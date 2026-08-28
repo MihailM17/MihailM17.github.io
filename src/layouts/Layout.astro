@@ -87,7 +87,7 @@ const { title } = Astro.props;
 
   .container{max-width:1180px; margin-inline:auto; padding-inline:clamp(1.25rem,5vw,3rem);}
   .section{padding-block:var(--sp-6);}
-  @media (max-width:640px){ .section{padding-block:var(--sp-5);} }
+  @media (max-width:700px){ .section{padding-block:var(--sp-5);} }
 
   .eyebrow{
     font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.16em;
@@ -268,7 +268,7 @@ const { title } = Astro.props;
     font-size: 0.82em; display:block; margin-top: 0.1em;
   }
   .about-grid{display:grid; grid-template-columns:1.15fr 0.95fr; gap:clamp(2rem,5vw,4rem); align-items:start; position:relative; z-index:1;}
-  @media (max-width:640px){ .about-grid{grid-template-columns:1fr;} }
+  @media (max-width:860px){ .about-grid{grid-template-columns:1fr;} }
   .about-copy p{margin-bottom:1.15em; max-width:56ch; color:var(--ecru); line-height:1.68;}
   .about-copy p:last-of-type{margin-bottom:0;}
   .about-lead{
@@ -306,7 +306,7 @@ const { title } = Astro.props;
     font-family:var(--font-mono); font-size:.64rem; letter-spacing:.06em; text-transform:uppercase; color:var(--ash);
   }
   .about-stats-footnote b{ color:var(--brass); font-weight:700; }
-  @media (max-width:520px){ .about-stats{ grid-template-columns:1fr; } .about-stats-footnote{ grid-column:auto; } }
+  @media (max-width:700px){ .about-stats{ grid-template-columns:1fr; } .about-stats-footnote{ grid-column:auto; } }
   .about-lang{
     display:inline-flex; align-items:center; gap:0.4rem;
     margin-top:var(--sp-3); font-family:var(--font-mono); font-size:.72rem;
@@ -347,7 +347,7 @@ const { title } = Astro.props;
   .case-title a:hover {color:var(--brass);} 
   .case-title-bg{font-family:var(--font-body); font-style:italic; color:var(--ash); font-size:1rem; margin-top:.3rem;}
   .case-grid{display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-4); margin-top:var(--sp-3); align-items:start;}
-  @media (max-width:640px){ .case-grid{grid-template-columns:1fr;} }
+  @media (max-width:800px){ .case-grid{grid-template-columns:1fr;} }
   
   .reel-frame{
     position:relative; aspect-ratio:16/9; background:var(--ink);
@@ -528,15 +528,15 @@ const { title } = Astro.props;
   .narrative-thumb:hover .play-overlay{ opacity: 1; }
   .play-overlay svg{ transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); }
   .narrative-thumb:hover .play-overlay svg{ transform: scale(1); }
-  @media (max-width: 720px){
-    .narrative-thumb{ width: clamp(160px, 28vw, 220px); }
+  @media (max-width: 880px){
+    .narrative-thumb{ width: clamp(170px, 28vw, 240px); }
   }
-  @media (max-width: 580px){
-    .narrative-row{ grid-template-columns: 56px 1fr auto; }
-    .narrative-thumb{ width: 130px; }
+  @media (max-width: 700px){
+    .narrative-row{ grid-template-columns: 64px 1fr auto; }
+    .narrative-thumb{ width: 140px; }
   }
-  @media (max-width: 440px){
-    .narrative-row{ grid-template-columns: 56px 1fr; }
+  @media (max-width: 520px){
+    .narrative-row{ grid-template-columns: 64px 1fr; }
     .narrative-thumb{ display: none; }
   }
 
@@ -546,7 +546,7 @@ const { title } = Astro.props;
     gap: var(--sp-4);
     align-items: stretch;
   }
-  @media (max-width: 640px){ .commercial-grid{ grid-template-columns: 1fr; } }
+  @media (max-width: 860px){ .commercial-grid{ grid-template-columns: 1fr; } }
 
   .commercial-card{
     display: flex;
@@ -667,7 +667,7 @@ const { title } = Astro.props;
 
   /* ---------- craft ---------- */
   .craft-grid{display:grid; grid-template-columns:1.1fr 1fr; gap:var(--sp-4);}
-  @media (max-width:640px){ .craft-grid{grid-template-columns:1fr;} }
+  @media (max-width:800px){ .craft-grid{grid-template-columns:1fr;} }
   .craft-primary, .craft-secondary{border:1px solid rgba(239,230,216,.12); padding:var(--sp-3);}
   .craft-primary h3{font-family:var(--font-display); font-weight:700; font-size:clamp(1.6rem,3.4vw,2.1rem); color:var(--ecru); margin:.5rem 0 var(--sp-2);}
   .tag-row{display:flex; flex-wrap:wrap; gap:.6rem;}
@@ -695,7 +695,7 @@ const { title } = Astro.props;
     max-width: 640px;
   }
   .form-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  @media (max-width:480px){ .form-grid{ grid-template-columns:1fr; } }
+  @media (max-width:600px){ .form-grid{ grid-template-columns:1fr; } }
   .contact-form label{ display:flex; flex-direction:column; gap: 0.35rem; }
   .contact-form label span{
     font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em;
