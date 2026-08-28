@@ -1,0 +1,205 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SpliceStrip from '../../components/SpliceStrip.astro';
+import Lightbox from '../../components/Lightbox.astro';
+
+export function getStaticPaths() {
+  const companyDetails = {
+    '7arts-artportal': {
+      slug: '7arts-artportal',
+      title: '7Arts',
+      role: 'Video Producer & Editor',
+      years: 'June 2025 – March 2026',
+      synopsis: `Independently managing the video pipeline, handling shooting, lighting, sound, and editing. I produced a high volume of trailers, social reels, and promos across their streaming platform, news division, and theatre productions.`,
+      description: `Although initially brought on as an editor, I operated as the company's sole video production specialist, managing the entire pipeline from set to final export. I independently handled all cinematography, lighting, and sound recording, followed by cutting and color grading in DaVinci Resolve. I delivered a high volume of content tailored to three distinct branches of the company.\n\n7Arts (Streaming Platform): Shot and edited promotional trailers for the platform itself, alongside dedicated trailers and social marketing reels for individual films and shows.\n\nArtPortal: Handled the end-to-end production of a massive catalog of short-form reels for the arts and news website, successfully translating written articles into engaging, fast-paced video content.\n\nArt Label Productions & The Big Praz Show: Filmed and crafted dynamic announcement videos for upcoming theatre productions and edited high-energy promotional advertisements for The Big Praz Show.`,
+      gallery: [
+        { src: '/reel-making-behind-the-scenes-1.jpg', caption: 'Reel BTS 1', alt: 'Reel behind the scenes 1' },
+        { src: '/reel-making-behind-the-scenes-2.jpg', caption: 'Reel BTS 2', alt: 'Reel behind the scenes 2' },
+        { src: '/reel-making-behind-the-scenes-3.jpg', caption: 'Reel BTS 3', alt: 'Reel behind the scenes 3' }
+      ]
+    },
+    'timeless-production': {
+      slug: 'timeless-production',
+      title: 'Timeless Production Group Ltd',
+      role: 'Video Editing Intern & Production Intern',
+      years: 'July 2022 – Sep 2022 & Feb 2025 – Apr 2025',
+      synopsis: `Two internships — from Production Intern in 2022 to Video Editing Intern in 2025, cutting Deroni recipe videos and Уча, зная и играя.`,
+      description: `Video Editing Intern — February 2025 – April 2025\n\nReturning to the company for a second internship, I stepped directly into an active editing role. During this three-month period, I was trusted to cut commercial YouTube content for clients, specifically focusing on fast-paced, short-form recipe videos featuring Deroni products. Additionally, I took on broadcast responsibilities by editing several episodes of the children's educational television program Уча, зная и играя.\n\nProduction Intern — July 2022 – September 2022\n\nDuring my initial time with the company, I focused on absorbing as much as possible about how a professional production environment operates. I assisted the team with general, day-to-day tasks, doing the foundational, hands-on work required to keep a production moving while learning the industry ropes from the ground up.`,
+      gallery: [
+        { src: 'https://img.youtube.com/vi/vC3i48d0Mms/hqdefault.jpg', caption: 'Сапунените мехури — Episode still', alt: 'Episode 1' },
+        { src: 'https://img.youtube.com/vi/CE5H1h6dpFw/hqdefault.jpg', caption: 'Колелото — Episode still', alt: 'Episode 2' },
+        { src: 'https://img.youtube.com/vi/O9bSfzCGmyg/hqdefault.jpg', caption: 'Фотография — Episode still', alt: 'Episode 3' },
+        { src: 'https://img.youtube.com/vi/l9OJxQ7X9vY/hqdefault.jpg', caption: 'Механика — Episode still', alt: 'Episode 4' }
+      ]
+    }
+  };
+  
+  return Object.keys(companyDetails).map(slug => ({
+    params: { slug },
+    props: { detail: companyDetails[slug] }
+  }));
+}
+
+const { detail } = Astro.props;
+if (!detail) throw new Error('Company not found');
+---
+
+<Layout title={`${detail.title} — Mihail Mihaylov`}>
+  <main>
+    <div class="container" style="padding-top: 1.6rem;">
+      <a href="/#commercial" class="back-link" data-cursor-hover data-cursor-label="BACK">← Back to Commercial</a>
+    </div>
+
+    <section class="project-hero">
+      <div class="container project-hero-inner">
+        <div class="hero-meta" data-reveal>
+          <span class="eyebrow" style="margin-bottom: 0.6rem;">{detail.role} — {detail.years}</span>
+        </div>
+        <h1 data-reveal>
+          <span class="line"><span>{detail.title},</span></span>
+        </h1>
+        <p class="project-synopsis" data-reveal>{(detail as any).synopsis || detail.description.split('\n')[0]}</p>
+      </div>
+    </section>
+
+    <SpliceStrip />
+
+    <section class="section specs-section">
+      <div class="container specs-grid">
+        <aside class="specs-aside" data-parallax="0.06">
+          <span class="eyebrow">Details</span>
+          <ul>
+            <li><b>Role</b> <span>{detail.role}</span></li>
+            <li><b>Period</b> <span>{detail.years}</span></li>
+            <li><b>Company</b> <span>{detail.title}</span></li>
+          </ul>
+        </aside>
+
+        <article class="story" data-parallax="0.12">
+          <span class="eyebrow">About</span>
+          {detail.description.split('\n').map((para) => para.trim()).filter(Boolean).map((para, idx) => {
+            const isInternshipHeading = /^(Video Editing Intern|Production Intern)\s—/.test(para);
+            const isBranchHeading = /^(7Arts \(Streaming Platform\)|ArtPortal:|Art Label Productions)/.test(para);
+            let content;
+            if (isInternshipHeading) {
+              content = <p data-reveal class="internship-heading"><b>{para}</b></p>;
+            } else if (isBranchHeading) {
+              const colonIdx = para.indexOf(':');
+              if (colonIdx !== -1) {
+                const head = para.slice(0, colonIdx + 1);
+                const rest = para.slice(colonIdx + 1);
+                content = <p data-reveal><b class="branch-head">{head}</b>{rest}</p>;
+              } else {
+                content = <p data-reveal>{para}</p>;
+              }
+            } else {
+              content = <p data-reveal>{para}</p>;
+            }
+            const showDivider = detail.slug === 'timeless-production' && idx === 1;
+            return (
+              <>
+                {content}
+                {showDivider && (
+                  <div class="internship-divider" aria-hidden="true" data-reveal>
+                    <span class="divider-line"></span>
+                    <span class="divider-diamond"></span>
+                    <span class="divider-line"></span>
+                  </div>
+                )}
+              </>
+            );
+          })}
+        </article>
+      </div>
+    </section>
+
+    <section class="section gallery-section" style="padding-top: 0;">
+      <div class="container">
+        <span class="eyebrow" data-reveal>Gallery</span>
+        <h2 data-reveal>Behind the scenes & work samples.</h2>
+        <div class="gallery-grid">
+          {detail.gallery?.map((img, i) => (
+            <figure class="gallery-card" data-reveal data-lightbox data-src={img.src} data-caption={img.caption} data-cursor-hover data-cursor-label="VIEW">
+              <div class="gallery-img-wrap skeleton" data-img-wrap>
+                <img src={img.src} alt={img.alt} loading="lazy" decoding="async" onload="this.closest('[data-img-wrap]')?.classList.remove('skeleton')" onerror="this.style.display='none'; const fb=this.nextElementSibling; if(fb) fb.style.display='block'; this.closest('[data-img-wrap]')?.classList.remove('skeleton')" />
+                <div class="img-error-fallback" style="display:none;">Image failed — <small>{img.src}</small></div>
+              </div>
+              <figcaption>{img.caption}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <SpliceStrip />
+    <Lightbox />
+  </main>
+</Layout>
+
+<style>
+  .back-link{
+    font-family: var(--font-mono); font-size: .78rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ash); border-bottom: 1px solid transparent; padding-bottom: 2px; transition: color .2s, border-color .2s;
+  }
+  .back-link:hover{ color: var(--ecru); border-color: var(--brass); }
+
+  .project-hero{
+    position: relative; padding-block: var(--sp-5) var(--sp-4);
+    background: radial-gradient(ellipse at 72% 12%, rgba(178,58,46,.14), transparent 58%), var(--ink);
+    overflow: clip;
+  }
+  .project-hero-inner{ position: relative; z-index: 1; }
+  .hero-meta{ display:flex; align-items:center; gap: .85rem; }
+  .project-hero h1{
+    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+    font-size: clamp(2.6rem, 9vw, 6.2rem); line-height: .9; letter-spacing: -.03em; color: var(--ecru);
+    margin: .45em 0 .3em;
+  }
+  .project-hero h1 .line{ display:block; overflow:clip; }
+  .project-synopsis{ max-width: 58ch; font-size: clamp(1.05rem, 2vw, 1.25rem); font-style: italic; color: var(--ecru); border-left: 2px solid var(--oxblood); padding-left: 1rem; }
+
+  .specs-grid{ display:grid; grid-template-columns: 300px 1fr; gap: var(--sp-5); align-items:start; }
+  @media (max-width:900px){ .specs-grid{ grid-template-columns:1fr; } }
+  .specs-aside{
+    position: sticky; top: 92px; background: var(--ink-2); border: 1px solid var(--oxblood-dim);
+    padding: 1.4rem; clip-path: polygon(0 0,100% 0,100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+  }
+  .specs-aside ul{ margin-top: .9rem; display:grid; gap: .65rem; }
+  .specs-aside li{ display:flex; justify-content:space-between; gap:1rem; font-family: var(--font-mono); font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ash); border-bottom: 1px solid rgba(239,230,216,.08); padding-bottom: .5rem; }
+  .specs-aside li b{ color: var(--ecru); }
+
+  .story{ display:grid; gap: 1.1rem; }
+  .story p{ color: var(--ecru); max-width: 58ch; line-height: 1.7; }
+  .internship-heading{
+    font-family: var(--font-mono); font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--brass); font-weight: 700; line-height: 1.4;
+    margin-top: 0.6rem; padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(212,162,76,0.18);
+  }
+  .internship-heading:first-of-type{ margin-top: 0.2rem; }
+  .branch-head{
+    font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.04em;
+    color: var(--brass); font-weight: 700;
+  }
+  .internship-divider{
+    display:flex; align-items:center; gap:0.75rem;
+    margin: 0.4rem 0 0.2rem; padding-block: 0.4rem;
+  }
+  .internship-divider .divider-line{
+    flex:1; height:1px;
+    background: linear-gradient(90deg, transparent, rgba(239,230,216,0.14), transparent);
+  }
+  .internship-divider .divider-diamond{
+    width:7px; height:7px; background: var(--brass);
+    transform: rotate(45deg); flex-shrink:0;
+    box-shadow: 0 0 0 6px rgba(212,162,76,0.07);
+  }
+
+  .gallery-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1.4rem; }
+  .gallery-card{ margin:0; cursor: zoom-in; }
+  .gallery-img-wrap{ aspect-ratio: 16/10; overflow:hidden; border:1px solid rgba(239,230,216,.12); background: var(--ink-2); }
+  .gallery-img-wrap img{ width:100%; height:100%; object-fit:cover; transition: transform .6s cubic-bezier(.16,1,.3,1); }
+  .gallery-card:hover img{ transform: scale(1.04); }
+  .gallery-card figcaption{ margin-top: .5rem; font-family: var(--font-mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ash); }
+</style>
+

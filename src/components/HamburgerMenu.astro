@@ -1,0 +1,345 @@
+---
+import { getCollection } from 'astro:content';
+
+const projects = await getCollection('projects');
+const siteContent = (await getCollection('site'))[0]?.data;
+
+// Custom order: newest first, with specific ordering for 2025 projects
+const orderPriority: Record<string, number> = {
+  'silent-lifts-vitosha': 1,
+  'zasnet': 2,
+  'remake-season-2': 3,
+  'eastern-wind': 4,
+};
+
+const films = [...projects].sort((a, b) => {
+  const priorityA = orderPriority[a.data.slug] ?? 999;
+  const priorityB = orderPriority[b.data.slug] ?? 999;
+  return priorityA - priorityB;
+});
+
+const mainLinks = siteContent?.nav || [];
+
+// Companies for hamburger menu - defined inline since detail isn't in content schema
+const companies = [
+  {
+    slug: '7arts-artportal',
+    org: '7Arts',
+    role: 'Video Producer & Editor',
+    years: 'June 2025 – March 2026',
+  },
+  {
+    slug: 'timeless-production',
+    org: 'Timeless Production Group Ltd',
+    role: 'Video Editing Intern & Production Intern',
+    years: 'July 2022 – Sep 2022 & Feb 2025 – Apr 2025',
+  }
+];
+---
+
+<button id="hamburger-btn" class="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="site-menu" data-cursor-hover data-cursor-label="MENU">
+  <span class="hamburger-box">
+    <span class="hamburger-line line-1"></span>
+    <span class="hamburger-line line-2"></span>
+    <span class="hamburger-line line-3"></span>
+  </span>
+  <span class="hamburger-text">Menu</span>
+</button>
+
+<div id="site-menu" class="site-menu" aria-hidden="true" inert>
+  <div class="menu-backdrop" data-menu-close></div>
+  <div class="menu-panel">
+    <div class="menu-header">
+      <span class="eyebrow" style="margin:0">Navigation — Mihail Mihaylov</span>
+      <button class="menu-close" aria-label="Close menu" data-menu-close data-cursor-hover data-cursor-label="CLOSE">✕</button>
+    </div>
+
+    <div class="menu-grid">
+      <nav class="menu-col" aria-label="Primary">
+        <span class="menu-kicker">Sections</span>
+        <ul>
+          {mainLinks.map((l, i) => (
+            <li><a href={l.href} data-menu-link data-cursor-hover><b>{String(i+1).padStart(2,'0')}</b><span>{l.label}<em>{l.sub}</em></span></a></li>
+          ))}
+        </ul>
+      </nav>
+
+      <div class="menu-stack">
+        <nav class="menu-col" aria-label="Films">
+          <span class="menu-kicker">Films & Stories <em>bar → story · image → YouTube</em></span>
+          <ul>
+            {films.map((f) => {
+              const film = f.data;
+              return (
+                <li>
+                  <a href={`/projects/${film.slug}`} data-menu-link data-cursor-hover data-cursor-label="OPEN">
+                    <b>{film.index}</b>
+                    <span>{film.slug === 'silent-lifts-vitosha' ? film.titleEn : film.title}<em>{film.kicker} — {film.year}</em></span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <nav class="menu-col" aria-label="Companies">
+          <span class="menu-kicker">Companies</span>
+          <ul>
+            {companies.map((job, i) => (
+              <li>
+                <a href={`/companies/${job.slug}`} data-menu-link data-cursor-hover data-cursor-label="OPEN">
+                  <b>{String(i+1).padStart(2,'0')}</b>
+                  <span>{job.org}<em>{job.role} — {job.years}</em></span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <div class="menu-footer">
+      <span>Sofia, Bulgaria · 42.70°N 23.32°E</span>
+      <div class="menu-social">
+        <a href={`mailto:${siteContent?.contact?.email || 'mohailmihaylov2004@gmail.com'}`} data-cursor-hover>Mail</a>
+        <a href={siteContent?.contact?.instagram || 'https://www.instagram.com/mihail.m4307/'} target="_blank" data-cursor-hover>IG</a>
+        <a href={siteContent?.contact?.linkedin || 'https://www.linkedin.com/in/mihail-mihaylov-bb0238247/'} target="_blank" data-cursor-hover>LI</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .hamburger{
+    display:inline-flex; align-items:center; gap:0.65rem;
+    background: transparent;
+    border: 1px solid rgba(239,230,216,0.14);
+    color: var(--ecru);
+    font-family: var(--font-mono); font-size: 0.72rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 0.55rem 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+    margin-left: 0.5rem;
+  }
+  .hamburger:hover{ border-color: var(--brass); color: var(--brass); }
+  .hamburger[aria-expanded="true"]{ border-color: var(--brass); background: rgba(212,162,76,0.08); color: var(--brass); }
+  .hamburger-box{
+    position:relative; width: 18px; height: 12px;
+    display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .hamburger-line{
+    display:block; height: 1px; background: currentColor;
+    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.25s ease, width 0.25s ease;
+    transform-origin: center;
+  }
+  .hamburger-line.line-2{ width: 12px; align-self: flex-end; }
+  .hamburger[aria-expanded="true"] .line-1{ transform: translateY(5.5px) rotate(45deg); }
+  .hamburger[aria-expanded="true"] .line-2{ opacity:0; transform: scaleX(0); }
+  .hamburger[aria-expanded="true"] .line-3{ transform: translateY(-5.5px) rotate(-45deg); }
+  .hamburger-text{ font-weight: 700; }
+
+  .site-menu{
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display:flex;
+    justify-content: flex-end;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.28s ease;
+  }
+  .site-menu.is-open{
+    pointer-events: auto;
+    opacity: 1;
+  }
+  .menu-backdrop{
+    position:absolute; inset:0;
+    background: rgba(12,10,10,0.56);
+    backdrop-filter: blur(6px) saturate(1.05);
+  }
+  .menu-panel{
+    position: relative;
+    width: min(680px, 94vw);
+    height: 100%;
+    background: var(--ink);
+    border-left: 1px solid rgba(239,230,216,0.12);
+    display:flex; flex-direction:column;
+    transform: translateX(100%);
+    transition: transform 0.48s cubic-bezier(0.16,1,0.3,1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: -18px 0 48px rgba(0,0,0,0.45);
+  }
+  .site-menu.is-open .menu-panel{ transform: translateX(0); }
+  .menu-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid rgba(239,230,216,0.08);
+    position:sticky; top:0; background: var(--ink); z-index:1;
+  }
+  .menu-close{
+    width:32px; height:32px;
+    display:grid; place-items:center;
+    background: transparent; border:1px solid rgba(239,230,216,0.14);
+    color: var(--ash); cursor:pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .menu-close:hover{ border-color: var(--brass); color: var(--ecru); }
+
+  .menu-grid{
+    display:grid; grid-template-columns: 0.85fr 1.15fr;
+    gap: 1.5rem;
+    padding: 1.4rem 1.2rem;
+    flex:1;
+    align-items: start;
+  }
+  .menu-stack{
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    min-width: 0;
+  }
+  @media (max-width:680px){
+    .menu-grid{ grid-template-columns: 1fr; }
+    .menu-panel{ width: 94vw; }
+  }
+  .menu-kicker{
+    font-family: var(--font-mono); font-size: 0.68rem;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--brass);
+    display:block; margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(239,230,216,0.08); padding-bottom: 0.5rem;
+  }
+  .menu-kicker em{
+    font-style: normal; color: var(--ash); letter-spacing: 0.04em; text-transform: none;
+    font-size: 0.66rem; margin-left: 0.4rem;
+  }
+  .menu-col{ min-width: 0; }
+  .menu-col ul{ display:grid; gap: 0.45rem; }
+  .menu-col li{
+    display:flex; align-items: center; gap: 0.6rem;
+  }
+  .menu-col li [data-menu-link]{
+    flex: 1; min-width: 0;
+    display:flex; gap: 0.85rem; align-items: center;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid transparent;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  }
+  .menu-col li [data-menu-link]:hover{
+    background: rgba(239,230,216,0.04);
+    border-color: rgba(239,230,216,0.08);
+    transform: translateX(2px);
+  }
+  .menu-col [data-menu-link] b{
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--brass);
+    min-width: 1.6rem; flex-shrink:0;
+  }
+  .menu-col [data-menu-link] span{
+    font-family: var(--font-display); font-weight: 700; font-size: 0.98rem;
+    color: var(--ecru); line-height:1.1;
+    display:block; min-width:0;
+  }
+  .menu-col [data-menu-link] span em{
+    display:block;
+    font-family: var(--font-mono); font-weight: 400; font-size: 0.68rem;
+    letter-spacing: 0.04em; text-transform: none; color: var(--ash);
+    margin-top: 0.15rem; font-style: normal;
+    white-space: normal; overflow: visible; text-overflow: clip;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+  }
+
+  .menu-footer{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 1rem 1.4rem;
+    border-top: 1px solid rgba(239,230,216,0.08);
+    font-family: var(--font-mono); font-size: 0.70rem;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ash);
+  }
+  .menu-social{ display:flex; gap: 1rem; }
+  .menu-social a{ border-bottom: 1px solid transparent; transition: color 0.2s, border-color 0.2s; }
+  .menu-social a:hover{ color: var(--ecru); border-color: var(--brass); }
+
+  /* Ensure hamburger sits nicely with nav */
+  @media (max-width:860px){
+    .hamburger{ padding: 0.5rem 0.65rem; }
+    .hamburger-text{ display:none; }
+  }
+</style>
+
+<script>
+  // @ts-nocheck
+  function initHamburger() {
+    const btn = document.getElementById('hamburger-btn');
+    const menu = document.getElementById('site-menu');
+    if (!btn || !menu) return;
+    // Move menu to body to escape header's backdrop-filter stacking context (fixes menu behind objects / clipped height)
+    if (menu.parentElement !== document.body) {
+      document.body.appendChild(menu);
+    }
+    // Keep cursor on top of menu
+    const cursor = document.getElementById('custom-cursor');
+    if (cursor && cursor.parentElement === document.body) {
+      document.body.appendChild(cursor);
+    }
+    if (btn.dataset.bound === '1') return;
+    btn.dataset.bound = '1';
+
+    const panel = menu.querySelector('.menu-panel');
+    const closeEls = menu.querySelectorAll('[data-menu-close]');
+    const links = menu.querySelectorAll('[data-menu-link]');
+
+    function open() {
+      btn.setAttribute('aria-expanded', 'true');
+      menu.setAttribute('aria-hidden', 'false');
+      menu.removeAttribute('inert');
+      menu.classList.add('is-open');
+      document.documentElement.style.overflow = 'hidden';
+      // focus first link for a11y
+      const first = menu.querySelector('[data-menu-link]');
+      if (first) first.focus();
+    }
+    function close() {
+      btn.setAttribute('aria-expanded', 'false');
+      menu.setAttribute('aria-hidden', 'true');
+      menu.setAttribute('inert', '');
+      menu.classList.remove('is-open');
+      document.documentElement.style.overflow = '';
+      btn.focus();
+    }
+    function toggle() {
+      const isOpen = menu.classList.contains('is-open');
+      if (isOpen) close(); else open();
+    }
+
+    btn.addEventListener('click', toggle);
+    closeEls.forEach(el => el.addEventListener('click', close));
+    links.forEach(a => a.addEventListener('click', () => {
+      close();
+      // let Lenis handle hash navigation after close
+      const href = a.getAttribute('href');
+      if (href && href.startsWith('/#')) {
+        const id = href.replace('/', '');
+        setTimeout(() => {
+          const target = document.querySelector(id);
+          if (target && window.__LENIS__) window.__LENIS__.scrollTo(target, { offset: -72 });
+        }, 320);
+      }
+    }));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.classList.contains('is-open')) close();
+    });
+
+    // Close on backdrop click already via data-menu-close
+    document.addEventListener('astro:before-swap', () => {
+      // cleanup overflow
+      document.documentElement.style.overflow = '';
+    }, { once: true });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHamburger);
+  else initHamburger();
+  document.addEventListener('astro:page-load', initHamburger);
+  document.addEventListener('astro:after-swap', initHamburger);
+</script>

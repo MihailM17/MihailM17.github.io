@@ -1,0 +1,36 @@
+{
+  "slug": "silent-lifts-vitosha",
+  "index": "01",
+  "title": "Замлъкналите лифтове на Витоша",
+  "titleEn": "The Silent Lifts of Vitosha",
+  "year": "2026",
+  "kicker": "Documentary · Director & Editor",
+  "meta": "11 min · Vitosha, Sofia · In collab with University of Central Florida · 28 days",
+  "youtubeUrl": "https://youtu.be/_ajdklDn5_k",
+  "thumb": "https://img.youtube.com/vi/_ajdklDn5_k/maxresdefault.jpg",
+  "cover": "https://img.youtube.com/vi/_ajdklDn5_k/maxresdefault.jpg",
+  "synopsis": "A documentary film exploring the history and impact of the Vitosha mountain lift closures.",
+  "story": [
+    "The Silent Lifts of Vitosha was created in just 28 days during a joint production sprint between New Bulgarian University and students from the University of Central Florida. The event, organized by our professors, featured five crews of four people each. It was an incredible opportunity to test the skills we've acquired over the past three years while collaborating and making connections with international filmmakers.",
+    "The concept came to me naturally. For a long time, I've missed the lifts that connect my hometown of Sofia to Vitosha Mountain - places I frequently visited with my parents when I was younger. Once the idea was born and we dove into the research, the topic revealed itself to be far more complex, intriguing, and political than any of us initially expected. We followed lift operators and the families who built their lives and careers around these chairlifts that no longer run.",
+    "None of this would have been possible without our incredible four-person crew. My fellow Bulgarian teammate took on the heavy lifting of producing, opening doors and connecting us with people I never thought we'd be able to reach. On the American side, our cinematographer immersed herself in this entirely new environment almost instantly, finding the most amazing shots along the mountain. Our fourth teammate, also from the US, was the absolute glue of the production, recording sound and handling all the essential details that tied the whole project together.",
+    "I wrote, directed, edited, and graded the film in DaVinci Resolve. Every interview was a single-take, single-camera confession; every piece of B-roll was earned through a hike. It was a truly unforgettable experience and a defining project, culminating in special screenings for representatives of the US Council in Sofia as well as local government officials."
+  ],
+  "specs": [
+    { "label": "Role", "value": "Director & Editor" },
+    { "label": "Duration", "value": "11 min" },
+    { "label": "Location", "value": "Vitosha, Sofia" },
+    { "label": "Collab", "value": "NBU × UCF — made in 28 days" },
+    { "label": "Tools", "value": "DaVinci Resolve, Sony FX3" }
+  ],
+  "gallery": [
+    { "src": "https://img.youtube.com/vi/_ajdklDn5_k/maxresdefault.jpg", "caption": "Vitosha ridge — empty chairs at golden hour", "alt": "Vitosha lifts" },
+    { "src": "/picture-from-silent-lifts-vitosha.png", "caption": "On set — Silent Lifts of Vitosha", "alt": "On set Silent Lifts" },
+    { "src": "/film-image-vitosha.jpg", "caption": "Vitosha landscape", "alt": "Vitosha landscape" },
+    { "src": "/the-silent-lifts-of-vitosha-nature.jpg", "caption": "Vitosha nature", "alt": "Vitosha nature" },
+    { "src": "/interview-1-silent-lifts-vitosha.jpg", "caption": "Interview — Silent Lifts of Vitosha", "alt": "Interview 1" },
+    { "src": "/interview-2-silent-lifts-vitosha.jpg", "caption": "Interview — Silent Lifts of Vitosha", "alt": "Interview 2" },
+    { "src": "/lifts-silent-lifts-vitosha.jpg", "caption": "Lifts — Silent Lifts of Vitosha", "alt": "Lifts" },
+    { "src": "/poster-silent-lifts-vitosha.jpg", "caption": "Poster — Silent Lifts of Vitosha", "alt": "Poster" }
+  ]
+}

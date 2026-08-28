@@ -1,0 +1,212 @@
+---
+// Lightbox — click any [data-lightbox] image to view fullscreen with caption
+---
+
+<div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Image preview">
+  <button class="lightbox-close" aria-label="Close lightbox" data-lightbox-close>✕</button>
+  <div class="lightbox-content">
+    <img id="lightbox-img" src="" alt="" />
+    <p id="lightbox-caption" class="lightbox-caption"></p>
+  </div>
+  <button class="lightbox-nav lightbox-prev" aria-label="Previous image" data-lightbox-prev>‹</button>
+  <button class="lightbox-nav lightbox-next" aria-label="Next image" data-lightbox-next>›</button>
+</div>
+
+<style>
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(12, 10, 10, 0.96);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    padding: 2rem;
+  }
+  .lightbox.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+  .lightbox-content {
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lightbox.is-open .lightbox-content {
+    transform: scale(1);
+  }
+  #lightbox-img {
+    max-width: 100%;
+    max-height: 75vh;
+    object-fit: contain;
+    border-radius: 2px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+  }
+  .lightbox-caption {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ecru);
+    text-align: center;
+    max-width: 60ch;
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    background: rgba(28, 22, 20, 0.8);
+    border: 1px solid rgba(239, 230, 216, 0.15);
+    color: var(--ecru);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    z-index: 10;
+  }
+  .lightbox-close:hover {
+    border-color: var(--brass);
+    background: rgba(28, 22, 20, 0.95);
+    transform: scale(1.05);
+  }
+  .lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    background: rgba(28, 22, 20, 0.8);
+    border: 1px solid rgba(239, 230, 216, 0.15);
+    color: var(--ecru);
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    z-index: 10;
+  }
+  .lightbox-nav:hover {
+    border-color: var(--brass);
+    background: rgba(28, 22, 20, 0.95);
+    transform: translateY(-50%) scale(1.05);
+  }
+  .lightbox-prev { left: 1.5rem; }
+  .lightbox-next { right: 1.5rem; }
+  @media (max-width: 640px) {
+    .lightbox-nav { width: 44px; height: 44px; font-size: 1.5rem; }
+    .lightbox-prev { left: 0.75rem; }
+    .lightbox-next { right: 0.75rem; }
+    .lightbox-close { top: 0.75rem; right: 0.75rem; }
+    .lightbox { padding: 1rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lightbox, .lightbox-content { transition: none; }
+  }
+</style>
+
+<script>
+  // @ts-nocheck
+  let lightboxImages = [];
+  let currentIndex = 0;
+
+  function initLightbox() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initLightbox);
+      return;
+    }
+    if (document.body.dataset.lightboxBound === '1') return;
+    document.body.dataset.lightboxBound = '1';
+
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    const closeBtn = lightbox?.querySelector('[data-lightbox-close]');
+    const prevBtn = lightbox?.querySelector('[data-lightbox-prev]');
+    const nextBtn = lightbox?.querySelector('[data-lightbox-next]');
+
+    function collectImages() {
+      lightboxImages = Array.from(document.querySelectorAll('[data-lightbox]')).map(el => ({
+        src: el.dataset.src || el.querySelector('img')?.src,
+        caption: el.dataset.caption || el.querySelector('figcaption')?.textContent || el.querySelector('img')?.alt || ''
+      }));
+    }
+
+    function openLightbox(index) {
+      collectImages();
+      if (lightboxImages.length === 0) return;
+      currentIndex = index;
+      updateLightbox();
+      lightbox.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', onKeydown);
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('is-open');
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKeydown);
+    }
+
+    function updateLightbox() {
+      const item = lightboxImages[currentIndex];
+      if (!item) return;
+      lightboxImg.src = item.src;
+      lightboxImg.alt = item.caption || '';
+      lightboxCaption.textContent = item.caption || '';
+    }
+
+    function navigate(dir) {
+      currentIndex = (currentIndex + dir + lightboxImages.length) % lightboxImages.length;
+      updateLightbox();
+    }
+
+    function onKeydown(e) {
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') navigate(-1);
+      else if (e.key === 'ArrowRight') navigate(1);
+    }
+
+    // Delegate click on all [data-lightbox] elements
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('[data-lightbox]');
+      if (trigger) {
+        const index = Array.from(document.querySelectorAll('[data-lightbox]')).indexOf(trigger);
+        if (index >= 0) openLightbox(index);
+      }
+    });
+
+    closeBtn?.addEventListener('click', closeLightbox);
+    prevBtn?.addEventListener('click', () => navigate(-1));
+    nextBtn?.addEventListener('click', () => navigate(1));
+
+    // Close on backdrop click
+    lightbox?.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+
+    // Re-collect on page transitions
+    document.addEventListener('astro:after-swap', () => {
+      collectImages();
+    });
+  }
+
+  initLightbox();
+  document.addEventListener('astro:page-load', initLightbox);
+  document.addEventListener('astro:after-swap', initLightbox);
+</script>

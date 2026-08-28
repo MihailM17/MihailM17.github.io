@@ -1,0 +1,291 @@
+---
+// CustomCursor — simplified, robust, "more normal" look.
+// Native cursor stays visible until custom is ready; custom is a subtle dot + ring.
+// Respects reduced-motion / touch. No disappearance gap.
+---
+
+<div id="custom-cursor" aria-hidden="true">
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"></div>
+  <span class="cursor-label">VIEW</span>
+</div>
+
+<style is:global>
+  /* Only hide native cursor when custom is actively running on fine pointer */
+  @media (pointer: fine) {
+    html.has-custom-cursor {
+      cursor: none;
+    }
+    html.has-custom-cursor a,
+    html.has-custom-cursor button,
+    html.has-custom-cursor [data-cursor-hover] {
+      cursor: none;
+    }
+  }
+
+  #custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  #custom-cursor.is-ready { opacity: 1; }
+
+  /* More normal: subtle, not fashion-y */
+  .cursor-dot {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    background: #EFE6D8; /* ecru — visible like native tip */
+    border: 1px solid rgba(28,22,20,0.18);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+    will-change: transform;
+    transition: transform 0.14s ease, background 0.14s ease;
+  }
+  .cursor-ring {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgba(239,230,216,0.55);
+    background: rgba(239,230,216,0.04);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+    transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), border-color 0.18s, background 0.18s;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.18);
+  }
+  .cursor-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ecru, #EFE6D8);
+    background: rgba(28,22,20,0.78);
+    border: 1px solid rgba(212,162,76,0.5);
+    padding: 2px 5px;
+    border-radius: 999px;
+    opacity: 0;
+    transition: opacity 0.14s ease;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  /* Hover — gentle, not huge */
+  #custom-cursor.is-hover .cursor-dot {
+    transform: translate(-50%, -50%) scale(1.6);
+    background: var(--brass, #D4A24C);
+  }
+  #custom-cursor.is-hover .cursor-ring {
+    transform: translate(-50%, -50%) scale(1.35);
+    border-color: rgba(212,162,76,0.9);
+    background: rgba(212,162,76,0.09);
+  }
+  #custom-cursor.is-hover .cursor-label { opacity: 1; }
+
+  #custom-cursor.is-hover.is-video .cursor-ring {
+    border-color: var(--oxblood, #B23A2E);
+    background: rgba(178,58,46,0.10);
+  }
+  #custom-cursor.is-down .cursor-ring {
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+
+  /* Fallback — always show native cursor on touch / narrow / reduced */
+  @media (pointer: coarse), (max-width: 900px) {
+    #custom-cursor { display: none !important; }
+    html.has-custom-cursor { cursor: auto !important; }
+    html.has-custom-cursor a, html.has-custom-cursor button { cursor: auto !important; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #custom-cursor { display: none !important; }
+    html.has-custom-cursor { cursor: auto !important; }
+  }
+</style>
+
+<script>
+  // @ts-nocheck
+  let rafId = 0;
+  let active = false;
+
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isCoarse = window.matchMedia('(pointer: coarse)').matches;
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  function shouldEnable() {
+    return !prefersReduced && !isCoarse && !isTouch && window.innerWidth > 900;
+  }
+
+  function initCursor() {
+    const cursor = document.getElementById('custom-cursor');
+    const dot = cursor?.querySelector('.cursor-dot');
+    const ring = cursor?.querySelector('.cursor-ring');
+    const label = cursor?.querySelector('.cursor-label');
+    if (!cursor || !dot || !ring || !label) return;
+
+    // If not suitable device — ensure native cursor visible
+    if (!shouldEnable()) {
+      document.documentElement.classList.remove('has-custom-cursor');
+      cursor.style.display = 'none';
+      cursor.classList.remove('is-ready');
+      return;
+    }
+
+    // Prevent double init
+    if (cursor.dataset.bound === '1') {
+      // Re-show if was hidden by resize
+      document.documentElement.classList.add('has-custom-cursor');
+      cursor.style.display = 'block';
+      requestAnimationFrame(() => cursor.classList.add('is-ready'));
+      return;
+    }
+    cursor.dataset.bound = '1';
+
+    document.documentElement.classList.add('has-custom-cursor');
+    cursor.style.display = 'block';
+    // Make visible immediately — no gap where native hidden but custom invisible
+    requestAnimationFrame(() => cursor.classList.add('is-ready'));
+
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    // If we already have a mouse position from previous session, keep it
+    // Start elements at center so they're visible even before first move
+    let dotX = mouseX, dotY = mouseY;
+    let ringX = mouseX, ringY = mouseY;
+    let labelX = mouseX, labelY = mouseY;
+
+    // Place instantly
+    dot.style.transform = `translate(${dotX}px, ${dotY}px) translate(-50%, -50%)`;
+    ring.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
+    label.style.transform = `translate(${labelX}px, ${labelY}px) translate(-50%, -50%)`;
+
+    function onMouseMove(e) {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      if (!active) {
+        active = true;
+        // already ready, but ensure
+        cursor.classList.add('is-ready');
+      }
+    }
+
+    function lerpLoop() {
+      // Smooth follow — dot snappier, ring/label lazy
+      dotX += (mouseX - dotX) * 0.32;
+      dotY += (mouseY - dotY) * 0.32;
+      ringX += (mouseX - ringX) * 0.16;
+      ringY += (mouseY - ringY) * 0.16;
+      labelX += (mouseX - labelX) * 0.16;
+      labelY += (mouseY - labelY) * 0.16;
+
+      dot.style.transform = `translate(${dotX}px, ${dotY}px) translate(-50%, -50%)`;
+      ring.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
+      label.style.transform = `translate(${labelX}px, ${labelY}px) translate(-50%, -50%)`;
+
+      rafId = requestAnimationFrame(lerpLoop);
+    }
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(lerpLoop);
+
+    function onMouseLeave() {
+      cursor.classList.remove('is-ready');
+      active = false;
+    }
+    function onMouseEnter() {
+      cursor.classList.add('is-ready');
+    }
+    function onMouseDown() { cursor.classList.add('is-down'); }
+    function onMouseUp() { cursor.classList.remove('is-down'); }
+
+    const hoverSelector = 'a, button, [data-cursor-hover], .reel-frame, .exp-thumb, .exp-thumb-vertical, .case-card, .film-panel, .narrative-row, .mini-thumb';
+    function onOver(e) {
+      const target = e.target.closest(hoverSelector);
+      if (target) {
+        cursor.classList.add('is-hover');
+        const isVideo = target.matches('.reel-frame, .reel-frame *, .exp-thumb, .exp-thumb-vertical, .mini-thumb, [data-cursor-video]');
+        cursor.classList.toggle('is-video', isVideo);
+        const customLabel = target.getAttribute('data-cursor-label');
+        label.textContent = customLabel || (isVideo ? 'PLAY' : 'VIEW');
+      }
+    }
+    function onOut(e) {
+      const target = e.target.closest(hoverSelector);
+      if (target) {
+        const stillOver = document.elementFromPoint(mouseX, mouseY)?.closest(hoverSelector);
+        if (!stillOver) {
+          cursor.classList.remove('is-hover', 'is-video');
+          label.textContent = 'VIEW';
+        }
+      }
+    }
+
+    // Use window for mousemove so we track even when over iframe etc
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    document.addEventListener('mouseleave', onMouseLeave);
+    document.addEventListener('mouseenter', onMouseEnter);
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('mouseover', onOver);
+    document.addEventListener('mouseout', onOut);
+
+    // Cleanup on view transition
+    document.addEventListener('astro:before-swap', () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseleave', onMouseLeave);
+      document.removeEventListener('mouseenter', onMouseEnter);
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('mouseover', onOver);
+      document.removeEventListener('mouseout', onOut);
+      cancelAnimationFrame(rafId);
+      cursor.dataset.bound = '';
+    }, { once: true });
+  }
+
+  // Initial boot
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCursor);
+  } else {
+    initCursor();
+  }
+  document.addEventListener('astro:page-load', initCursor);
+  document.addEventListener('astro:after-swap', initCursor);
+
+  // Handle resize / orientation — re-evaluate shouldEnable
+  let resizeTimer;
+  let wasEnabled = shouldEnable();
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      const nowEnabled = shouldEnable();
+      const cursor = document.getElementById('custom-cursor');
+      
+      if (!nowEnabled && wasEnabled) {
+        // Was enabled, now disabled - clean up
+        if (cursor) {
+          cursor.style.display = 'none';
+          cursor.classList.remove('is-ready');
+          cursor.dataset.bound = '';
+        }
+        document.documentElement.classList.remove('has-custom-cursor');
+        cancelAnimationFrame(rafId);
+      } else if (nowEnabled && !wasEnabled) {
+        // Was disabled, now enabled - re-init
+        if (cursor && cursor.dataset.bound !== '1') {
+          initCursor();
+        }
+      }
+      wasEnabled = nowEnabled;
+    }, 120);
+  });
+</script>

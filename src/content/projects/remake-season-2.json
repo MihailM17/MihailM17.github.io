@@ -1,0 +1,32 @@
+{
+  "slug": "remake-season-2",
+  "index": "03",
+  "title": "РимейкЪТ — Season 2",
+  "titleEn": "Remake — Season 2",
+  "year": "2025",
+  "kicker": "TV Reality Show · Director",
+  "meta": "3-episode competition · NBU Television · 2025",
+  "youtubeUrl": "https://youtu.be/L-FgwXF-VA8?si=tXC_bETUdr_AfYAI",
+  "thumb": "https://img.youtube.com/vi/L-FgwXF-VA8/maxresdefault.jpg",
+  "cover": "https://img.youtube.com/vi/L-FgwXF-VA8/maxresdefault.jpg",
+  "synopsis": "The second season of a student reality competition project, requiring extensive crew organization and post-production management.",
+  "story": [
+    "РимейкЪТ is a student-led television reality show at New Bulgarian University that follows competing teams as they recreate scenes from iconic Bulgarian films. The format documents the entire filmmaking journey - from initial script analysis and artistic choices to the chaotic shoot days, editing, and the final screening.",
+    "For the second season, the students chose to remake scenes from the massive new hit Gundi: Legend of Love. Stepping into the role of Series Director for the reality production, I wanted to ensure the show wasn't just a dry behind-the-scenes documentary. I wanted it to have a distinct visual framework. Inspired by the way the original Gundi film utilized color to separate character motives, I introduced a color-coding system for our reality show. Instead of just dividing the teams functionally, we assigned them specific colors - blue, green, red, yellow - each symbolizing different qualities and attitudes. This visual concept became a creative bridge between the original cinematic masterpiece and our reality format.",
+    "The logistics were intense. Distributing the TV crew, synchronizing schedules, and leading a group of people I didn't initially know well required fast, precise decisions. Thanks to the guidance of our university supervisors, Bobi Dimova and Rado Badov, we kept our focus through the highly pressurized studio shoot days. That calm translated into post-production, where I worked closely with our lead editor, Kaloyan Zlatev. Sifting through hundreds of gigabytes of footage to craft a compelling narrative across three 20-minute episodes was a monumental task, but we were completely in sync.",
+    "The project culminated in a packed premiere at the university cinema. To our surprise, the director and lead cinematographer of Gundi: Legend of Love - Dimitar Dimitrov and Boris Slavkov - attended the screening. Watching the reality show with them and hearing the director say, \"I don't know much about reality formats, but I genuinely had fun; you did a super job,\" was an unforgettable, validating experience."
+  ],
+  "specs": [
+    { "label": "Role", "value": "Director — Season 2" },
+    { "label": "Format", "value": "3 × 20 min · Reality Competition" },
+    { "label": "Network", "value": "NBU Television" },
+    { "label": "Cameras", "value": "8 × broadcast" }
+  ],
+  "gallery": [
+    { "src": "https://img.youtube.com/vi/L-FgwXF-VA8/maxresdefault.jpg", "caption": "Control room — live cut", "alt": "Control room" },
+    { "src": "/director-photo-final-remakecut.jpg", "caption": "Director — Remake Season 2", "alt": "Director Remake" },
+    { "src": "/group-photo-final-remakecut.jpg", "caption": "Group photo — Remake Season 2", "alt": "Group Remake" },
+    { "src": "/me-final-remakecut.jpg", "caption": "Director final — Remake Season 2", "alt": "Director final Remake" },
+    { "src": "/me-remakecut.jpg", "caption": "On set — Remake Season 2", "alt": "On set Remake" }
+  ]
+}

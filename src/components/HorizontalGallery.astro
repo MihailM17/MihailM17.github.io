@@ -1,0 +1,343 @@
+---
+interface GalleryItem {
+  src: string;
+  alt: string;
+  caption?: string;
+  year?: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  items: GalleryItem[];
+}
+
+const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items } = Astro.props;
+---
+
+<section class="horizontal-section" data-horizontal-section>
+  <div class="horizontal-header container" data-reveal>
+    <span class="eyebrow">{eyebrow}</span>
+    <h2>{title}</h2>
+    <p class="horizontal-hint">SCROLL → <span>hold to scrub</span></p>
+  </div>
+
+  <div class="gallery-stage" data-pin-wrap>
+    <div class="horizontal-track" data-horizontal-track>
+      {items.length === 0 ? (
+        <div class="empty-state" style="min-width: min(420px, 90vw);">
+          <b>Archive empty</b> — no stills published yet.<br/>
+          Vitosha dailies (28 days · 5 crews × 4) are being scanned.<br/>
+          <span style="color:var(--ash)">If you’re Mihail: add images to <code>src/content/site/main.json → gallery.items</code>.</span>
+        </div>
+      ) : items.map((item) => (
+        <figure class="gallery-panel" data-cursor-hover data-cursor-label="VIEW" data-lightbox data-src={item.src} data-caption={item.caption || item.alt}>
+          <div class="panel-media skeleton" data-img-wrap>
+            <img src={item.src} alt={item.alt} loading="eager" decoding="async" onload="this.closest('[data-img-wrap]')?.classList.remove('skeleton')" onerror="this.style.display='none'; const fb=this.nextElementSibling; if(fb) fb.style.display='block'; this.closest('[data-img-wrap]')?.classList.remove('skeleton')" />
+            <div class="img-error-fallback" style="display:none;">Image failed to load<br/><small>{item.src}</small><br/><span style="color:var(--brass)">Check file exists in /public</span></div>
+          </div>
+          <figcaption>
+            <span class="panel-caption">{item.caption || item.alt}</span>
+            {item.year && <span class="panel-year">{item.year}</span>}
+          </figcaption>
+        </figure>
+      ))}
+      <div class="gallery-panel gallery-panel--end" aria-hidden="true">
+        <div class="panel-end">
+          <span class="eyebrow" style="margin:0">End of Reel</span>
+          <p>Mihail Mihaylov — Archive</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .horizontal-section {
+    position: relative;
+    background: var(--ink);
+    border-top: 1px solid rgba(239,230,216,0.07);
+    border-bottom: 1px solid rgba(239,230,216,0.07);
+    padding-block: var(--sp-5) 0;
+    overflow: clip;
+  }
+  .horizontal-header { margin-bottom: var(--sp-3); }
+  .horizontal-header h2 {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(1.9rem, 4.4vw, 2.9rem);
+    line-height: 1.08; margin: 0 0 0.6rem; color: var(--ecru);
+  }
+  .horizontal-hint { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ash); }
+  .horizontal-hint span { color: var(--brass); }
+
+  /* Clean stage — fixed height, hidden overflow when pinned, fallback scroll when JS off */
+  .gallery-stage{
+    position: relative;
+    height: 68vh;
+    min-height: 520px;
+    max-height: 680px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: var(--ink);
+    border-top: 1px solid rgba(239,230,216,0.06);
+    border-bottom: 1px solid rgba(239,230,216,0.06);
+  }
+  /* Fallback when JS disabled or pin fails — allow native horizontal scroll */
+  .gallery-stage.is-fallback{
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--brass) transparent;
+  }
+  .gallery-stage.is-fallback::-webkit-scrollbar{ height: 6px; }
+  .gallery-stage.is-fallback::-webkit-scrollbar-thumb{ background: var(--brass); }
+
+  .horizontal-track {
+    display: flex;
+    gap: clamp(1.2rem, 2vw, 2rem);
+    padding-inline: clamp(1.25rem,5vw,3rem);
+    will-change: transform;
+    min-width: 100%; /* Ensure track has width before images load */
+  }
+
+  /* Prominent, less cluttered panels — large, gray, site-matched */
+  .gallery-panel{
+    flex: 0 0 auto;
+    width: clamp(420px, 42vw, 640px);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    transition: transform 0.48s cubic-bezier(0.16,1,0.3,1);
+    will-change: transform;
+  }
+  .gallery-panel:hover{
+    transform: translateY(-14px) scale(1.04);
+    z-index: 2;
+  }
+  .panel-media{
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--ink-2);
+    border: 1px solid rgba(239,230,216,0.10);
+    transition: border-color 0.35s ease, box-shadow 0.45s ease;
+  }
+  .panel-media::after{
+    content:"";
+    position:absolute; inset:0;
+    border: 1px solid rgba(239,230,216,0.04);
+    pointer-events:none;
+  }
+  .panel-media img{
+    width:100%; height:100%; object-fit:cover;
+    filter: saturate(0.92) contrast(1.04);
+    transition: transform 0.62s cubic-bezier(0.16,1,0.3,1);
+  }
+  .gallery-panel:hover .panel-media{
+    border-color: var(--brass);
+    box-shadow: 0 22px 48px rgba(0,0,0,0.52), 0 0 0 1px rgba(212,162,76,0.22);
+  }
+  .gallery-panel:hover .panel-media img{ transform: scale(1.12); }
+  .gallery-panel:hover .panel-caption{ color: var(--brass); }
+  .gallery-panel figcaption{
+    display:flex; justify-content: space-between; align-items: baseline;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    padding-inline: 2px;
+  }
+  .panel-caption{
+    font-family: var(--font-mono); font-size: 0.74rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ecru);
+    white-space: nowrap; overflow:hidden; text-overflow: ellipsis;
+    max-width: 68%;
+  }
+  .panel-year{
+    font-family: var(--font-mono); font-size: 0.74rem;
+    letter-spacing: 0.08em; color: var(--brass);
+    flex-shrink:0;
+  }
+
+  .gallery-panel--end{
+    width: 320px;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    border: 1px dashed rgba(239,230,216,0.14);
+    aspect-ratio: 16 / 10;
+    display:flex;
+  }
+  .panel-end{
+    text-align:center;
+    padding: 2rem;
+    color: var(--ash);
+    font-family: var(--font-mono); font-size: 0.78rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .panel-end p{
+    margin-top: 0.5rem; color: var(--ecru);
+    font-family: var(--font-body); font-style: italic;
+    font-size: 0.95rem; text-transform: none; letter-spacing: 0;
+  }
+
+  @media (max-width: 700px) {
+    .gallery-stage{ height: 56vh; min-height: 420px; }
+    .gallery-panel{ width: 82vw; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gallery-stage{ height: auto; min-height: auto; overflow: visible; }
+    .horizontal-track{
+      flex-wrap: wrap;
+      transform: none !important;
+      padding-block: 1.5rem;
+    }
+  }
+</style>
+
+<script>
+  // @ts-nocheck
+  import { gsap, ScrollTrigger } from '../lib/gsap';
+
+  let horizontalST = null;
+  let initPromise = null;
+
+  function initHorizontal() {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const section = document.querySelector('[data-horizontal-section]');
+    const track = document.querySelector('[data-horizontal-track]');
+    const stage = document.querySelector('.gallery-stage');
+    if (!section || !track) return;
+
+    // Reduced motion → native scroll fallback, no pin
+    if (prefersReduced) {
+      if (stage) stage.classList.add('is-fallback');
+      return;
+    }
+    if (stage) stage.classList.remove('is-fallback');
+
+    if (horizontalST) {
+      try { horizontalST.kill(); } catch {}
+      horizontalST = null;
+      gsap.set(track, { clearProps: 'x' });
+    }
+    gsap.killTweensOf(track);
+
+    // Ensure track is visible and at x=0 before measuring
+    gsap.set(track, { x: 0, visibility: 'visible' });
+
+    // Wait for all images to load AND next frame for layout to settle
+    const imgs = Array.from(track.querySelectorAll('img'));
+    
+    const waitForImages = () => {
+      const promises = imgs.map(img => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise(resolve => {
+          const onLoad = () => { img.removeEventListener('load', onLoad); img.removeEventListener('error', onError); resolve(); };
+          const onError = () => { img.removeEventListener('load', onLoad); img.removeEventListener('error', onError); resolve(); };
+          img.addEventListener('load', onLoad, { once: true });
+          img.addEventListener('error', onError, { once: true });
+        });
+      });
+      return Promise.all(promises);
+    };
+
+    const doSetup = async (retry = 0) => {
+      // Wait for images
+      await waitForImages();
+      
+      // Wait for layout to settle (2 frames)
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      
+      const trackWidth = track.scrollWidth;
+      const viewportW = window.innerWidth;
+      
+      // If layout not ready, retry (max 5 retries)
+      if (trackWidth < 100 && retry < 5) {
+        await new Promise(r => setTimeout(r, 200 * (retry + 1)));
+        return doSetup(retry + 1);
+      }
+      
+      // Ensure stage is not fallback when we have a real pin
+      if (stage) stage.classList.remove('is-fallback');
+      
+      const scrollDistance = Math.max(0, trackWidth - viewportW + 48);
+      const pinDuration = scrollDistance * 1.05;
+      
+      if (scrollDistance <= 10) {
+        gsap.set(track, { x: 0 });
+        if (stage) stage.classList.add('is-fallback');
+        return;
+      }
+      
+      gsap.set(track, { x: 0 });
+      try {
+        const tween = gsap.to(track, {
+          x: -scrollDistance,
+          ease: 'none',
+          scrollTrigger: {
+            id: 'horizontal-gallery',
+            trigger: section,
+            pin: section,
+            pinSpacing: true,
+            scrub: 1,
+            start: 'top top',
+            end: () => `+=${pinDuration}`,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onRefresh: () => track.style.visibility = 'visible',
+          }
+        });
+        horizontalST = tween.scrollTrigger;
+        track.style.visibility = 'visible';
+      } catch (err) {
+        console.warn('HorizontalGallery pin failed, falling back to native scroll', err);
+        if (stage) stage.classList.add('is-fallback');
+        gsap.set(track, { x: 0 });
+      }
+    };
+
+    doSetup();
+  }
+
+  // Avoid double-init on first paint: Astro ClientRouter fires astro:page-load immediately too.
+  // Use a flag so DOMContentLoaded init is skipped if page-load fires within 120ms.
+  let lastInit = 0;
+  function guardedInit() {
+    const now = Date.now();
+    if (now - lastInit < 120) return;
+    lastInit = now;
+    initHorizontal();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', guardedInit);
+  } else {
+    guardedInit();
+  }
+  document.addEventListener('astro:page-load', () => setTimeout(guardedInit, 90));
+  document.addEventListener('astro:after-swap', () => setTimeout(() => { ScrollTrigger.refresh(); guardedInit(); }, 80));
+  // Critical: kill pin before Astro view-transition diffs DOM (prevents duplicated pin-spacer)
+  document.addEventListener('astro:before-swap', () => {
+    if (horizontalST) {
+      try { horizontalST.kill(true); } catch {}
+      horizontalST = null;
+    }
+    const track = document.querySelector('[data-horizontal-track]');
+    if (track) {
+      gsap.set(track, { clearProps: 'x' });
+      track.style.transform = '';
+    }
+    const stage = document.querySelector('.gallery-stage');
+    if (stage) {
+      const spacer = stage.querySelector('.ScrollTrigger-pin-spacer');
+      if (spacer && spacer.parentElement === stage.parentElement) {
+        spacer.remove();
+      }
+    }
+  });
+  window.addEventListener('resize', () => ScrollTrigger.refresh());
+  window.addEventListener('load', () => ScrollTrigger.refresh(), { once: true });
+</script>

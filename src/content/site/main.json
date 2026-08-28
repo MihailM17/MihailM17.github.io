@@ -1,0 +1,138 @@
+{
+  "siteTitle": "Mihail Mihaylov — Director & Editor",
+  "hero": {
+    "eyebrow": "Director — Editor",
+    "titleLine1": "Mihail",
+    "titleLine2": "Mihaylov",
+    "sub": "Third-year director and editor at New Bulgarian University, with experience directing short films, documentaries, TV, and online short-form content.",
+    "meta": "Sofia, Bulgaria · 42.70°N 23.32°E"
+  },
+  "about": {
+    "kicker": "About — Sofia / NBU",
+    "titleLine1": "Crafting",
+    "titleLine2": "visual stories.",
+    "lead": "Sofia-based director who lives in post-production — final year, Cinema & Television at New Bulgarian University.",
+    "p1": "Hey, I'm Mihail. I'm a Sofia-based director who also edits videos. I'm currently in my final year studying Cinema and Television at New Bulgarian University.",
+    "p2": "I love the entire post-production puzzle, especially color grading and cutting in DaVinci Resolve. Over the past couple of years, my work has bounced between directing short documentaries and TV reality shows, to editing fast-paced digital content and broadcast deliveries.",
+    "stats": [
+      { "value": "28", "label": "days to be made — Vitosha doc sprint" },
+      { "value": "04", "label": "episodes delivered" },
+      { "value": "03", "label": "shorts & docs" }
+    ],
+    "lang": "Bulgarian • English — Sofia, Bulgaria",
+    "portraitAlt": "Portrait of Mihail Mihaylov"
+  },
+  "narrative": {
+    "kicker": "Narrative",
+    "index": "01",
+    "count": "03 / Short Films & Docs",
+    "hint": "Strict editorial — title, comma, year. No fluff."
+  },
+  "commercial": {
+    "kicker": "Commercial",
+    "index": "02",
+    "count": "7Arts · Timeless · Broadcast",
+    "hint": "Professional work",
+    "jobs": [
+      {
+        "org": "7Arts",
+        "role": "Video Producer & Editor",
+        "years": "June 2025 – March 2026",
+        "desc": "Sole video specialist owning the full pipeline — cinematography, lighting, sound, edit and DaVinci grade — delivering high-volume content for 7Arts, ArtPortal and Art Label productions.",
+        "items": [
+          { "url": "https://www.instagram.com/reel/DP1d4V7DE5n/", "thumb": "/art-portal-cover.png", "label": "Art Portal — Reel · 2025", "isVertical": true },
+          { "url": "https://www.instagram.com/reel/DQwwvU7CGVI/", "thumb": "/big-praz-1.png", "label": "Big Praz — Announcement · 2025", "isVertical": true },
+          { "url": "https://www.facebook.com/share/v/1DQJKSR9fR/", "thumb": "/big-praz-2.png", "label": "Big Praz — Live Reel · 2025", "isVertical": true }
+        ],
+        "detail": {
+          "slug": "7arts-artportal",
+          "title": "7Arts",
+          "role": "Video Producer & Editor",
+          "years": "June 2025 – March 2026",
+          "synopsis": "Independently managing the video pipeline, handling shooting, lighting, sound, and editing. I produced a high volume of trailers, social reels, and promos across their streaming platform, news division, and theatre productions.",
+          "description": "Although initially brought on as an editor, I operated as the company's sole video production specialist, managing the entire pipeline from set to final export. I independently handled all cinematography, lighting, and sound recording, followed by cutting and color grading in DaVinci Resolve. I delivered a high volume of content tailored to three distinct branches of the company:\n\n7Arts (Streaming Platform): Shot and edited promotional trailers for the platform itself, alongside dedicated trailers and social marketing reels for individual films and shows.\n\nArtPortal: Handled the end-to-end production of a massive catalog of short-form reels for the arts and news website, successfully translating written articles into engaging, fast-paced video content.\n\nArt Label Productions & The Big Praz Show: Filmed and crafted dynamic announcement videos for upcoming theatre productions and edited high-energy promotional advertisements for The Big Praz Show.",
+          "gallery": [
+            { "src": "/reel-making-behind-the-scenes-1.jpg", "caption": "Reel BTS 1", "alt": "Reel behind the scenes 1" },
+            { "src": "/reel-making-behind-the-scenes-2.jpg", "caption": "Reel BTS 2", "alt": "Reel behind the scenes 2" },
+            { "src": "/reel-making-behind-the-scenes-3.jpg", "caption": "Reel BTS 3", "alt": "Reel behind the scenes 3" }
+          ]
+        }
+      },
+      {
+        "org": "Timeless Production Group Ltd",
+        "role": "Video Editing Intern & Production Intern",
+        "years": "July 2022 – Sep 2022 & Feb 2025 – Apr 2025",
+        "desc": "Two internships — Production Intern in 2022 and Video Editing Intern in 2025, cutting Deroni recipe videos and Уча, зная и играя episodes.",
+        "items": [
+          { "url": "https://youtu.be/vC3i48d0Mms", "thumb": "https://img.youtube.com/vi/vC3i48d0Mms/hqdefault.jpg", "label": "Сапунените мехури" },
+          { "url": "https://youtu.be/CE5H1h6dpFw", "thumb": "https://img.youtube.com/vi/CE5H1h6dpFw/hqdefault.jpg", "label": "Колелото" },
+          { "url": "https://youtu.be/O9bSfzCGmyg", "thumb": "https://img.youtube.com/vi/O9bSfzCGmyg/hqdefault.jpg", "label": "Фотография" },
+          { "url": "https://youtu.be/l9OJxQ7X9vY", "thumb": "https://img.youtube.com/vi/l9OJxQ7X9vY/hqdefault.jpg", "label": "Механика" }
+        ],
+        "detail": {
+          "slug": "timeless-production",
+          "title": "Timeless Production Group Ltd",
+          "role": "Video Editing Intern & Production Intern",
+          "years": "July 2022 – Sep 2022 & Feb 2025 – Apr 2025",
+          "synopsis": "Two internships — from Production Intern in 2022 to Video Editing Intern in 2025, cutting Deroni recipe videos and Уча, зная и играя.",
+          "description": "Video Editing Intern — February 2025 – April 2025\n\nReturning to the company for a second internship, I stepped directly into an active editing role. During this three-month period, I was trusted to cut commercial YouTube content for clients, specifically focusing on fast-paced, short-form recipe videos featuring Deroni products. Additionally, I took on broadcast responsibilities by editing several episodes of the children's educational television program Уча, зная и играя.\n\nProduction Intern — July 2022 – September 2022\n\nDuring my initial time with the company, I focused on absorbing as much as possible about how a professional production environment operates. I assisted the team with general, day-to-day tasks, doing the foundational, hands-on work required to keep a production moving while learning the industry ropes from the ground up.",
+          "gallery": [
+            { "src": "https://img.youtube.com/vi/vC3i48d0Mms/hqdefault.jpg", "caption": "Сапунените мехури — Episode still", "alt": "Episode 1" },
+            { "src": "https://img.youtube.com/vi/CE5H1h6dpFw/hqdefault.jpg", "caption": "Колелото — Episode still", "alt": "Episode 2" },
+            { "src": "https://img.youtube.com/vi/O9bSfzCGmyg/hqdefault.jpg", "caption": "Фотография — Episode still", "alt": "Episode 3" },
+            { "src": "https://img.youtube.com/vi/l9OJxQ7X9vY/hqdefault.jpg", "caption": "Механика — Episode still", "alt": "Episode 4" }
+          ]
+        }
+      }
+    ],
+    "credits": [
+      { "org": "New Bulgarian University", "role": "Cinema & Television — Directing & Editing", "note": "final year" },
+      { "org": "Timeless Production Group", "role": "Post-production editor", "note": "4 episodes delivered" },
+      { "org": "7Arts / ArtPortal", "role": "Editor + camera operator", "note": "daily culture coverage" },
+      { "org": "Sofia International Film Festival", "role": "Photo & video coverage", "note": "volunteer, 2 years" }
+    ]
+  },
+  "gallery": {
+    "eyebrow": "Archive / Film Strip",
+    "title": "Selected Stills.",
+    "hint": "SCROLL → hold to scrub",
+    "items": [
+      { "src": "/group-photo-iztochen-vyatar.jpg", "alt": "Art Portal group", "caption": "Art Portal — Gallery coverage", "year": "2025" },
+      { "src": "/director-photo-final-remakecut.jpg", "alt": "Big Praz poster", "caption": "Big Praz — Announcement", "year": "2025" },
+      { "src": "/me-final-remakecut.jpg", "alt": "Big Praz rehearsal", "caption": "Big Praz — Stage", "year": "2025" },
+      { "src": "/picture-from-silent-lifts-vitosha.png", "alt": "Portrait of Mihail on set", "caption": "On set — Sofia", "year": "2026" },
+      { "src": "/the-silent-lifts-of-vitosha-nature.jpg", "alt": "Vitosha nature", "caption": "Silent Lifts — Vitosha nature", "year": "2026" },
+      { "src": "/me-and-cam-op-semeistvo.png", "alt": "Camera operator with family", "caption": "Camera operator — family", "year": "2025" },
+      { "src": "/me-lunen-blqsuk.png", "alt": "Lunar eclipse", "caption": "Lunar eclipse", "year": "2025" },
+      { "src": "/shot-from-lunen-blqsuk.jpg", "alt": "Lunar eclipse shot", "caption": "Lunar eclipse detail", "year": "2025" }
+    ]
+  },
+  "craft": {
+    "kicker": "Craft",
+    "title": "The cut is the performance.",
+    "nowKicker": "Now",
+    "nowTitle": "Resolve-first, story-always.",
+    "tags": ["DaVinci Resolve", "Color", "Edit", "Camera", "Broadcast Delivery"],
+    "approachKicker": "Approach",
+    "approachText": "Fast where it needs to be, patient where it matters. I like hard cuts, honest color, and letting a subject finish a thought.",
+    "approachNote": "Inspired by the kinetic type and pinned film-strips of landonorris.com — but in Bulgarian, and with more grain."
+  },
+  "contact": {
+    "kicker": "Contact",
+    "title": "Get in touch.",
+    "titleAccent": "",
+    "lede": "Based in Sofia, Bulgaria. Open to editing, color, and directing work.",
+    "email": "mohailmihaylov2004@gmail.com",
+    "instagram": "https://www.instagram.com/mihail.m4307/",
+    "linkedin": "https://www.linkedin.com/in/mihail-mihaylov-bb0238247/",
+    "formNote": "Opens your email app — no data stored on site."
+  },
+  "footer": "© 2026 Mihail Mihaylov · Sofia, Bulgaria · Made for the big screen",
+  "nav": [
+    { "href": "/#narrative", "label": "Narrative", "sub": "01 — Shorts & Docs" },
+    { "href": "/#commercial", "label": "Commercial", "sub": "02 — 7Arts / Timeless" },
+    { "href": "/#archive", "label": "Archive", "sub": "Film strip" },
+    { "href": "/#about", "label": "About", "sub": "Sofia / NBU" },
+    { "href": "/#contact", "label": "Contact", "sub": "Get in touch" }
+  ]
+}

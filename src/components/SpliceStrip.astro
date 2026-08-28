@@ -1,0 +1,8 @@
+---
+const count = 40; 
+---
+<div class="splice-strip" aria-hidden="true">
+  {Array.from({ length: count }).map((_, i) => (
+    i % 2 === 0 ? <span class="cell diamond"></span> : <span class="cell dot"></span>
+  ))}
+</div>

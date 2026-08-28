@@ -1,0 +1,29 @@
+{
+  "slug": "eastern-wind",
+  "index": "04",
+  "title": "Източен вятър",
+  "titleEn": "Eastern Wind",
+  "year": "2025",
+  "kicker": "Short Film · Editor & Production Sound",
+  "meta": "13 min · NBU · Independent · Mountain Villa",
+  "youtubeUrl": "https://youtu.be/jGJNPgaQiJE",
+  "thumb": "https://img.youtube.com/vi/jGJNPgaQiJE/maxresdefault.jpg",
+  "cover": "https://img.youtube.com/vi/jGJNPgaQiJE/maxresdefault.jpg",
+  "synopsis": "A psychological drama about friends at a mountain villa where the East Wind exposes hidden tensions — my first credit as editor and production sound, made independently after my first year at NBU.",
+  "story": [
+    "Made independently just after my first year at New Bulgarian University, Източен вятър holds a special place in my portfolio as a benchmark for how far I've come. When a colleague wanted to create a short film outside of our regular university coursework, she brought me on board to edit and, for the very first time, run production sound.",
+    "The film is a psychological drama about friends staying at a mountain villa. A local host warns them about the \"East Wind,\" a phenomenon believed to bring out the worst in people. As the weather turns, hidden resentments and a secret affair boil over, ultimately culminating in a severe allergic reaction and a tragic car crash.",
+    "Stepping into the role of the \"sound guy\" was a completely new and fun challenge that forced me to listen to a set in an entirely different way. The post-production was equally demanding. Piecing together the tension and balancing the audio mix proved to be a tough edit, but pushing through those hurdles yielded a final result that far exceeded my initial expectations."
+  ],
+  "specs": [
+    { "label": "Role", "value": "Editor & Production Sound" },
+    { "label": "Duration", "value": "13 min" },
+    { "label": "Format", "value": "Independent · Short Film" },
+    { "label": "Year", "value": "2025" }
+  ],
+  "gallery": [
+    { "src": "https://img.youtube.com/vi/jGJNPgaQiJE/maxresdefault.jpg", "caption": "Interior — kitchen light at 6am", "alt": "Eastern Wind still" },
+    { "src": "/group-photo-iztochen-vyatar.jpg", "caption": "Group photo — Eastern Wind", "alt": "Group photo Eastern Wind" },
+    { "src": "/me-iztochen-vyatar.jpg", "caption": "Director on set — Eastern Wind", "alt": "Director Eastern Wind" }
+  ]
+}

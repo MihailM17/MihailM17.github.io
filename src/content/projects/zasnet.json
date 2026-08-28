@@ -1,0 +1,32 @@
+{
+  "slug": "zasnet",
+  "index": "02",
+  "title": "Заснет",
+  "titleEn": "Заснет",
+  "year": "2025",
+  "kicker": "Short Film · Director & Editor",
+  "meta": "9 min · NBU · DaVinci Resolve grade",
+  "youtubeUrl": "https://youtu.be/GpF_UJrMVxk",
+  "thumb": "https://img.youtube.com/vi/GpF_UJrMVxk/maxresdefault.jpg",
+  "cover": "https://img.youtube.com/vi/GpF_UJrMVxk/maxresdefault.jpg",
+  "synopsis": "A narrative short film about the complexities of human relationships.",
+  "story": [
+    "This short film was born out of a winter film workshop at New Bulgarian University. The greatest challenge? We had exactly three days to shoot a film in the village of Elena—a location we knew almost nothing about beforehand.",
+    "To prepare, I relied heavily on Google Maps to blindly scout potential shooting locations. It was a risky, hit-or-miss strategy, but a necessary one. Although I didn't write the screenplay, I worked to ensure the script was as adaptable as possible for unpredictable conditions. We shot almost entirely outdoors in the freezing winter, relying on zero artificial lighting—just the sun, the mountain fog, and what we had in front of the lens.",
+    "While every project has room for improvement, the constraints of this shoot taught our team an incredible amount about adaptability and run-and-gun filmmaking."
+  ],
+  "specs": [
+    { "label": "Role", "value": "Director & Editor" },
+    { "label": "Duration", "value": "9 min" },
+    { "label": "Grade", "value": "DaVinci Resolve" },
+    { "label": "Year", "value": "2025" }
+  ],
+  "gallery": [
+    { "src": "https://img.youtube.com/vi/GpF_UJrMVxk/maxresdefault.jpg", "caption": "Zasnet — night interior", "alt": "Zasnet still" },
+    { "src": "/shot-from-zasnet.jpg", "caption": "Shot from Zasnet", "alt": "Zasnet shot" },
+    { "src": "/me-and-camera-op-zasnet.jpg", "caption": "Director & camera operator — Zasnet", "alt": "Director camera op Zasnet" },
+    { "src": "/team-in-zasnet-1.jpg", "caption": "Team — Zasnet", "alt": "Team Zasnet 1" },
+    { "src": "/team-in-zasnet-2.jpg", "caption": "Team — Zasnet", "alt": "Team Zasnet 2" },
+    { "src": "/team-in-zasnet-3.jpg", "caption": "Team — Zasnet", "alt": "Team Zasnet 3" }
+  ]
+}

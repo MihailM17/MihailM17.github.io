@@ -1,0 +1,284 @@
+---
+// LenisSmoothScroll — buttery inertia + GSAP ScrollTrigger sync
+// Respects prefers-reduced-motion. No destructive kill of all triggers.
+---
+
+<script>
+  // @ts-nocheck
+  import Lenis from 'lenis';
+  import { gsap, ScrollTrigger } from '../lib/gsap';
+
+  let lenis = null;
+  let rafId = 0;
+  let updateLenis = null;
+
+  function initLenis() {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Cleanup previous instance cleanly
+    if (lenis) {
+      try { lenis.destroy(); } catch {}
+      lenis = null;
+    }
+    if (updateLenis) {
+      gsap.ticker.remove(updateLenis);
+      updateLenis = null;
+    }
+    cancelAnimationFrame(rafId);
+
+    // Don't kill every ScrollTrigger — that breaks HorizontalGallery pin.
+    // Just refresh after setup.
+
+    if (prefersReduced) {
+      document.documentElement.classList.remove('lenis', 'lenis-smooth');
+      document.documentElement.style.scrollBehavior = 'smooth';
+      initGsapOnly();
+      ScrollTrigger.refresh();
+      return;
+    }
+
+    lenis = new Lenis({
+      duration: 1.15,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      touchMultiplier: 1.6,
+      wheelMultiplier: 1.0,
+      lerp: 0.078,
+      infinite: false,
+    });
+
+    document.documentElement.classList.add('lenis', 'lenis-smooth');
+
+    lenis.on('scroll', ScrollTrigger.update);
+
+    updateLenis = (time) => {
+      lenis?.raf(time * 1000);
+    };
+    gsap.ticker.add(updateLenis);
+    gsap.ticker.lagSmoothing(0);
+
+    // Anchor hijack — smooth hash navigation (handles both #section and /#section, plus logo /)
+    function hijackAnchors() {
+      document.querySelectorAll('a[href*="#"], a[href="/"], a[href="/#top"]').forEach((a) => {
+        const anchor = a;
+        if (anchor.dataset.lenisBound === '1') return;
+        anchor.dataset.lenisBound = '1';
+        anchor.addEventListener('click', (e) => {
+          const href = anchor.getAttribute('href');
+          if (!href) return;
+          if (href === '#') return;
+          // Handle logo "/" — if already on home, scroll to top
+          if (href === '/' || href === '/#top') {
+            const isHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
+            if (isHome) {
+              e.preventDefault();
+              const topEl = document.querySelector('#top');
+              if (topEl && lenis) {
+                lenis.scrollTo(topEl, { offset: -72, duration: 1.0, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+              } else if (topEl) {
+                topEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+              history.pushState(null, '', '/');
+              return;
+            }
+            // not on home — let browser navigate to "/"
+            return;
+          }
+          
+          // Handle /#section format (from other pages) - navigate to home first
+          if (href.startsWith('/#')) {
+            const hash = href.slice(1); // #section
+            const target = document.querySelector(hash);
+            if (target) {
+              e.preventDefault();
+              // If we're on home page, scroll directly
+              if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+                lenis?.scrollTo(target, {
+                  offset: -72,
+                  duration: 1.1,
+                  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                });
+                history.pushState(null, '', hash);
+              } else {
+                // Navigate to home page with hash
+                window.location.href = href;
+              }
+            }
+            return;
+          }
+          
+          // Handle #section format (on home page)
+          if (href.startsWith('#')) {
+            const target = document.querySelector(href);
+            if (target) {
+              e.preventDefault();
+              lenis?.scrollTo(target, {
+                offset: -72,
+                duration: 1.1,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+              });
+              history.pushState(null, '', href);
+            }
+          }
+        });
+      });
+    }
+    hijackAnchors();
+    
+    // Re-run hijackAnchors on view transitions for new links
+    document.addEventListener('astro:after-swap', () => {
+      setTimeout(hijackAnchors, 50);
+    });
+
+    // handle hash on initial load (e.g. /#narrative from subpages — back to narrative/commercial)
+    function handleInitialHash() {
+      const hash = window.location.hash;
+      if (!hash || hash === '#') return;
+      const target = document.querySelector(hash);
+      if (!target) return;
+      setTimeout(() => {
+        if (lenis) {
+          lenis.scrollTo(target, { offset: -72, duration: 1.0, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+        } else {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 180);
+    }
+
+    // expose for debugging
+    window.__LENIS__ = lenis;
+    window.__GSAP__ = gsap;
+    window.__ScrollTrigger__ = ScrollTrigger;
+
+    initGsapShared();
+    setTimeout(() => {
+      ScrollTrigger.refresh();
+      handleInitialHash();
+    }, 120);
+    window.addEventListener('load', () => {
+      ScrollTrigger.refresh();
+      handleInitialHash();
+    }, { once: true });
+  }
+
+  function initGsapOnly() {
+    initGsapShared();
+    window.__GSAP__ = gsap;
+    window.__ScrollTrigger__ = ScrollTrigger;
+  }
+
+  function initGsapShared() {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+
+    // Reveal — intentional, not generic: hero gets cinematic rise, everything else is near-instant (keeps glass, kills stagger slop)
+    const allReveal = gsap.utils.toArray('[data-reveal]:not([data-gsap-init])');
+    allReveal.forEach((el) => el.setAttribute('data-gsap-init', '1'));
+    const heroReveal = allReveal.filter(el => el.closest('.hero'));
+    const otherReveal = allReveal.filter(el => !el.closest('.hero'));
+
+    if (heroReveal.length > 0) {
+      gsap.set(heroReveal, { autoAlpha: 0, y: 18 });
+      ScrollTrigger.batch(heroReveal, {
+        onEnter: (batch) => gsap.to(batch, {
+          autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.06, ease: 'power3.out', overwrite: true,
+          onComplete: () => batch.forEach(el => el.classList.add('reveal-visible')),
+        }),
+        start: 'top 92%', once: true,
+      });
+    }
+    if (otherReveal.length > 0) {
+      gsap.set(otherReveal, { autoAlpha: 0 });
+      ScrollTrigger.batch(otherReveal, {
+        onEnter: (batch) => gsap.to(batch, {
+          autoAlpha: 1, duration: 0.45, stagger: 0.03, ease: 'power2.out', overwrite: true,
+          onComplete: () => batch.forEach(el => el.classList.add('reveal-visible')),
+        }),
+        start: 'top 92%', once: true,
+      });
+      setTimeout(() => {
+        otherReveal.forEach((el) => {
+          const style = window.getComputedStyle(el);
+          if (parseFloat(style.opacity) < 0.1) {
+            const rect = el.getBoundingClientRect();
+            if (rect.top < window.innerHeight * 0.92) gsap.to(el, { autoAlpha: 1, duration: 0.4 });
+          }
+        });
+        ScrollTrigger.refresh();
+      }, 900);
+    }
+
+    // Kinetic hero
+    const heroH1 = document.querySelector('.hero h1');
+    if (heroH1 && !heroH1.dataset.kinInit) {
+      heroH1.dataset.kinInit = '1';
+      gsap.from(heroH1, {
+        yPercent: 12,
+        autoAlpha: 0,
+        duration: 1.1,
+        ease: 'power4.out',
+        scrollTrigger: { trigger: heroH1, start: 'top 92%', once: true },
+      });
+    }
+
+    // Subtle parallax — exclude horizontal gallery imgs (they have own horizontal scrub)
+    const parallaxImgs = gsap.utils.toArray('.portrait-panel img, .reel-frame img, .exp-thumb img, .exp-thumb-vertical img');
+    parallaxImgs.forEach((img) => {
+      if (img.dataset.parallaxInit) return;
+      img.dataset.parallaxInit = '1';
+      const triggerEl = img.closest('section, .exp-card, .case-card') || img;
+      gsap.to(img, {
+        yPercent: -5,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: triggerEl,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 0.8,
+        },
+      });
+    });
+  }
+
+  // Clean up ScrollTriggers on page transition to avoid duplicates
+  document.addEventListener('astro:before-swap', () => {
+    ScrollTrigger.getAll().forEach(st => {
+      if (st.vars.id !== 'horizontal-gallery') {
+        st.kill();
+      }
+    });
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLenis);
+  } else {
+    initLenis();
+  }
+  document.addEventListener('astro:page-load', initLenis);
+  document.addEventListener('astro:after-swap', () => ScrollTrigger.refresh());
+  document.addEventListener('astro:before-swap', () => {
+    if (lenis) {
+      try { lenis.destroy(); } catch {}
+      lenis = null;
+    }
+    if (updateLenis) {
+      gsap.ticker.remove(updateLenis);
+      updateLenis = null;
+    }
+  });
+</script>
+
+<style is:global>
+  html.lenis, html.lenis body { height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+  .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+  .lenis.lenis-stopped { overflow: hidden; }
+  .lenis.lenis-scrolling iframe { pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: smooth; }
+  }
+</style>
