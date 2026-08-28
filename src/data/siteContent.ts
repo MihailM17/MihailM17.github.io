@@ -100,6 +100,10 @@ export const siteContent = {
     tags: ["DaVinci Resolve", "Color", "Edit", "Camera", "Broadcast Delivery"],
     approachKicker: "Approach",
     approachText: "Fast where it needs to be, patient where it matters. I like hard cuts, honest color, and letting a subject finish a thought.",
+<<<<<<< HEAD
+=======
+    approachNote: ".",
+>>>>>>> f82e850e7b7278396aa82879f0b63bdb638f50e4
   },
 
   contact: {
