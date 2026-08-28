@@ -23,10 +23,10 @@
     { "label": "Cameras", "value": "8 × broadcast" }
   ],
   "gallery": [
-    { "src": "https://img.youtube.com/vi/L-FgwXF-VA8/maxresdefault.jpg", "caption": "Control room — live cut", "alt": "Control room" },
-    { "src": "/director-photo-final-remakecut.jpg", "caption": "Director — Remake Season 2", "alt": "Director Remake" },
-    { "src": "/group-photo-final-remakecut.jpg", "caption": "Group photo — Remake Season 2", "alt": "Group Remake" },
-    { "src": "/me-final-remakecut.jpg", "caption": "Director final — Remake Season 2", "alt": "Director final Remake" },
-    { "src": "/me-remakecut.jpg", "caption": "On set — Remake Season 2", "alt": "On set Remake" }
+    { "src": "https://img.youtube.com/vi/L-FgwXF-VA8/maxresdefault.jpg", "caption": "РимейкЪТ — Control room", "alt": "Control room — РимейкЪТ, live cut" },
+    { "src": "/director-photo-final-remakecut.jpg", "caption": "РимейкЪТ — Gundi Director", "alt": "Gundi Director — РимейкЪТ, control room" },
+    { "src": "/group-photo-final-remakecut.jpg", "caption": "РимейкЪТ — Cast & crew", "alt": "Cast & crew — РимейкЪТ, final slate" },
+    { "src": "/me-final-remakecut.jpg", "caption": "РимейкЪТ — On set", "alt": "On set — РимейкЪТ" },
+    { "src": "/римейкът_studio_shot.jpg", "caption": "РимейкЪТ — Studio", "alt": "Studio — РимейкЪТ, 8-camera sync" }
   ]
 }

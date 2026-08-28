@@ -52,9 +52,9 @@
           "synopsis": "Independently managing the video pipeline, handling shooting, lighting, sound, and editing. I produced a high volume of trailers, social reels, and promos across their streaming platform, news division, and theatre productions.",
           "description": "Although initially brought on as an editor, I operated as the company's sole video production specialist, managing the entire pipeline from set to final export. I independently handled all cinematography, lighting, and sound recording, followed by cutting and color grading in DaVinci Resolve. I delivered a high volume of content tailored to three distinct branches of the company:\n\n7Arts (Streaming Platform): Shot and edited promotional trailers for the platform itself, alongside dedicated trailers and social marketing reels for individual films and shows.\n\nArtPortal: Handled the end-to-end production of a massive catalog of short-form reels for the arts and news website, successfully translating written articles into engaging, fast-paced video content.\n\nArt Label Productions & The Big Praz Show: Filmed and crafted dynamic announcement videos for upcoming theatre productions and edited high-energy promotional advertisements for The Big Praz Show.",
           "gallery": [
-            { "src": "/reel-making-behind-the-scenes-1.jpg", "caption": "Reel BTS 1", "alt": "Reel behind the scenes 1" },
-            { "src": "/reel-making-behind-the-scenes-2.jpg", "caption": "Reel BTS 2", "alt": "Reel behind the scenes 2" },
-            { "src": "/reel-making-behind-the-scenes-3.jpg", "caption": "Reel BTS 3", "alt": "Reel behind the scenes 3" }
+            { "src": "/reel-making-behind-the-scenes-1.jpg", "caption": "7Arts — Reel BTS, ArtPortal", "alt": "Reel BTS — ArtPortal, 7Arts" },
+            { "src": "/big_praz_reel-making-bts-2.jpg", "caption": "7Arts — Big Praz, reel making BTS", "alt": "Big Praz — Reel BTS, 7Arts" },
+            { "src": "/big_praz_reel-making-bts-3.jpg", "caption": "7Arts — Big Praz, reel making BTS", "alt": "Big Praz — Reel BTS, 7Arts" }
           ]
         }
       },
@@ -97,14 +97,14 @@
     "title": "Selected Stills.",
     "hint": "SCROLL → hold to scrub",
     "items": [
-      { "src": "/group-photo-iztochen-vyatar.jpg", "alt": "Art Portal group", "caption": "Art Portal — Gallery coverage", "year": "2025" },
-      { "src": "/director-photo-final-remakecut.jpg", "alt": "Big Praz poster", "caption": "Big Praz — Announcement", "year": "2025" },
-      { "src": "/me-final-remakecut.jpg", "alt": "Big Praz rehearsal", "caption": "Big Praz — Stage", "year": "2025" },
-      { "src": "/picture-from-silent-lifts-vitosha.png", "alt": "Portrait of Mihail on set", "caption": "On set — Sofia", "year": "2026" },
-      { "src": "/the-silent-lifts-of-vitosha-nature.jpg", "alt": "Vitosha nature", "caption": "Silent Lifts — Vitosha nature", "year": "2026" },
-      { "src": "/me-and-cam-op-semeistvo.png", "alt": "Camera operator with family", "caption": "Camera operator — family", "year": "2025" },
-      { "src": "/me-lunen-blqsuk.png", "alt": "Lunar eclipse", "caption": "Lunar eclipse", "year": "2025" },
-      { "src": "/shot-from-lunen-blqsuk.jpg", "alt": "Lunar eclipse shot", "caption": "Lunar eclipse detail", "year": "2025" }
+      { "src": "/group-photo-iztochen-vyatar.jpg", "alt": "Ensemble — Източен вятър", "caption": "Източен вятър — Ensemble", "year": "2025" },
+      { "src": "/director-photo-final-remakecut.jpg", "alt": "Gundi Director — РимейкЪТ S2", "caption": "РимейкЪТ S2 - Gundi Director", "year": "2025" },
+      { "src": "/me-final-remakecut.jpg", "alt": "On set — РимейкЪТ S2", "caption": "РимейкЪТ S2 — On set", "year": "2025" },
+      { "src": "/silent-lifts-vitosha_ruins.png", "alt": "Ruins — Silent Lifts, Vitosha", "caption": "Silent Lifts — Ruins", "year": "2026" },
+      { "src": "/the-silent-lifts-of-vitosha-closed_doors.jpg", "alt": "Closed doors — Silent Lifts, Vitosha", "caption": "Silent Lifts — Closed doors", "year": "2026" },
+      { "src": "/me-and-cam-operator_on_семейство.png", "alt": "BTS shooting Семейство", "caption": "BTS shooting \"Семейство\"", "year": "2025" },
+      { "src": "/лунен_блясък_on_sunset.png", "alt": "Лунен блясък — On sunset", "caption": "Лунен блясък — On sunset", "year": "2025" },
+      { "src": "/studio_shot_from_лунен_блясък.jpg", "alt": "Лунен блясък — Studio shot", "caption": "Лунен блясък — Studio shot", "year": "2025" }
     ]
   },
   "craft": {

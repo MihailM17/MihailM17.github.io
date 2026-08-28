@@ -24,13 +24,13 @@
     { "label": "Tools", "value": "DaVinci Resolve, Sony FX3" }
   ],
   "gallery": [
-    { "src": "https://img.youtube.com/vi/_ajdklDn5_k/maxresdefault.jpg", "caption": "Vitosha ridge — empty chairs at golden hour", "alt": "Vitosha lifts" },
-    { "src": "/picture-from-silent-lifts-vitosha.png", "caption": "On set — Silent Lifts of Vitosha", "alt": "On set Silent Lifts" },
-    { "src": "/film-image-vitosha.jpg", "caption": "Vitosha landscape", "alt": "Vitosha landscape" },
-    { "src": "/the-silent-lifts-of-vitosha-nature.jpg", "caption": "Vitosha nature", "alt": "Vitosha nature" },
-    { "src": "/interview-1-silent-lifts-vitosha.jpg", "caption": "Interview — Silent Lifts of Vitosha", "alt": "Interview 1" },
-    { "src": "/interview-2-silent-lifts-vitosha.jpg", "caption": "Interview — Silent Lifts of Vitosha", "alt": "Interview 2" },
-    { "src": "/lifts-silent-lifts-vitosha.jpg", "caption": "Lifts — Silent Lifts of Vitosha", "alt": "Lifts" },
-    { "src": "/poster-silent-lifts-vitosha.jpg", "caption": "Poster — Silent Lifts of Vitosha", "alt": "Poster" }
+    { "src": "https://img.youtube.com/vi/_ajdklDn5_k/maxresdefault.jpg", "caption": "Silent Lifts — Ridge", "alt": "Vitosha ridge — Silent Lifts" },
+    { "src": "/silent-lifts-vitosha_ruins.png", "caption": "Silent Lifts — Ruins", "alt": "Ruins — Silent Lifts, Vitosha" },
+    { "src": "/vitosha_shot_on_film.jpg", "caption": "Silent Lifts — Vitosha, shot on film", "alt": "Vitosha — Silent Lifts, shot on film" },
+    { "src": "/the-silent-lifts-of-vitosha-closed_doors.jpg", "caption": "Silent Lifts — Closed doors", "alt": "Closed doors — Silent Lifts, Vitosha" },
+    { "src": "/interview-1-silent-lifts-vitosha.jpg", "caption": "Silent Lifts — Interview, lift operator", "alt": "Interview — Silent Lifts, lift operator" },
+    { "src": "/interview-2-silent-lifts-vitosha.jpg", "caption": "Silent Lifts — Interview", "alt": "Interview — Silent Lifts" },
+    { "src": "/lifts-silent-lifts-vitosha_abandoned_station.jpg", "caption": "Silent Lifts — Abandoned station", "alt": "Abandoned station — Silent Lifts, Vitosha" },
+    { "src": "/poster-silent-lifts-vitosha.jpg", "caption": "Silent Lifts — Festival poster", "alt": "Poster — Silent Lifts" }
   ]
 }

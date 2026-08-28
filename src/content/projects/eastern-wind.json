@@ -22,8 +22,8 @@
     { "label": "Year", "value": "2025" }
   ],
   "gallery": [
-    { "src": "https://img.youtube.com/vi/jGJNPgaQiJE/maxresdefault.jpg", "caption": "Interior — kitchen light at 6am", "alt": "Eastern Wind still" },
-    { "src": "/group-photo-iztochen-vyatar.jpg", "caption": "Group photo — Eastern Wind", "alt": "Group photo Eastern Wind" },
-    { "src": "/me-iztochen-vyatar.jpg", "caption": "Director on set — Eastern Wind", "alt": "Director Eastern Wind" }
+    { "src": "https://img.youtube.com/vi/jGJNPgaQiJE/maxresdefault.jpg", "caption": "Източен вятър — Interior", "alt": "Interior — Източен вятър" },
+    { "src": "/group-photo-iztochen-vyatar.jpg", "caption": "Източен вятър — Ensemble", "alt": "Ensemble — Източен вятър" },
+    { "src": "/east_wind_me_recording_sound.jpg", "caption": "Източен вятър — Recording sound", "alt": "Recording sound — Източен вятър, on set" }
   ]
 }

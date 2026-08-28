@@ -22,11 +22,11 @@
     { "label": "Year", "value": "2025" }
   ],
   "gallery": [
-    { "src": "https://img.youtube.com/vi/GpF_UJrMVxk/maxresdefault.jpg", "caption": "Zasnet — night interior", "alt": "Zasnet still" },
-    { "src": "/shot-from-zasnet.jpg", "caption": "Shot from Zasnet", "alt": "Zasnet shot" },
-    { "src": "/me-and-camera-op-zasnet.jpg", "caption": "Director & camera operator — Zasnet", "alt": "Director camera op Zasnet" },
-    { "src": "/team-in-zasnet-1.jpg", "caption": "Team — Zasnet", "alt": "Team Zasnet 1" },
-    { "src": "/team-in-zasnet-2.jpg", "caption": "Team — Zasnet", "alt": "Team Zasnet 2" },
-    { "src": "/team-in-zasnet-3.jpg", "caption": "Team — Zasnet", "alt": "Team Zasnet 3" }
+    { "src": "https://img.youtube.com/vi/GpF_UJrMVxk/maxresdefault.jpg", "caption": "Заснет — Night interior", "alt": "Night interior — Заснет" },
+    { "src": "/zasnet_shooting_by_the_lake.jpg", "caption": "Заснет — Shooting by the lake", "alt": "Shooting by the lake — Заснет, Elena" },
+    { "src": "/me-and-camera-op-zasnet.jpg", "caption": "Заснет — Director & camera", "alt": "Director & camera — Заснет" },
+    { "src": "/zasnet_team_while_shooting.jpg", "caption": "Заснет — Team while shooting", "alt": "Team while shooting — Заснет, Elena" },
+    { "src": "/zasnet_team_while_shooting2.jpg", "caption": "Заснет — Team while shooting", "alt": "Team while shooting — Заснет, Elena" },
+    { "src": "/zasnet_team_while_shooting3.jpg", "caption": "Заснет — Team while shooting", "alt": "Team while shooting — Заснет, Elena" }
   ]
 }
