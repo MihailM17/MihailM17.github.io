@@ -100,7 +100,6 @@ export const siteContent = {
     tags: ["DaVinci Resolve", "Color", "Edit", "Camera", "Broadcast Delivery"],
     approachKicker: "Approach",
     approachText: "Fast where it needs to be, patient where it matters. I like hard cuts, honest color, and letting a subject finish a thought.",
-    approachNote: "Inspired by the kinetic type and pinned film-strips of landonorris.com — but in Bulgarian, and with more grain.",
   },
 
   contact: {
