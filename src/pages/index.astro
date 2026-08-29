@@ -201,7 +201,7 @@ const c = siteContent;
           <div class="craft-secondary">
             <span class="eyebrow">{c.craft.approachKicker}</span>
             <p>{c.craft.approachText}</p>
-            <p style="margin-top:0.9rem; color:var(--ash); font-size:0.92rem;">{c.craft.approachNote}</p>
+            {c.craft.approachNote && <p style="margin-top:0.9rem; color:var(--ash); font-size:0.92rem;">{c.craft.approachNote}</p>}
           </div>
         </div>
       </div>

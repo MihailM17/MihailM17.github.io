@@ -109,7 +109,7 @@ const siteContentSchema = z.object({
     tags: z.array(z.string()),
     approachKicker: z.string(),
     approachText: z.string(),
-    approachNote: z.string(),
+    approachNote: z.string().optional(),
   }),
   contact: z.object({
     kicker: z.string(),
