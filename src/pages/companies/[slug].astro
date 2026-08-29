@@ -159,10 +159,13 @@ if (!detail) throw new Error('Company not found');
   .project-synopsis{ max-width: 58ch; font-size: clamp(1.05rem, 2vw, 1.25rem); font-style: italic; color: var(--ecru); border-left: 2px solid var(--oxblood); padding-left: 1rem; }
 
   .specs-grid{ display:grid; grid-template-columns: 300px 1fr; gap: var(--sp-5); align-items:start; }
-  @media (max-width:900px){ .specs-grid{ grid-template-columns:1fr; } }
+  @media (max-width:480px){ .specs-grid{ grid-template-columns:1fr; gap:1.5rem; } }
   .specs-aside{
     position: sticky; top: 92px; background: var(--ink-2); border: 1px solid var(--oxblood-dim);
     padding: 1.4rem; clip-path: polygon(0 0,100% 0,100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+  }
+  @media (max-width:640px){
+    .specs-aside{ position:static; top:auto; }
   }
   .specs-aside ul{ margin-top: .9rem; display:grid; gap: .65rem; }
   .specs-aside li{ display:flex; justify-content:space-between; gap:1rem; font-family: var(--font-mono); font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ash); border-bottom: 1px solid rgba(239,230,216,.08); padding-bottom: .5rem; }
@@ -196,6 +199,7 @@ if (!detail) throw new Error('Company not found');
   }
 
   .gallery-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1.4rem; }
+  @media (max-width:480px){ .gallery-grid{ grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap:0.9rem; } }
   .gallery-card{ margin:0; cursor: zoom-in; }
   .gallery-img-wrap{ aspect-ratio: 16/10; overflow:hidden; border:1px solid rgba(239,230,216,.12); background: var(--ink-2); }
   .gallery-img-wrap img{ width:100%; height:100%; object-fit:cover; transition: transform .6s cubic-bezier(.16,1,.3,1); }

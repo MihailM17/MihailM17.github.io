@@ -108,13 +108,13 @@
     ]
   },
   "craft": {
-    "kicker": "Craft",
-    "title": "The cut is the performance.",
-    "nowKicker": "Now",
-    "nowTitle": "Resolve-first, story-always.",
-    "tags": ["DaVinci Resolve", "Color", "Edit", "Camera", "Broadcast Delivery"],
-    "approachKicker": "Approach",
-    "approachText": "Fast where it needs to be, patient where it matters. I like hard cuts, honest color, and letting a subject finish a thought."
+    "kicker": "Tools",
+    "title": "Software I work with.",
+    "nowKicker": "Edit & Grade",
+    "nowTitle": "DaVinci Resolve & Premiere Pro",
+    "tags": ["DaVinci Resolve", "Premiere Pro", "Blender", "Photoshop", "Illustrator"],
+    "approachKicker": "3D & Design",
+    "approachText": "Blender for 3D, Photoshop & Illustrator for stills and graphics."
   },
   "contact": {
     "kicker": "Contact",

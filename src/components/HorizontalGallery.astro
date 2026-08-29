@@ -244,25 +244,79 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
       return Promise.all(promises);
     };
 
+    // Fallback estimate when images not yet loaded — based on panel count * clamp width
+    const getEstimatedWidth = () => {
+      const panels = track.querySelectorAll('.gallery-panel');
+      if (panels.length === 0) return track.scrollWidth;
+      // panel width is clamp(420px, 42vw, 640px) + gap clamp(1.2rem,2vw,2rem)
+      const vw = window.innerWidth;
+      const panelW = Math.min(640, Math.max(420, vw * 0.42));
+      const gap = Math.min(32, Math.max(19.2, vw * 0.02));
+      const pad = Math.min(48, Math.max(20, vw * 0.05)) * 2; // padding-inline
+      return panels.length * panelW + (panels.length - 1) * gap + pad;
+    };
+
     const doSetup = async (retry = 0) => {
-      // Wait for images
-      await waitForImages();
+      // Wait for images, but don't block forever — estimate if still not ready
+      await Promise.race([
+        waitForImages(),
+        new Promise(r => setTimeout(r, 900))
+      ]);
       
       // Wait for layout to settle (2 frames)
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       
-      const trackWidth = track.scrollWidth;
+      let trackWidth = track.scrollWidth;
       const viewportW = window.innerWidth;
       
-      // If layout not ready, retry (max 5 retries)
-      if (trackWidth < 100 && retry < 5) {
-        await new Promise(r => setTimeout(r, 200 * (retry + 1)));
-        return doSetup(retry + 1);
+      // If layout not ready (e.g. site still loading, fonts/images pending), use estimate and retry
+      if (trackWidth < 100 || trackWidth < getEstimatedWidth() * 0.6) {
+        if (retry < 8) {
+          // Use estimate to still create pin immediately so scroll works even before images load
+          trackWidth = Math.max(trackWidth, getEstimatedWidth());
+          if (retry === 0) {
+            // Create pin with estimated width immediately for instant scroll feedback
+            const estScroll = Math.max(0, trackWidth - viewportW + 48);
+            if (estScroll > 10 && !horizontalST) {
+              try {
+                const tween = gsap.to(track, {
+                  x: -estScroll,
+                  ease: 'none',
+                  scrollTrigger: {
+                    id: 'horizontal-gallery',
+                    trigger: section,
+                    pin: section,
+                    pinSpacing: true,
+                    scrub: 1,
+                    start: 'top top',
+                    end: () => `+=${estScroll * 1.05}`,
+                    anticipatePin: 1,
+                    invalidateOnRefresh: true,
+                    onRefresh: () => track.style.visibility = 'visible',
+                  }
+                });
+                horizontalST = tween.scrollTrigger;
+                track.style.visibility = 'visible';
+              } catch {}
+            }
+          }
+          await new Promise(r => setTimeout(r, 300 * (retry + 1)));
+          return doSetup(retry + 1);
+        }
+      } else {
+        // Layout ready — if we already created an estimated pin, kill it and recreate with real width
+        if (horizontalST) {
+          try { horizontalST.kill(); } catch {}
+          horizontalST = null;
+          gsap.set(track, { clearProps: 'x' });
+          gsap.set(track, { x: 0 });
+        }
       }
       
       // Ensure stage is not fallback when we have a real pin
       if (stage) stage.classList.remove('is-fallback');
       
+      trackWidth = Math.max(track.scrollWidth, getEstimatedWidth());
       const scrollDistance = Math.max(0, trackWidth - viewportW + 48);
       const pinDuration = scrollDistance * 1.05;
       
@@ -274,6 +328,11 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
       
       gsap.set(track, { x: 0 });
       try {
+        // Kill previous estimated pin if exists
+        if (horizontalST) {
+          try { horizontalST.kill(); } catch {}
+          horizontalST = null;
+        }
         const tween = gsap.to(track, {
           x: -scrollDistance,
           ease: 'none',
@@ -300,6 +359,23 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
     };
 
     doSetup();
+
+    // Re-measure when track size changes (images/fonts loading late)
+    let ro = null;
+    try {
+      ro = new ResizeObserver(() => {
+        ScrollTrigger.refresh();
+        // debounce re-init
+        clearTimeout(window._hgResizeTimer);
+        window._hgResizeTimer = setTimeout(() => {
+          if (track.scrollWidth > window.innerWidth) {
+            doSetup();
+          }
+        }, 250);
+      });
+      ro.observe(track);
+      if (stage) ro.observe(stage);
+    } catch {}
   }
 
   // Avoid double-init on first paint: Astro ClientRouter fires astro:page-load immediately too.
@@ -339,5 +415,16 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
     }
   });
   window.addEventListener('resize', () => ScrollTrigger.refresh());
-  window.addEventListener('load', () => ScrollTrigger.refresh(), { once: true });
+  window.addEventListener('load', () => {
+    ScrollTrigger.refresh();
+    setTimeout(() => {
+      initHorizontal();
+      ScrollTrigger.refresh();
+    }, 150);
+  }, { once: true });
+  // Also refresh when fonts/images finish late (e.g. slow 3G, site not fully loaded)
+  document.fonts?.ready?.then(() => {
+    ScrollTrigger.refresh();
+    setTimeout(() => initHorizontal(), 100);
+  });
 </script>

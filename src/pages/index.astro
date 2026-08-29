@@ -194,14 +194,33 @@ const c = siteContent;
           <div class="craft-primary">
             <span class="eyebrow">{c.craft.nowKicker}</span>
             <h3>{c.craft.nowTitle}</h3>
-            <div class="tag-row">
-              {c.craft.tags.map((t) => (<span class="tag">{t}</span>))}
+            <div class="software-grid">
+              {[
+                { name: 'DaVinci Resolve', icon: '/Davinci_icon.png' },
+                { name: 'Premiere Pro', icon: '/Premiere_icon.png' },
+              ].map((app) => (
+                <div class="software-item">
+                  <img src={app.icon} alt={app.name} class="app-icon" loading="lazy" decoding="async" />
+                  <span class="app-name">{app.name}</span>
+                </div>
+              ))}
             </div>
           </div>
           <div class="craft-secondary">
             <span class="eyebrow">{c.craft.approachKicker}</span>
-            <p>{c.craft.approachText}</p>
-            {c.craft.approachNote && <p style="margin-top:0.9rem; color:var(--ash); font-size:0.92rem;">{c.craft.approachNote}</p>}
+            <h3>Blender & Adobe</h3>
+            <div class="software-grid">
+              {[
+                { name: 'Blender', icon: '/Blender_icon.png' },
+                { name: 'Photoshop', icon: '/Photoshop_icon.png' },
+                { name: 'Illustrator', icon: '/Illustrator_icon.png' },
+              ].map((app) => (
+                <div class="software-item">
+                  <img src={app.icon} alt={app.name} class="app-icon" loading="lazy" decoding="async" />
+                  <span class="app-name">{app.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -433,4 +452,21 @@ const c = siteContent;
     transition: color .2s, border-color .2s;
   }
   .commercial-card:hover .commercial-card-cta{ color: var(--ecru); border-color: var(--brass); }
+
+  .software-grid{ display:grid; gap:0.7rem; margin-top:1rem; }
+  .software-item{ display:flex; align-items:center; gap:0.75rem; padding:0.55rem 0.7rem; background:rgba(239,230,216,0.03); border:1px solid rgba(239,230,216,0.08); transition:border-color 0.2s, background 0.2s; }
+  .software-item:hover{ border-color:rgba(212,162,76,0.22); background:rgba(239,230,216,0.05); }
+  .app-icon{ width:34px; height:34px; object-fit:contain; flex-shrink:0; display:block; background:rgba(239,230,216,0.02); border:1px solid rgba(239,230,216,0.08); padding:3px; }
+  .app-name{ font-family:var(--font-mono); font-size:0.78rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--ecru); }
+  @media (max-width: 480px){
+    .craft-grid{ gap:0; background:rgba(37,30,26,0.72); border:1px solid rgba(239,230,216,0.12); padding:0; overflow:hidden; }
+    .craft-primary, .craft-secondary{ background:transparent; border:none; padding:0.9rem; }
+    .craft-primary{ border-bottom:1px solid rgba(239,230,216,0.08); }
+    .craft-grid .eyebrow{ margin-bottom:0.5rem; }
+    .craft-grid h3{ margin-bottom:0.6rem; }
+    .software-grid{ gap:0.5rem; margin-top:0.7rem; }
+    .software-item{ padding:0.45rem 0.6rem; }
+    .app-icon{ width:30px; height:30px; }
+    .app-name{ font-size:0.70rem; }
+  }
 </style>
