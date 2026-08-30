@@ -21,6 +21,8 @@ const { title } = Astro.props;
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{title}</title>
 <meta name="description" content="Mihail Mihaylov — director and editor based in Sofia, Bulgaria. DaVinci Resolve post-production, camera work, and documentary filmmaking.">
+<!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-GZMPLW7CNY"></script>
+<script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-GZMPLW7CNY');</script>
 <ClientRouter />
 <link rel="icon" type="image/png" href="/logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -538,8 +540,9 @@ const { title } = Astro.props;
     .narrative-main h3{ font-size: clamp(1.15rem, 4vw, 1.5rem); }
   }
   @media (max-width: 440px){
-    .narrative-row .narrative-index{ padding:0.6rem 0.7rem 0; }
-    .narrative-row .narrative-main{ padding:0.35rem 0.7rem 0.7rem; }
+    .narrative-row{ gap:0.4rem; padding:0.6rem 0.5rem; }
+    .narrative-thumb{ width:60px; }
+    .narrative-index b{ font-size:0.88rem; }
   }
 
   .commercial-grid{
@@ -784,8 +787,8 @@ const { title } = Astro.props;
 
   /* Mobile compact — keep desktop layout but much smaller (only phones) */
   @media (max-width: 480px){
-    .hero{ min-height:82vh; }
-    .hero h1{ font-size: clamp(2.4rem, 11.5vw, 3.2rem); margin-block:0.25em 0.35em; letter-spacing:-0.02em; }
+    .hero{ min-height:84vh; }
+    .hero h1{ font-size: clamp(2.7rem, 12vw, 3.4rem); margin-block:0.28em 0.38em; letter-spacing:-0.02em; }
     .hero-sub{ font-size: 0.88rem; max-width: 34ch; margin-bottom:1.2rem; }
     .hero .eyebrow{ font-size: 0.66rem; }
     .hero-meta{ font-size: 0.66rem; }
@@ -798,31 +801,32 @@ const { title } = Astro.props;
     .split-label h2{ font-size: clamp(1.35rem, 6vw, 1.8rem); }
     .split-label{ gap:0.5rem; padding-bottom:0.6rem; margin-bottom:1rem; }
     .split-count{ font-size:0.66rem; }
-    /* Narrative like Remake case-card on mobile — text on top, preview full-width middle, text below */
+    /* Narrative squeezed preview on mobile, keep card feel like Remake */
     .narrative-row{
-      grid-template-columns:1fr;
-      gap:0;
-      padding:0;
+      grid-template-columns:36px 1fr 68px;
+      gap:0.5rem;
+      padding:0.65rem 0.6rem;
       background:var(--ink-2);
       border:1px solid var(--oxblood-dim);
-      clip-path:polygon(0 0,100% 0,100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+      clip-path:polygon(0 0,100% 0,100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
       overflow:hidden;
+      align-items:center;
     }
     .narrative-row .narrative-index{
-      display:flex; gap:0.6rem; align-items:baseline;
-      padding:0.75rem 0.9rem 0;
-      font-size:0.64rem;
+      display:block;
+      padding:0;
+      font-size:0.60rem;
     }
-    .narrative-row .narrative-index b{ font-size:1.0rem; }
-    .narrative-row .narrative-main{ padding:0.4rem 0.9rem 0.9rem; }
-    .narrative-main h3{ font-size:1.05rem; }
-    .narrative-meta{ font-size:0.60rem; }
-    .case-synopsis{ font-size:0.80rem; margin-bottom:0.7rem; }
-    .narrative-cta{ font-size:0.60rem; }
+    .narrative-row .narrative-index b{ font-size:0.95rem; }
+    .narrative-row .narrative-main{ padding:0; }
+    .narrative-main h3{ font-size:0.92rem; line-height:1.1; }
+    .narrative-meta{ font-size:0.58rem; margin-top:0.25rem; }
+    .case-synopsis{ font-size:0.76rem; margin-bottom:0.5rem; line-height:1.45; }
+    .narrative-cta{ font-size:0.58rem; }
     .narrative-thumb{
-      width:100%; order:-1;
-      aspect-ratio:16/9;
-      border:none; border-bottom:1px solid var(--oxblood-dim);
+      width:68px; order:0;
+      aspect-ratio:1/1;
+      border:1px solid var(--oxblood-dim);
       clip-path:none;
     }
     .case-card{ padding:0.9rem 0.8rem; margin-bottom:1.2rem; }
@@ -835,17 +839,19 @@ const { title } = Astro.props;
     .commercial-card .mini-grid{ gap:0.35rem; padding-top:0.5rem; grid-template-columns:repeat(3, 1fr); }
     .commercial-card .mini-thumb{ border-width:1px; }
     .commercial-card .mini-label{ font-size:0.50rem; margin-top:0.2rem; }
-    #craft{ padding-block:1.2rem; }
-    #craft .craft-primary, #craft .craft-secondary{ padding:0.75rem; }
-    .craft-primary h3{ font-size:1.05rem; margin:0.3rem 0 0.6rem; }
-    .craft-primary .eyebrow, .craft-secondary .eyebrow{ font-size:0.64rem; margin-bottom:0.4rem; }
-    .craft-secondary p{ font-size:0.78rem; margin-top:0.6rem; }
-    .craft-secondary p[style]{ font-size:0.78rem !important; }
-    .tag{ font-size:0.58rem; padding:0.25rem 0.5rem; }
-    .craft-grid{ gap:1rem; }
-    #contact{ padding-block:1.4rem; }
-    .contact-lede{ font-size:0.85rem; margin-bottom:1rem; }
-    .contact-form{ padding:0.8rem; margin-top:1.2rem; }
+    #craft{ padding-block:0.9rem; }
+    #craft .craft-primary, #craft .craft-secondary{ padding:0.6rem; }
+    .craft-primary h3{ font-size:0.95rem; margin:0.2rem 0 0.5rem; }
+    .craft-primary .eyebrow, .craft-secondary .eyebrow{ font-size:0.60rem; margin-bottom:0.3rem; }
+    .craft-secondary p{ font-size:0.72rem; margin-top:0.5rem; }
+    .craft-secondary p[style]{ font-size:0.72rem !important; }
+    .tag{ font-size:0.54rem; padding:0.2rem 0.4rem; }
+    .craft-grid{ gap:0.8rem; }
+    .software-grid{ gap:0.4rem; margin-top:0.5rem; }
+    .software-item{ padding:0.4rem 0.5rem; }
+    #contact{ padding-block:1.1rem; }
+    .contact-lede{ font-size:0.80rem; margin-bottom:0.8rem; }
+    .contact-form{ padding:0.7rem; margin-top:1rem; }
     .contact-form label span{ font-size:0.64rem; }
     .contact-form input, .contact-form textarea{ font-size:0.88rem; padding:0.6rem 0.7rem; }
     .form-submit{ font-size:0.70rem; padding:0.65rem 1rem; }
