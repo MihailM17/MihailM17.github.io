@@ -29,7 +29,8 @@
     // Don't kill every ScrollTrigger — that breaks HorizontalGallery pin.
     // Just refresh after setup.
 
-    if (prefersReduced) {
+    const isMobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(hover: none)').matches;
+    if (prefersReduced || isMobile) {
       document.documentElement.classList.remove('lenis', 'lenis-smooth');
       document.documentElement.style.scrollBehavior = 'smooth';
       initGsapOnly();
@@ -225,23 +226,26 @@
       });
     }
 
-    // Subtle parallax — exclude horizontal gallery imgs (they have own horizontal scrub)
-    const parallaxImgs = gsap.utils.toArray('.portrait-panel img, .reel-frame img, .exp-thumb img, .exp-thumb-vertical img');
-    parallaxImgs.forEach((img) => {
-      if (img.dataset.parallaxInit) return;
-      img.dataset.parallaxInit = '1';
-      const triggerEl = img.closest('section, .exp-card, .case-card') || img;
-      gsap.to(img, {
-        yPercent: -5,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: triggerEl,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 0.8,
-        },
+    // Subtle parallax — disabled on mobile for performance (kills scroll lag)
+    const isMobileParallax = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
+    if (!isMobileParallax) {
+      const parallaxImgs = gsap.utils.toArray('.portrait-panel img, .reel-frame img, .exp-thumb img, .exp-thumb-vertical img');
+      parallaxImgs.forEach((img) => {
+        if (img.dataset.parallaxInit) return;
+        img.dataset.parallaxInit = '1';
+        const triggerEl = img.closest('section, .exp-card, .case-card') || img;
+        gsap.to(img, {
+          yPercent: -5,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: triggerEl,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 0.8,
+          },
+        });
       });
-    });
+    }
   }
 
   // Clean up ScrollTriggers on page transition to avoid duplicates

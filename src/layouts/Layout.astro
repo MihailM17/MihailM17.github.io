@@ -859,6 +859,10 @@ const { title } = Astro.props;
     .horizontal-hint{ font-size:0.62rem; }
   }
 
+  @media (max-width:768px){
+    body::before, body::after{ display:none; }
+    .hero::before, .hero::after{ display:none; }
+  }
   @media (prefers-reduced-motion:reduce){
     html{scroll-behavior:auto;}
     *,*::before,*::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important;}

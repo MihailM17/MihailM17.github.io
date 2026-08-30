@@ -216,6 +216,12 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
       if (stage) stage.classList.add('is-fallback');
       return;
     }
+    // Mobile → native scroll (kills lag/teleport from pin+scrub on touch)
+    const isMobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(hover: none)').matches;
+    if (isMobile) {
+      if (stage) stage.classList.add('is-fallback');
+      return;
+    }
     if (stage) stage.classList.remove('is-fallback');
 
     if (horizontalST) {
@@ -414,7 +420,14 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
       }
     }
   });
-  window.addEventListener('resize', () => ScrollTrigger.refresh());
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+      initHorizontal();
+    }, 150);
+  });
   window.addEventListener('load', () => {
     ScrollTrigger.refresh();
     setTimeout(() => {
