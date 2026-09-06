@@ -26,8 +26,11 @@ export const server = {
         },
       });
 
-      const to = import.meta.env.CONTACT_EMAIL || 'mihailmihaylov2004@gmail.com';
-      const fullSubject = `[Portfolio] ${subject} — ${name}`;
+      const to = import.meta.env.CONTACT_EMAIL || 'mohailmihaylov2004@gmail.com';
+      // Strip CR/LF to block email header injection via name/subject
+      const safeSubject = subject.replace(/[\r\n]+/g, ' ').slice(0, 200);
+      const safeName = name.replace(/[\r\n]+/g, ' ').slice(0, 100);
+      const fullSubject = `[Portfolio] ${safeSubject} — ${safeName}`;
       const body = `From: ${name} <${email}>\n\n${message}\n\n—\nSent via mihailmihaylov.com contact form`;
 
       await transporter.sendMail({
