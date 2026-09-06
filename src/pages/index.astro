@@ -7,7 +7,7 @@ import HorizontalGallery from '../components/HorizontalGallery.astro';
 import Lightbox from '../components/Lightbox.astro';
 import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
-import portraitImg from '../assets/portrait.png';
+import portraitImg from '../assets/portrait.jpg';
 
 const projects = await getCollection('projects');
 const siteContent = (await getCollection('site'))[0]?.data;
