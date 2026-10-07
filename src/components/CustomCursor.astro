@@ -1,5 +1,5 @@
 ---
-// CustomCursor — simplified, robust, "more normal" look.
+// CustomCursor - simplified, robust, "more normal" look.
 // Native cursor stays visible until custom is ready; custom is a subtle dot + ring.
 // Respects reduced-motion / touch. No disappearance gap.
 ---
@@ -41,7 +41,7 @@
     position: absolute;
     width: 7px;
     height: 7px;
-    background: #EFE6D8; /* ecru — visible like native tip */
+    background: #EFE6D8; /* ecru - visible like native tip */
     border: 1px solid rgba(28,22,20,0.18);
     border-radius: 50%;
     transform: translate(-50%, -50%);
@@ -81,7 +81,7 @@
     pointer-events: none;
   }
 
-  /* Hover — gentle, not huge */
+  /* Hover - gentle, not huge */
   #custom-cursor.is-hover .cursor-dot {
     transform: translate(-50%, -50%) scale(1.6);
     background: var(--brass, #D4A24C);
@@ -101,7 +101,7 @@
     transform: translate(-50%, -50%) scale(0.92);
   }
 
-  /* Fallback — always show native cursor on touch / narrow / reduced */
+  /* Fallback - always show native cursor on touch / narrow / reduced */
   @media (pointer: coarse), (max-width: 900px) {
     #custom-cursor { display: none !important; }
     html.has-custom-cursor { cursor: auto !important; }
@@ -133,7 +133,7 @@
     const label = cursor?.querySelector('.cursor-label');
     if (!cursor || !dot || !ring || !label) return;
 
-    // If not suitable device — ensure native cursor visible
+    // If not suitable device - ensure native cursor visible
     if (!shouldEnable()) {
       document.documentElement.classList.remove('has-custom-cursor');
       cursor.style.display = 'none';
@@ -153,7 +153,7 @@
 
     document.documentElement.classList.add('has-custom-cursor');
     cursor.style.display = 'block';
-    // Make visible immediately — no gap where native hidden but custom invisible
+    // Make visible immediately - no gap where native hidden but custom invisible
     requestAnimationFrame(() => cursor.classList.add('is-ready'));
 
     let mouseX = window.innerWidth / 2;
@@ -180,7 +180,7 @@
     }
 
     function lerpLoop() {
-      // Smooth follow — dot snappier, ring/label lazy
+      // Smooth follow - dot snappier, ring/label lazy
       dotX += (mouseX - dotX) * 0.32;
       dotY += (mouseY - dotY) * 0.32;
       ringX += (mouseX - ringX) * 0.16;
@@ -261,7 +261,7 @@
   document.addEventListener('astro:page-load', initCursor);
   document.addEventListener('astro:after-swap', initCursor);
 
-  // Handle resize / orientation — re-evaluate shouldEnable
+  // Handle resize / orientation - re-evaluate shouldEnable
   let resizeTimer;
   let wasEnabled = shouldEnable();
   window.addEventListener('resize', () => {

@@ -1,5 +1,5 @@
 ---
-// LenisSmoothScroll — buttery inertia + GSAP ScrollTrigger sync
+// LenisSmoothScroll - buttery inertia + GSAP ScrollTrigger sync
 // Respects prefers-reduced-motion. No destructive kill of all triggers.
 ---
 
@@ -26,7 +26,7 @@
     }
     cancelAnimationFrame(rafId);
 
-    // Don't kill every ScrollTrigger — that breaks HorizontalGallery pin.
+    // Don't kill every ScrollTrigger - that breaks HorizontalGallery pin.
     // Just refresh after setup.
 
     const isMobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(hover: none)').matches;
@@ -60,7 +60,7 @@
     gsap.ticker.add(updateLenis);
     gsap.ticker.lagSmoothing(0);
 
-    // Anchor hijack — smooth hash navigation (handles both #section and /#section, plus logo /)
+    // Anchor hijack - smooth hash navigation (handles both #section and /#section, plus logo /)
     function hijackAnchors() {
       document.querySelectorAll('a[href*="#"], a[href="/"], a[href="/#top"]').forEach((a) => {
         const anchor = a;
@@ -70,7 +70,7 @@
           const href = anchor.getAttribute('href');
           if (!href) return;
           if (href === '#') return;
-          // Handle logo "/" — if already on home, scroll to top
+          // Handle logo "/" - if already on home, scroll to top
           if (href === '/' || href === '/#top') {
             const isHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
             if (isHome) {
@@ -86,7 +86,7 @@
               history.pushState(null, '', '/');
               return;
             }
-            // not on home — let browser navigate to "/"
+            // not on home - let browser navigate to "/"
             return;
           }
           
@@ -135,7 +135,7 @@
       setTimeout(hijackAnchors, 50);
     });
 
-    // handle hash on initial load (e.g. /#narrative from subpages — back to narrative/commercial)
+    // handle hash on initial load (e.g. /#narrative from subpages - back to narrative/commercial)
     function handleInitialHash() {
       const hash = window.location.hash;
       if (!hash || hash === '#') return;
@@ -176,7 +176,7 @@
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) return;
 
-    // Reveal — intentional, not generic: hero gets cinematic rise, everything else is near-instant (keeps glass, kills stagger slop)
+    // Reveal - intentional, not generic: hero gets cinematic rise, everything else is near-instant (keeps glass, kills stagger slop)
     const allReveal = gsap.utils.toArray('[data-reveal]:not([data-gsap-init])');
     allReveal.forEach((el) => el.setAttribute('data-gsap-init', '1'));
     const heroReveal = allReveal.filter(el => el.closest('.hero'));
@@ -226,7 +226,7 @@
       });
     }
 
-    // Subtle parallax — disabled on mobile for performance (kills scroll lag)
+    // Subtle parallax - disabled on mobile for performance (kills scroll lag)
     const isMobileParallax = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
     if (!isMobileParallax) {
       const parallaxImgs = gsap.utils.toArray('.portrait-panel img, .reel-frame img, .exp-thumb img, .exp-thumb-vertical img');

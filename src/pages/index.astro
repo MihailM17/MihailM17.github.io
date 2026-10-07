@@ -62,7 +62,7 @@ const c = siteContent;
               {c.about.stats.map((s) => (
                 <div class="stat"><b>{s.value}</b><span>{s.label}</span></div>
               ))}
-              <div class="about-stats-footnote"><b>28 days</b> · 5 crews × 4 · NBU × UCF sprint · Jan 2026 — Sofia 42.70°N 23.32°E</div>
+              <div class="about-stats-footnote"><b>28 days</b> · 5 crews × 4 · NBU × UCF sprint · Jan 2026 - Sofia 42.70°N 23.32°E</div>
             </div>
             <span class="about-lang">{c.about.lang}</span>
           </div>
@@ -85,7 +85,7 @@ const c = siteContent;
 
         <div class="narrative-list">
           {narrative.length === 0 ? (
-            <div class="empty-state"><b>No narrative films published yet.</b> — Add projects to <code>src/content/projects/*.json</code> (needs <code>index, title, youtubeUrl, thumb</code>). The 28-day Vitosha sprint will appear here when published.</div>
+            <div class="empty-state"><b>No narrative films published yet.</b> - Add projects to <code>src/content/projects/*.json</code> (needs <code>index, title, youtubeUrl, thumb</code>). The 28-day Vitosha sprint will appear here when published.</div>
           ) : narrative.map((film) => {
             const f = film.data;
             return (
@@ -97,7 +97,7 @@ const c = siteContent;
                       {f.slug === 'silent-lifts-vitosha' ? f.titleEn : f.title}, {f.year}
                     </a>
                   </h3>
-                  <div class="narrative-meta"><b>{f.kicker}</b> — {f.meta}</div>
+                  <div class="narrative-meta"><b>{f.kicker}</b> - {f.meta}</div>
                   <p class="case-synopsis" style="margin-top:0.7rem; max-width:52ch;">{f.synopsis}</p>
                   <a href={`/projects/${f.slug}`} class="narrative-cta" data-cursor-hover>Read story →</a>
                 </div>
@@ -142,7 +142,7 @@ const c = siteContent;
 
         <div class="commercial-grid">
           {commercial.length === 0 ? (
-            <div class="empty-state"><b>No commercial jobs listed.</b> — Add to <code>src/content/site/main.json → commercial.jobs</code>.</div>
+            <div class="empty-state"><b>No commercial jobs listed.</b> - Add to <code>src/content/site/main.json → commercial.jobs</code>.</div>
           ) : commercial.map((job) => {
             const fallbackSlug = job.org.includes('7Arts') ? '7arts-artportal' : job.org.includes('Timeless') ? 'timeless-production' : null;
             const slug = (job as any).detail?.slug || fallbackSlug;
@@ -150,7 +150,7 @@ const c = siteContent;
             <article class="commercial-card" data-reveal data-company-slug={slug} data-cursor-hover data-cursor-label="OPEN">
               <div class="commercial-card-content">
                 <h3><a href={slug ? `/companies/${slug}` : undefined} class="commercial-card-title-link" data-cursor-hover>{job.org}</a></h3>
-                <span class="role">{job.role} — {job.years}</span>
+                <span class="role">{job.role} - {job.years}</span>
                 <p class="desc">{job.desc}</p>
               </div>
               <div class="mini-grid">
@@ -239,10 +239,10 @@ const c = siteContent;
             <label><span>Name</span><input type="text" name="name" required placeholder="Your name" autocomplete="name" aria-describedby="err-name"><span class="field-error" id="err-name" aria-live="polite"></span></label>
             <label><span>Your Email</span><input type="email" name="email" required placeholder="you@email.com" autocomplete="email" aria-describedby="err-email"><span class="field-error" id="err-email" aria-live="polite"></span></label>
           </div>
-          <label style="margin-top:1rem"><span>Subject</span><input type="text" name="subject" placeholder="Project inquiry — edit / color / directing" required aria-describedby="err-subject"><span class="field-error" id="err-subject" aria-live="polite"></span></label>
+          <label style="margin-top:1rem"><span>Subject</span><input type="text" name="subject" placeholder="Project inquiry - edit / color / directing" required aria-describedby="err-subject"><span class="field-error" id="err-subject" aria-live="polite"></span></label>
           <label style="margin-top:1rem"><span>Message</span><textarea name="message" required placeholder="Tell me about your project, timeline, and budget..." rows="5" aria-describedby="err-message"></textarea><span class="field-error" id="err-message" aria-live="polite"></span></label>
           <button type="submit" class="form-submit" data-cursor-hover data-cursor-label="SEND">Send Email →</button>
-          <p class="form-note">Or email directly: <a href={`mailto:${c.contact.email}`}>{c.contact.email}</a> — {c.contact.formNote}</p>
+          <p class="form-note">Or email directly: <a href={`mailto:${c.contact.email}`}>{c.contact.email}</a> - {c.contact.formNote}</p>
           <p class="form-status" id="form-status" aria-live="polite"></p>
         </form>
 
@@ -299,17 +299,17 @@ const c = siteContent;
           const subject = (data.get('subject') || '').toString().trim() || 'Portfolio inquiry';
           const message = (data.get('message') || '').toString().trim();
           let hasError = false;
-          if (!name || name.length < 2) { setErr(errName, form.querySelector('[name="name"]'), 'Name required — at least 2 characters.'); hasError = true; }
+          if (!name || name.length < 2) { setErr(errName, form.querySelector('[name="name"]'), 'Name required - at least 2 characters.'); hasError = true; }
           const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-          if (!email || !emailOk) { setErr(errEmail, form.querySelector('[name="email"]'), 'Valid email required — e.g., name@domain.com'); hasError = true; }
-          if (!subject || subject.length < 3) { setErr(errSubject, form.querySelector('[name="subject"]'), 'Subject required — 3+ characters or leave as “Portfolio inquiry”.'); hasError = true; }
-          if (!message || message.length < 10) { setErr(errMessage, form.querySelector('[name="message"]'), 'Message required — 10+ characters so I can reply usefully.'); hasError = true; }
+          if (!email || !emailOk) { setErr(errEmail, form.querySelector('[name="email"]'), 'Valid email required - e.g., name@domain.com'); hasError = true; }
+          if (!subject || subject.length < 3) { setErr(errSubject, form.querySelector('[name="subject"]'), 'Subject required - 3+ characters or leave as “Portfolio inquiry”.'); hasError = true; }
+          if (!message || message.length < 10) { setErr(errMessage, form.querySelector('[name="message"]'), 'Message required - 10+ characters so I can reply usefully.'); hasError = true; }
           if (hasError) {
-            if (status) status.textContent = 'Fix the fields above — not sent yet.';
+            if (status) status.textContent = 'Fix the fields above - not sent yet.';
             return;
           }
           if (!navigator.onLine) {
-            if (status) status.textContent = 'You appear offline — message not sent. Copy your text and email directly.';
+            if (status) status.textContent = 'You appear offline - message not sent. Copy your text and email directly.';
             return;
           }
           if (status) status.textContent = 'Sending…';
@@ -318,13 +318,13 @@ const c = siteContent;
           try {
             const { error } = await actions.sendEmail({ name, email, subject, message });
             if (error) {
-              if (status) status.textContent = `Couldn’t send: ${error.message} — try email directly: ${form.querySelector('a[href^=\"mailto:\"]')?.href || 'mohailmihaylov2004@gmail.com'}`;
+              if (status) status.textContent = `Couldn’t send: ${error.message} - try email directly: ${form.querySelector('a[href^=\"mailto:\"]')?.href || 'mohailmihaylov2004@gmail.com'}`;
             } else {
-              if (status) status.textContent = 'Sent — I’ll reply within 24h (Sofia time). Check spam if you don’t hear back.';
+              if (status) status.textContent = 'Sent - I’ll reply within 24h (Sofia time). Check spam if you don’t hear back.';
               form.reset();
             }
           } catch (err) {
-            if (status) status.textContent = 'Network error — not sent. Please email directly or try again.';
+            if (status) status.textContent = 'Network error - not sent. Please email directly or try again.';
             console.error(err);
           } finally {
             if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Send Email →'; }
@@ -396,7 +396,7 @@ const c = siteContent;
           card.style.cursor = 'pointer';
 
           card.addEventListener('click', (e) => {
-            // Keep thumbnail/video links intact — don't redirect to company page
+            // Keep thumbnail/video links intact - don't redirect to company page
             if (e.target.closest('.mini-thumb')) return;
             // If clicking the title link itself, let native navigation handle it
             if (e.target.closest('a[href^="/companies"]')) return;

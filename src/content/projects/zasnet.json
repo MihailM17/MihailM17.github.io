@@ -11,8 +11,8 @@
   "cover": "https://img.youtube.com/vi/GpF_UJrMVxk/maxresdefault.jpg",
   "synopsis": "A narrative short film about the complexities of human relationships.",
   "story": [
-    "This short film was born out of a winter film workshop at New Bulgarian University. The greatest challenge? We had exactly three days to shoot a film in the village of Elena—a location we knew almost nothing about beforehand.",
-    "To prepare, I relied heavily on Google Maps to blindly scout potential shooting locations. It was a risky, hit-or-miss strategy, but a necessary one. Although I didn't write the screenplay, I worked to ensure the script was as adaptable as possible for unpredictable conditions. We shot almost entirely outdoors in the freezing winter, relying on zero artificial lighting—just the sun, the mountain fog, and what we had in front of the lens.",
+    "This short film was born out of a winter film workshop at New Bulgarian University. The greatest challenge? We had exactly three days to shoot a film in the village of Elena-a location we knew almost nothing about beforehand.",
+    "To prepare, I relied heavily on Google Maps to blindly scout potential shooting locations. It was a risky, hit-or-miss strategy, but a necessary one. Although I didn't write the screenplay, I worked to ensure the script was as adaptable as possible for unpredictable conditions. We shot almost entirely outdoors in the freezing winter, relying on zero artificial lighting-just the sun, the mountain fog, and what we had in front of the lens.",
     "While every project has room for improvement, the constraints of this shoot taught our team an incredible amount about adaptability and run-and-gun filmmaking."
   ],
   "specs": [
@@ -22,11 +22,11 @@
     { "label": "Year", "value": "2025" }
   ],
   "gallery": [
-    { "src": "https://img.youtube.com/vi/GpF_UJrMVxk/maxresdefault.jpg", "caption": "Заснет — Night interior", "alt": "Night interior — Заснет" },
-    { "src": "/zasnet_shooting_by_the_lake.jpg", "caption": "Заснет — Shooting by the lake", "alt": "Shooting by the lake — Заснет, Elena" },
-    { "src": "/me-and-camera-op-zasnet.jpg", "caption": "Заснет — Director & camera", "alt": "Director & camera — Заснет" },
-    { "src": "/zasnet_team_while_shooting.jpg", "caption": "Заснет — Team while shooting", "alt": "Team while shooting — Заснет, Elena" },
-    { "src": "/zasnet_team_while_shooting2.jpg", "caption": "Заснет — Team while shooting", "alt": "Team while shooting — Заснет, Elena" },
-    { "src": "/zasnet_team_while_shooting3.jpg", "caption": "Заснет — Team while shooting", "alt": "Team while shooting — Заснет, Elena" }
+    { "src": "https://img.youtube.com/vi/GpF_UJrMVxk/maxresdefault.jpg", "caption": "Заснет - Night interior", "alt": "Night interior - Заснет" },
+    { "src": "/zasnet_shooting_by_the_lake.jpg", "caption": "Заснет - Shooting by the lake", "alt": "Shooting by the lake - Заснет, Elena" },
+    { "src": "/me-and-camera-op-zasnet.jpg", "caption": "Заснет - Director & camera", "alt": "Director & camera - Заснет" },
+    { "src": "/zasnet_team_while_shooting.jpg", "caption": "Заснет - Team while shooting", "alt": "Team while shooting - Заснет, Elena" },
+    { "src": "/zasnet_team_while_shooting2.jpg", "caption": "Заснет - Team while shooting", "alt": "Team while shooting - Заснет, Elena" },
+    { "src": "/zasnet_team_while_shooting3.jpg", "caption": "Заснет - Team while shooting", "alt": "Team while shooting - Заснет, Elena" }
   ]
 }

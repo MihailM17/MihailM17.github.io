@@ -28,7 +28,7 @@ const displayTitleEn = hasEnglishTitle ? current.data.title : current.data.title
 const projectData = current.data;
 ---
 
-<Layout title={`${displayTitle}, ${projectData.year} — Mihail Mihaylov`}>
+<Layout title={`${displayTitle}, ${projectData.year} - Mihail Mihaylov`}>
   <main>
     <div class="container" style="padding-top: 1.6rem;">
       <a href="/#narrative" class="back-link" data-cursor-hover data-cursor-label="BACK">← Back to Narrative</a>
@@ -37,14 +37,14 @@ const projectData = current.data;
     <section class="project-hero">
       <div class="container project-hero-inner">
         <div class="hero-meta" data-reveal>
-          <span class="eyebrow" style="margin-bottom: 0.6rem;">{projectData.kicker} — {projectData.year}</span>
+          <span class="eyebrow" style="margin-bottom: 0.6rem;">{projectData.kicker} - {projectData.year}</span>
           <span class="index-badge">{projectData.index}</span>
         </div>
         <h1 data-reveal>
           <span class="line"><span>{displayTitle},</span></span>
           <span class="line"><span class="outline">{projectData.year}</span></span>
         </h1>
-        <p class="hero-en" data-reveal>{hasEnglishTitle ? <><em>{displayTitleEn}</em> — </> : ''}{projectData.meta}</p>
+        <p class="hero-en" data-reveal>{hasEnglishTitle ? <><em>{displayTitleEn}</em> - </> : ''}{projectData.meta}</p>
         <p class="project-synopsis" data-reveal>{projectData.synopsis}</p>
       </div>
 
@@ -86,14 +86,14 @@ const projectData = current.data;
         <div class="gallery-grid">
           {projectData.gallery.length === 0 ? (
             <div class="empty-state">
-              <b>No stills yet</b> — this film’s gallery is being assembled.<br/>
+              <b>No stills yet</b> - this film’s gallery is being assembled.<br/>
               For <em>{projectData.slug}</em>: add images to <code>src/content/projects/{projectData.slug}.json → gallery[]</code>.
             </div>
           ) : projectData.gallery.map((img, i) => (
             <figure class="gallery-card" data-reveal data-parallax={i % 2 === 0 ? "0.04" : "0.10"} data-lightbox data-src={img.src} data-caption={img.caption} data-cursor-hover data-cursor-label="VIEW">
               <div class="gallery-img-wrap skeleton" data-img-wrap>
                 <img src={img.src} alt={img.alt} loading="lazy" decoding="async" onload="this.closest('[data-img-wrap]')?.classList.remove('skeleton')" onerror="this.style.display='none'; const fb=this.nextElementSibling; if(fb) fb.style.display='block'; this.closest('[data-img-wrap]')?.classList.remove('skeleton')" />
-                <div class="img-error-fallback" style="display:none;">Image failed — <small>{img.src}</small></div>
+                <div class="img-error-fallback" style="display:none;">Image failed - <small>{img.src}</small></div>
               </div>
               <figcaption>{img.caption}</figcaption>
             </figure>

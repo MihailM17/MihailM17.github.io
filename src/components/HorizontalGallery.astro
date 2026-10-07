@@ -26,7 +26,7 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
     <div class="horizontal-track" data-horizontal-track>
       {items.length === 0 ? (
         <div class="empty-state" style="min-width: min(420px, 90vw);">
-          <b>Archive empty</b> — no stills published yet.<br/>
+          <b>Archive empty</b> - no stills published yet.<br/>
           Vitosha dailies (28 days · 5 crews × 4) are being scanned.<br/>
           <span style="color:var(--ash)">If you’re Mihail: add images to <code>src/content/site/main.json → gallery.items</code>.</span>
         </div>
@@ -45,7 +45,7 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
       <div class="gallery-panel gallery-panel--end" aria-hidden="true">
         <div class="panel-end">
           <span class="eyebrow" style="margin:0">End of Reel</span>
-          <p>Mihail Mihaylov — Archive</p>
+          <p>Mihail Mihaylov - Archive</p>
         </div>
       </div>
     </div>
@@ -70,7 +70,7 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
   .horizontal-hint { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ash); }
   .horizontal-hint span { color: var(--brass); }
 
-  /* Clean stage — fixed height, hidden overflow when pinned, fallback scroll when JS off */
+  /* Clean stage - fixed height, hidden overflow when pinned, fallback scroll when JS off */
   .gallery-stage{
     position: relative;
     height: 68vh;
@@ -83,7 +83,7 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
     border-top: 1px solid rgba(239,230,216,0.06);
     border-bottom: 1px solid rgba(239,230,216,0.06);
   }
-  /* Fallback when JS disabled or pin fails — allow native horizontal scroll */
+  /* Fallback when JS disabled or pin fails - allow native horizontal scroll */
   .gallery-stage.is-fallback{
     overflow-x: auto;
     overflow-y: hidden;
@@ -101,7 +101,7 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
     min-width: 100%; /* Ensure track has width before images load */
   }
 
-  /* Prominent, less cluttered panels — large, gray, site-matched */
+  /* Prominent, less cluttered panels - large, gray, site-matched */
   .gallery-panel{
     flex: 0 0 auto;
     width: clamp(420px, 42vw, 640px);
@@ -250,7 +250,7 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
       return Promise.all(promises);
     };
 
-    // Fallback estimate when images not yet loaded — based on panel count * clamp width
+    // Fallback estimate when images not yet loaded - based on panel count * clamp width
     const getEstimatedWidth = () => {
       const panels = track.querySelectorAll('.gallery-panel');
       if (panels.length === 0) return track.scrollWidth;
@@ -263,7 +263,7 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
     };
 
     const doSetup = async (retry = 0) => {
-      // Wait for images, but don't block forever — estimate if still not ready
+      // Wait for images, but don't block forever - estimate if still not ready
       await Promise.race([
         waitForImages(),
         new Promise(r => setTimeout(r, 900))
@@ -310,7 +310,7 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
           return doSetup(retry + 1);
         }
       } else {
-        // Layout ready — if we already created an estimated pin, kill it and recreate with real width
+        // Layout ready - if we already created an estimated pin, kill it and recreate with real width
         if (horizontalST) {
           try { horizontalST.kill(); } catch {}
           horizontalST = null;

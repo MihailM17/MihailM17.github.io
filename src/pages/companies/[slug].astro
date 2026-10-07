@@ -13,9 +13,9 @@ export function getStaticPaths() {
       synopsis: `Independently managing the video pipeline, handling shooting, lighting, sound, and editing. I produced a high volume of trailers, social reels, and promos across their streaming platform, news division, and theatre productions.`,
       description: `Although initially brought on as an editor, I operated as the company's sole video production specialist, managing the entire pipeline from set to final export. I independently handled all cinematography, lighting, and sound recording, followed by cutting and color grading in DaVinci Resolve. I delivered a high volume of content tailored to three distinct branches of the company.\n\n7Arts (Streaming Platform): Shot and edited promotional trailers for the platform itself, alongside dedicated trailers and social marketing reels for individual films and shows.\n\nArtPortal: Handled the end-to-end production of a massive catalog of short-form reels for the arts and news website, successfully translating written articles into engaging, fast-paced video content.\n\nArt Label Productions & The Big Praz Show: Filmed and crafted dynamic announcement videos for upcoming theatre productions and edited high-energy promotional advertisements for The Big Praz Show.`,
       gallery: [
-        { src: '/reel-making-behind-the-scenes-1.jpg', caption: '7Arts — Reel BTS, ArtPortal', alt: 'Reel BTS — ArtPortal, 7Arts' },
-        { src: '/big_praz_reel-making-bts-2.jpg', caption: '7Arts — Big Praz, reel making BTS', alt: 'Big Praz — Reel BTS, 7Arts' },
-        { src: '/big_praz_reel-making-bts-3.jpg', caption: '7Arts — Big Praz, reel making BTS', alt: 'Big Praz — Reel BTS, 7Arts' }
+        { src: '/reel-making-behind-the-scenes-1.jpg', caption: '7Arts - Reel BTS, ArtPortal', alt: 'Reel BTS - ArtPortal, 7Arts' },
+        { src: '/big_praz_reel-making-bts-2.jpg', caption: '7Arts - Big Praz, reel making BTS', alt: 'Big Praz - Reel BTS, 7Arts' },
+        { src: '/big_praz_reel-making-bts-3.jpg', caption: '7Arts - Big Praz, reel making BTS', alt: 'Big Praz - Reel BTS, 7Arts' }
       ]
     },
     'timeless-production': {
@@ -23,13 +23,13 @@ export function getStaticPaths() {
       title: 'Timeless Production Group Ltd',
       role: 'Video Editing Intern & Production Intern',
       years: 'July 2022 – Sep 2022 & Feb 2025 – Apr 2025',
-      synopsis: `Two internships — from Production Intern in 2022 to Video Editing Intern in 2025, cutting Deroni recipe videos and Уча, зная и играя.`,
-      description: `Video Editing Intern — February 2025 – April 2025\n\nReturning to the company for a second internship, I stepped directly into an active editing role. During this three-month period, I was trusted to cut commercial YouTube content for clients, specifically focusing on fast-paced, short-form recipe videos featuring Deroni products. Additionally, I took on broadcast responsibilities by editing several episodes of the children's educational television program Уча, зная и играя.\n\nProduction Intern — July 2022 – September 2022\n\nDuring my initial time with the company, I focused on absorbing as much as possible about how a professional production environment operates. I assisted the team with general, day-to-day tasks, doing the foundational, hands-on work required to keep a production moving while learning the industry ropes from the ground up.`,
+      synopsis: `Two internships - from Production Intern in 2022 to Video Editing Intern in 2025, cutting Deroni recipe videos and Уча, зная и играя.`,
+      description: `Video Editing Intern - February 2025 – April 2025\n\nReturning to the company for a second internship, I stepped directly into an active editing role. During this three-month period, I was trusted to cut commercial YouTube content for clients, specifically focusing on fast-paced, short-form recipe videos featuring Deroni products. Additionally, I took on broadcast responsibilities by editing several episodes of the children's educational television program Уча, зная и играя.\n\nProduction Intern - July 2022 – September 2022\n\nDuring my initial time with the company, I focused on absorbing as much as possible about how a professional production environment operates. I assisted the team with general, day-to-day tasks, doing the foundational, hands-on work required to keep a production moving while learning the industry ropes from the ground up.`,
       gallery: [
-        { src: 'https://img.youtube.com/vi/vC3i48d0Mms/hqdefault.jpg', caption: 'Сапунените мехури — Episode still', alt: 'Episode 1' },
-        { src: 'https://img.youtube.com/vi/CE5H1h6dpFw/hqdefault.jpg', caption: 'Колелото — Episode still', alt: 'Episode 2' },
-        { src: 'https://img.youtube.com/vi/O9bSfzCGmyg/hqdefault.jpg', caption: 'Фотография — Episode still', alt: 'Episode 3' },
-        { src: 'https://img.youtube.com/vi/l9OJxQ7X9vY/hqdefault.jpg', caption: 'Механика — Episode still', alt: 'Episode 4' }
+        { src: 'https://img.youtube.com/vi/vC3i48d0Mms/hqdefault.jpg', caption: 'Сапунените мехури - Episode still', alt: 'Episode 1' },
+        { src: 'https://img.youtube.com/vi/CE5H1h6dpFw/hqdefault.jpg', caption: 'Колелото - Episode still', alt: 'Episode 2' },
+        { src: 'https://img.youtube.com/vi/O9bSfzCGmyg/hqdefault.jpg', caption: 'Фотография - Episode still', alt: 'Episode 3' },
+        { src: 'https://img.youtube.com/vi/l9OJxQ7X9vY/hqdefault.jpg', caption: 'Механика - Episode still', alt: 'Episode 4' }
       ]
     }
   };
@@ -44,7 +44,7 @@ const { detail } = Astro.props;
 if (!detail) throw new Error('Company not found');
 ---
 
-<Layout title={`${detail.title} — Mihail Mihaylov`}>
+<Layout title={`${detail.title} - Mihail Mihaylov`}>
   <main>
     <div class="container" style="padding-top: 1.6rem;">
       <a href="/#commercial" class="back-link" data-cursor-hover data-cursor-label="BACK">← Back to Commercial</a>
@@ -53,7 +53,7 @@ if (!detail) throw new Error('Company not found');
     <section class="project-hero">
       <div class="container project-hero-inner">
         <div class="hero-meta" data-reveal>
-          <span class="eyebrow" style="margin-bottom: 0.6rem;">{detail.role} — {detail.years}</span>
+          <span class="eyebrow" style="margin-bottom: 0.6rem;">{detail.role} - {detail.years}</span>
         </div>
         <h1 data-reveal>
           <span class="line"><span>{detail.title},</span></span>
@@ -78,7 +78,7 @@ if (!detail) throw new Error('Company not found');
         <article class="story" data-parallax="0.12">
           <span class="eyebrow">About</span>
           {detail.description.split('\n').map((para) => para.trim()).filter(Boolean).map((para, idx) => {
-            const isInternshipHeading = /^(Video Editing Intern|Production Intern)\s—/.test(para);
+            const isInternshipHeading = /^(Video Editing Intern|Production Intern)\s-/.test(para);
             const isBranchHeading = /^(7Arts \(Streaming Platform\)|ArtPortal:|Art Label Productions)/.test(para);
             let content;
             if (isInternshipHeading) {
@@ -122,7 +122,7 @@ if (!detail) throw new Error('Company not found');
             <figure class="gallery-card" data-reveal data-lightbox data-src={img.src} data-caption={img.caption} data-cursor-hover data-cursor-label="VIEW">
               <div class="gallery-img-wrap skeleton" data-img-wrap>
                 <img src={img.src} alt={img.alt} loading="lazy" decoding="async" onload="this.closest('[data-img-wrap]')?.classList.remove('skeleton')" onerror="this.style.display='none'; const fb=this.nextElementSibling; if(fb) fb.style.display='block'; this.closest('[data-img-wrap]')?.classList.remove('skeleton')" />
-                <div class="img-error-fallback" style="display:none;">Image failed — <small>{img.src}</small></div>
+                <div class="img-error-fallback" style="display:none;">Image failed - <small>{img.src}</small></div>
               </div>
               <figcaption>{img.caption}</figcaption>
             </figure>

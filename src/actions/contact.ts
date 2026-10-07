@@ -30,8 +30,8 @@ export const server = {
       // Strip CR/LF to block email header injection via name/subject
       const safeSubject = subject.replace(/[\r\n]+/g, ' ').slice(0, 200);
       const safeName = name.replace(/[\r\n]+/g, ' ').slice(0, 100);
-      const fullSubject = `[Portfolio] ${safeSubject} — ${safeName}`;
-      const body = `From: ${name} <${email}>\n\n${message}\n\n—\nSent via mihailmihaylov.com contact form`;
+      const fullSubject = `[Portfolio] ${safeSubject} - ${safeName}`;
+      const body = `From: ${name} <${email}>\n\n${message}\n\n-\nSent via mihailmihaylov.com contact form`;
 
       await transporter.sendMail({
         from: `"Portfolio Contact" <${import.meta.env.SMTP_USER || email}>`,

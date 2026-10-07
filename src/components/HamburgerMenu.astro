@@ -50,7 +50,7 @@ const companies = [
   <div class="menu-backdrop" data-menu-close></div>
   <div class="menu-panel">
     <div class="menu-header">
-      <span class="eyebrow" style="margin:0">Navigation — Mihail Mihaylov</span>
+      <span class="eyebrow" style="margin:0">Navigation - Mihail Mihaylov</span>
       <button class="menu-close" aria-label="Close menu" data-menu-close data-cursor-hover data-cursor-label="CLOSE">✕</button>
     </div>
 
@@ -74,7 +74,7 @@ const companies = [
                 <li>
                   <a href={`/projects/${film.slug}`} data-menu-link data-cursor-hover data-cursor-label="OPEN">
                     <b>{film.index}</b>
-                    <span>{film.slug === 'silent-lifts-vitosha' ? film.titleEn : film.title}<em>{film.kicker} — {film.year}</em></span>
+                    <span>{film.slug === 'silent-lifts-vitosha' ? film.titleEn : film.title}<em>{film.kicker} - {film.year}</em></span>
                   </a>
                 </li>
               );
@@ -89,7 +89,7 @@ const companies = [
               <li>
                 <a href={`/companies/${job.slug}`} data-menu-link data-cursor-hover data-cursor-label="OPEN">
                   <b>{String(i+1).padStart(2,'0')}</b>
-                  <span>{job.org}<em>{job.role} — {job.years}</em></span>
+                  <span>{job.org}<em>{job.role} - {job.years}</em></span>
                 </a>
               </li>
             ))}

@@ -38,13 +38,13 @@ export const projects: Project[] = [
       { label: "Role", value: "Director & Editor" },
       { label: "Duration", value: "11 min" },
       { label: "Location", value: "Vitosha, Sofia" },
-      { label: "Collab", value: "NBU × UCF — made in 28 days" },
+      { label: "Collab", value: "NBU × UCF - made in 28 days" },
       { label: "Tools", value: "DaVinci Resolve, Sony FX3" },
     ],
     gallery: [
-      { src: "https://img.youtube.com/vi/_ajdklDn5_k/maxresdefault.jpg", caption: "Vitosha ridge — empty chairs at golden hour", alt: "Vitosha lifts" },
-      { src: "/1000000570.png", caption: "Portrait — on location", alt: "On set portrait" },
-      { src: "/art-portal-cover.png", caption: "Stills — archival poster", alt: "Poster" },
+      { src: "https://img.youtube.com/vi/_ajdklDn5_k/maxresdefault.jpg", caption: "Vitosha ridge - empty chairs at golden hour", alt: "Vitosha lifts" },
+      { src: "/1000000570.png", caption: "Portrait - on location", alt: "On set portrait" },
+      { src: "/art-portal-cover.png", caption: "Stills - archival poster", alt: "Poster" },
     ],
   },
   {
@@ -58,7 +58,7 @@ export const projects: Project[] = [
     youtubeUrl: "https://youtu.be/jGJNPgaQiJE",
     thumb: "https://img.youtube.com/vi/jGJNPgaQiJE/maxresdefault.jpg",
     cover: "https://img.youtube.com/vi/jGJNPgaQiJE/maxresdefault.jpg",
-    synopsis: "A psychological drama about friends at a mountain villa where the East Wind exposes hidden tensions — my first credit as editor and production sound, made independently after my first year at NBU.",
+    synopsis: "A psychological drama about friends at a mountain villa where the East Wind exposes hidden tensions - my first credit as editor and production sound, made independently after my first year at NBU.",
     story: [
       "Made independently just after my first year at New Bulgarian University, Източен вятър holds a special place in my portfolio as a benchmark for how far I've come. When a colleague wanted to create a short film outside of our regular university coursework, she brought me on board to edit and, for the very first time, run production sound.",
       "The film is a psychological drama about friends staying at a mountain villa. A local host warns them about the \"East Wind,\" a phenomenon believed to bring out the worst in people. As the weather turns, hidden resentments and a secret affair boil over, ultimately culminating in a severe allergic reaction and a tragic car crash.",
@@ -71,8 +71,8 @@ export const projects: Project[] = [
       { label: "Year", value: "2025" },
     ],
     gallery: [
-      { src: "https://img.youtube.com/vi/jGJNPgaQiJE/maxresdefault.jpg", caption: "Interior — kitchen light at 6am", alt: "Eastern Wind still" },
-      { src: "/big-praz-1.png", caption: "Lookbook — Eastern Wind", alt: "Poster" },
+      { src: "https://img.youtube.com/vi/jGJNPgaQiJE/maxresdefault.jpg", caption: "Interior - kitchen light at 6am", alt: "Eastern Wind still" },
+      { src: "/big-praz-1.png", caption: "Lookbook - Eastern Wind", alt: "Poster" },
     ],
   },
   {
@@ -88,8 +88,8 @@ export const projects: Project[] = [
     cover: "https://img.youtube.com/vi/GpF_UJrMVxk/maxresdefault.jpg",
     synopsis: "A narrative short film about the complexities of human relationships.",
     story: [
-      "This short film was born out of a winter film workshop at New Bulgarian University. The greatest challenge? We had exactly three days to shoot a film in the village of Elena—a location we knew almost nothing about beforehand.",
-      "To prepare, I relied heavily on Google Maps to blindly scout potential shooting locations. It was a risky, hit-or-miss strategy, but a necessary one. Although I didn't write the screenplay, I worked to ensure the script was as adaptable as possible for unpredictable conditions. We shot almost entirely outdoors in the freezing winter, relying on zero artificial lighting—just the sun, the mountain fog, and what we had in front of the lens.",
+      "This short film was born out of a winter film workshop at New Bulgarian University. The greatest challenge? We had exactly three days to shoot a film in the village of Elena-a location we knew almost nothing about beforehand.",
+      "To prepare, I relied heavily on Google Maps to blindly scout potential shooting locations. It was a risky, hit-or-miss strategy, but a necessary one. Although I didn't write the screenplay, I worked to ensure the script was as adaptable as possible for unpredictable conditions. We shot almost entirely outdoors in the freezing winter, relying on zero artificial lighting-just the sun, the mountain fog, and what we had in front of the lens.",
       "While every project has room for improvement, the constraints of this shoot taught our team an incredible amount about adaptability and run-and-gun filmmaking."
     ],
     specs: [
@@ -99,15 +99,15 @@ export const projects: Project[] = [
       { label: "Year", value: "2025" },
     ],
     gallery: [
-      { src: "https://img.youtube.com/vi/_ajdklDn5_k/maxresdefault.jpg", caption: "Zasnet — night interior", alt: "Zasnet still" },
-      { src: "/big-praz-2.png", caption: "Set — monitor", alt: "On monitor" },
+      { src: "https://img.youtube.com/vi/_ajdklDn5_k/maxresdefault.jpg", caption: "Zasnet - night interior", alt: "Zasnet still" },
+      { src: "/big-praz-2.png", caption: "Set - monitor", alt: "On monitor" },
     ],
   },
   {
     slug: "remake-season-2",
     index: "03",
-    title: "РимейкЪТ — Season 2",
-    titleEn: "Remake — Season 2",
+    title: "РимейкЪТ - Season 2",
+    titleEn: "Remake - Season 2",
     year: "2025",
     kicker: "TV Reality Show · Director",
     meta: "3-episode competition · NBU Television · 2025",
@@ -122,17 +122,17 @@ export const projects: Project[] = [
       "The project culminated in a packed premiere at the university cinema. To our surprise, the director and lead cinematographer of Gundi: Legend of Love - Dimitar Dimitrov and Boris Slavkov - attended the screening. Watching the reality show with them and hearing the director say, \"I don't know much about reality formats, but I genuinely had fun; you did a super job,\" was an unforgettable, validating experience."
     ],
     specs: [
-      { label: "Role", value: "Director — Season 2" },
+      { label: "Role", value: "Director - Season 2" },
       { label: "Format", value: "3 × 20 min · Reality Competition" },
       { label: "Network", value: "NBU Television" },
       { label: "Cameras", value: "8 × broadcast" },
     ],
     gallery: [
-      { src: "https://img.youtube.com/vi/L-FgwXF-VA8/maxresdefault.jpg", caption: "Control room — live cut", alt: "Control room" },
-      { src: "/director-photo-final-remakecut.jpg", caption: "Director — Remake Season 2", alt: "Director Remake" },
-      { src: "/group-photo-final-remakecut.jpg", caption: "Group photo — Remake Season 2", alt: "Group Remake" },
-      { src: "/me-final-remakecut.jpg", caption: "Director final — Remake Season 2", alt: "Director final Remake" },
-      { src: "/me-remakecut.jpg", caption: "On set — Remake Season 2", alt: "On set Remake" },
+      { src: "https://img.youtube.com/vi/L-FgwXF-VA8/maxresdefault.jpg", caption: "Control room - live cut", alt: "Control room" },
+      { src: "/director-photo-final-remakecut.jpg", caption: "Director - Remake Season 2", alt: "Director Remake" },
+      { src: "/group-photo-final-remakecut.jpg", caption: "Group photo - Remake Season 2", alt: "Group Remake" },
+      { src: "/me-final-remakecut.jpg", caption: "Director final - Remake Season 2", alt: "Director final Remake" },
+      { src: "/me-remakecut.jpg", caption: "On set - Remake Season 2", alt: "On set Remake" },
     ],
   },
 ];

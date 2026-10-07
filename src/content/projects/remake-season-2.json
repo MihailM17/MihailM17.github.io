@@ -1,8 +1,8 @@
 {
   "slug": "remake-season-2",
   "index": "03",
-  "title": "РимейкЪТ — Season 2",
-  "titleEn": "Remake — Season 2",
+  "title": "РимейкЪТ - Season 2",
+  "titleEn": "Remake - Season 2",
   "year": "2025",
   "kicker": "TV Reality Show · Director",
   "meta": "3-episode competition · NBU Television · 2025",
@@ -17,16 +17,16 @@
     "The project culminated in a packed premiere at the university cinema. To our surprise, the director and lead cinematographer of Gundi: Legend of Love - Dimitar Dimitrov and Boris Slavkov - attended the screening. Watching the reality show with them and hearing the director say, \"I don't know much about reality formats, but I genuinely had fun; you did a super job,\" was an unforgettable, validating experience."
   ],
   "specs": [
-    { "label": "Role", "value": "Director — Season 2" },
+    { "label": "Role", "value": "Director - Season 2" },
     { "label": "Format", "value": "3 × 20 min · Reality Competition" },
     { "label": "Network", "value": "NBU Television" },
     { "label": "Cameras", "value": "8 × broadcast" }
   ],
   "gallery": [
-    { "src": "https://img.youtube.com/vi/L-FgwXF-VA8/maxresdefault.jpg", "caption": "РимейкЪТ — Control room", "alt": "Control room — РимейкЪТ, live cut" },
-    { "src": "/director-photo-final-remakecut.jpg", "caption": "РимейкЪТ — Gundi Director", "alt": "Gundi Director — РимейкЪТ, control room" },
-    { "src": "/group-photo-final-remakecut.jpg", "caption": "РимейкЪТ — Cast & crew", "alt": "Cast & crew — РимейкЪТ, final slate" },
-    { "src": "/me-final-remakecut.jpg", "caption": "РимейкЪТ — On set", "alt": "On set — РимейкЪТ" },
-    { "src": "/римейкът_studio_shot.jpg", "caption": "РимейкЪТ — Studio", "alt": "Studio — РимейкЪТ, 8-camera sync" }
+    { "src": "https://img.youtube.com/vi/L-FgwXF-VA8/maxresdefault.jpg", "caption": "РимейкЪТ - Control room", "alt": "Control room - РимейкЪТ, live cut" },
+    { "src": "/director-photo-final-remakecut.jpg", "caption": "РимейкЪТ - Gundi Director", "alt": "Gundi Director - РимейкЪТ, control room" },
+    { "src": "/group-photo-final-remakecut.jpg", "caption": "РимейкЪТ - Cast & crew", "alt": "Cast & crew - РимейкЪТ, final slate" },
+    { "src": "/me-final-remakecut.jpg", "caption": "РимейкЪТ - On set", "alt": "On set - РимейкЪТ" },
+    { "src": "/римейкът_studio_shot.jpg", "caption": "РимейкЪТ - Studio", "alt": "Studio - РимейкЪТ, 8-camera sync" }
   ]
 }

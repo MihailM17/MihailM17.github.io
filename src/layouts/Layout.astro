@@ -20,7 +20,7 @@ const { title } = Astro.props;
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{title}</title>
-<meta name="description" content="Mihail Mihaylov — director and editor based in Sofia, Bulgaria. DaVinci Resolve post-production, camera work, and documentary filmmaking.">
+<meta name="description" content="Mihail Mihaylov - director and editor based in Sofia, Bulgaria. DaVinci Resolve post-production, camera work, and documentary filmmaking.">
 <!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-GZMPLW7CNY"></script>
 <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-GZMPLW7CNY');</script>
 <ClientRouter />
@@ -57,7 +57,7 @@ const { title } = Astro.props;
     -webkit-font-smoothing:antialiased;
     position: relative;
   }
-  /* grain — subtle film texture (REVERT: opacity 0.035, single layer) */
+  /* grain - subtle film texture (REVERT: opacity 0.035, single layer) */
   body::before{
     content:"";
     position: fixed;
@@ -68,7 +68,7 @@ const { title } = Astro.props;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     mix-blend-mode: soft-light;
   }
-  /* experimental second grain layer — faint halftone dots, remove to revert */
+  /* experimental second grain layer - faint halftone dots, remove to revert */
   body::after{
     content:"";
     position: fixed;
@@ -104,7 +104,7 @@ const { title } = Astro.props;
     margin-bottom:var(--sp-4); color:var(--ecru);
   }
 
-  /* reveal-on-scroll — now driven by GSAP; keep CSS fallback for no-JS */
+  /* reveal-on-scroll - now driven by GSAP; keep CSS fallback for no-JS */
   .reveal-pending{opacity:0; transform:translateY(22px); transition:opacity .7s ease, transform .7s ease;}
   .reveal-visible{opacity:1; transform:translateY(0);}
   /* GSAP will set autoAlpha; ensure no FOUC */
@@ -151,7 +151,7 @@ const { title } = Astro.props;
   .splice-strip .diamond{width:7px; height:7px; background:var(--oxblood); transform:rotate(45deg);}
   .splice-strip .dot{width:4px; height:4px; border-radius:50%; background:var(--brass);}
 
-  /* ---------- hero — interesting per-section wash (revert to transparent to flatten) ---------- */
+  /* ---------- hero - interesting per-section wash (revert to transparent to flatten) ---------- */
   .hero{
     position:relative; min-height:92vh; display:flex; flex-direction:column; justify-content:center;
     background:
@@ -208,7 +208,7 @@ const { title } = Astro.props;
   .scroll-cue span{position:absolute; top:0; left:-2px; width:5px; height:5px; border-radius:50%; background:var(--brass); animation:scrollDot 2.4s ease-in-out infinite;}
   @keyframes scrollDot{0%{top:0; opacity:1;} 85%{opacity:1;} 100%{top:47px; opacity:0;}}
 
-  /* velocity marquee — Lando inspired */
+  /* velocity marquee - Lando inspired */
   .velocity-bar{
     position: relative;
     overflow: hidden;
@@ -238,7 +238,7 @@ const { title } = Astro.props;
     to{ transform: translateX(-50%); }
   }
 
-  /* ---------- about — interesting wash ---------- */
+  /* ---------- about - interesting wash ---------- */
   .about-section{
     position:relative; overflow:clip;
     padding-block: calc(var(--sp-6) + 0.5rem);
@@ -597,7 +597,7 @@ const { title } = Astro.props;
     padding-top: 1.2rem;
     align-items: start;
   }
-  /* When 3 items (7Arts) — force 3-col on wide, no orphan half-cell */
+  /* When 3 items (7Arts) - force 3-col on wide, no orphan half-cell */
   @media (min-width: 520px){
     .commercial-card .mini-grid:has(> :nth-child(3):last-child){
       grid-template-columns: repeat(3, 1fr);
@@ -755,7 +755,7 @@ const { title } = Astro.props;
     min-height: 1.2em;
   }
 
-   /* ---------- state coverage — skeletons & empty/error (anti-slop) ---------- */
+   /* ---------- state coverage - skeletons & empty/error (anti-slop) ---------- */
   .skeleton{
     background: linear-gradient(90deg, var(--ink-2) 25%, rgba(239,230,216,.06) 37%, var(--ink-2) 63%);
     background-size:400% 100%;
@@ -788,7 +788,7 @@ const { title } = Astro.props;
   .footer-inner{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem;}
   footer p{font-family:var(--font-mono); font-size:.75rem; letter-spacing:.04em; color:var(--ash);}
 
-  /* Mobile compact — keep desktop layout but much smaller (only phones) */
+  /* Mobile compact - keep desktop layout but much smaller (only phones) */
   @media (max-width: 480px){
     .hero{ min-height:84vh; }
     .hero h1{ font-size: clamp(2.7rem, 12vw, 3.4rem); margin-block:0.28em 0.38em; letter-spacing:-0.02em; }
@@ -885,7 +885,7 @@ const { title } = Astro.props;
   <CustomCursor />
   <header>
     <div class="container nav-inner">
-      <a class="brand" href="/" aria-label="Mihail Mihaylov — home" data-cursor-hover data-cursor-label="HOME">
+      <a class="brand" href="/" aria-label="Mihail Mihaylov - home" data-cursor-hover data-cursor-label="HOME">
         <Image src={logoImg} alt="Mihail Mihaylov Logo" class="brand-logo" widths={[64, 128]} sizes="64px" loading="eager" decoding="async" />
       </a>
       <div class="nav-actions">
