@@ -26,6 +26,8 @@ const hasEnglishTitle = current.data.titleEn && current.data.titleEn !== current
 const displayTitle = hasEnglishTitle ? current.data.titleEn : current.data.title;
 const displayTitleEn = hasEnglishTitle ? current.data.title : current.data.titleEn;
 const projectData = current.data;
+const gradeUrl = (projectData as any).gradeBreakdownUrl as string | undefined;
+const gradeId = gradeUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
 ---
 
 <Layout title={`${displayTitle}, ${projectData.year} - Mihail Mihaylov`}>
@@ -53,7 +55,6 @@ const projectData = current.data;
           <img src={projectData.cover} alt={`${displayTitle} cover`} loading="eager" decoding="async" />
           <span class="play-badge"><i>▶</i> Watch Film</span>
         </a>
-        <span class="cover-hint">Click image → YouTube · Bar links stay on site</span>
       </div>
     </section>
 
@@ -82,6 +83,21 @@ const projectData = current.data;
         </article>
       </div>
     </section>
+
+    {gradeUrl && gradeId && (
+      <section class="section grade-section" style="padding-top: 0;">
+        <div class="container">
+          <span class="eyebrow" data-reveal>Grade Breakdown</span>
+          <p class="project-synopsis" data-reveal>How the moonlit grade was built, step by step in DaVinci Resolve.</p>
+          <div class="project-cover-wrap" data-reveal>
+            <a href={gradeUrl} target="_blank" rel="noopener noreferrer" class="project-cover" aria-label={`Watch ${displayTitle} grade breakdown on YouTube`} data-cursor-hover data-cursor-label="PLAY BREAKDOWN">
+              <img src={`https://img.youtube.com/vi/${gradeId}/maxresdefault.jpg`} alt={`${displayTitle} grade breakdown cover`} loading="lazy" decoding="async" onerror={`this.onerror=null;this.src='https://img.youtube.com/vi/${gradeId}/hqdefault.jpg'`} />
+              <span class="play-badge"><i>▶</i> Watch Breakdown</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    )}
 
     <section class="section gallery-section" style="padding-top: 0;">
       <div class="container">
@@ -173,7 +189,6 @@ const projectData = current.data;
     padding: .65rem 1rem; backdrop-filter: blur(6px); display:flex; gap:.5rem; align-items:center;
   }
   .play-badge i{ color: var(--brass); font-style: normal; }
-  .cover-hint{ display:block; margin-top: .6rem; font-family: var(--font-mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ash); }
 
   .specs-grid{ display:grid; grid-template-columns: 300px 1fr; gap: var(--sp-5); align-items:start; }
   @media (max-width:480px){ .specs-grid{ grid-template-columns:1fr; gap:1.5rem; } }
