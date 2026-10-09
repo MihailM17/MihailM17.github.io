@@ -13,6 +13,7 @@ type LibraryItem = {
   category: 'narrative' | 'tv' | 'commercial';
   href: string;
   watchUrl?: string;
+  gradeUrl?: string;
   title: string;
   sub?: string;
   yearLabel: string;
@@ -34,6 +35,7 @@ const filmItems: LibraryItem[] = projects.map((p) => {
     category: isTv ? 'tv' : 'narrative',
     href: `/projects/${d.slug}`,
     watchUrl: d.youtubeUrl,
+    gradeUrl: d.gradeBreakdownUrl,
     title: `${displayTitle}, ${d.year}`,
     sub: isVitosha && d.title ? d.title : undefined,
     yearLabel: d.year,
@@ -145,6 +147,7 @@ const counts = {
                 <div class="library-links">
                   <a href={it.href} class="library-cta" data-cursor-hover>Read story →</a>
                   {it.watchUrl && <a href={it.watchUrl} target="_blank" rel="noopener noreferrer" class="library-cta ghost" data-cursor-hover>Watch ↗</a>}
+                  {it.gradeUrl && <a href={it.gradeUrl} target="_blank" rel="noopener noreferrer" class="library-cta ghost" data-cursor-hover>Grade ↗</a>}
                 </div>
               </div>
             </article>

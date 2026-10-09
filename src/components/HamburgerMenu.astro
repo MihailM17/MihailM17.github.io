@@ -7,9 +7,10 @@ const siteContent = (await getCollection('site'))[0]?.data;
 // Custom order: newest first, with specific ordering for 2025 projects
 const orderPriority: Record<string, number> = {
   'silent-lifts-vitosha': 1,
-  'zasnet': 2,
-  'remake-season-2': 3,
-  'eastern-wind': 4,
+  'lunen-blyasak': 2,
+  'zasnet': 3,
+  'remake-season-2': 4,
+  'eastern-wind': 5,
 };
 
 const films = [...projects].sort((a, b) => {

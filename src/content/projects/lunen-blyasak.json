@@ -6,14 +6,15 @@
   "year": "2026",
   "kicker": "Music Video · Assistant and Color Grade",
   "meta": "Music Video · July 2026 · DaVinci Resolve grade",
-  "youtubeUrl": "https://www.youtube.com/",
-  "thumb": "https://mihailm17.github.io/%D0%BB%D1%83%D0%BD%D0%B5%D0%BD_%D0%B1%D0%BB%D1%8F%D1%81%D1%8A%D0%BA_on_sunset.png",
-  "cover": "https://mihailm17.github.io/%D0%BB%D1%83%D0%BD%D0%B5%D0%BD_%D0%B1%D0%BB%D1%8F%D1%81%D1%8A%D0%BA_on_sunset.png",
-  "synopsis": "A music video where I worked as assistant and created the color grade. One minute color grading showreel coming soon.",
+  "youtubeUrl": "https://youtu.be/_WoclaA8dH4?si=b9E-YlOMMDZX2ZPt",
+  "gradeBreakdownUrl": "https://youtu.be/WjtEI1Mo8h0?si=nOUzCuR3RkrEE-V7",
+  "thumb": "https://img.youtube.com/vi/_WoclaA8dH4/maxresdefault.jpg",
+  "cover": "https://img.youtube.com/vi/_WoclaA8dH4/maxresdefault.jpg",
+  "synopsis": "A music video where I worked as assistant and created the color grade. Watch the final video and my grade breakdown.",
   "story": [
     "Лунен Блясък is a music video where I joined the team as assistant and took charge of the color grade in DaVinci Resolve.",
     "The goal of the grade was a soft moonlit look that keeps skin tones natural while letting the night exteriors and studio shots cut together cleanly.",
-    "A one minute color grading showreel will be added here once it is ready, with before and after stills from the sunset and studio setups."
+    "The finished video is linked above, and I also recorded a short breakdown of how I built the grade, linked as Grade breakdown."
   ],
   "specs": [
     { "label": "Role", "value": "Assistant and Color Grade" },

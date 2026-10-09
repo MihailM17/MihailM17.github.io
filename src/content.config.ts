@@ -10,6 +10,7 @@ const projectSchema = z.object({
   kicker: z.string(),
   meta: z.string(),
   youtubeUrl: z.string().url(),
+  gradeBreakdownUrl: z.string().url().optional(),
   thumb: z.string().url(),
   cover: z.string().url(),
   synopsis: z.string(),

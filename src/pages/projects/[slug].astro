@@ -69,6 +69,9 @@ const projectData = current.data;
             ))}
           </ul>
           <a href={projectData.youtubeUrl} target="_blank" rel="noopener noreferrer" class="specs-cta" data-cursor-hover data-cursor-label="YOUTUBE">Watch on YouTube →</a>
+          {(projectData as any).gradeBreakdownUrl && (
+            <><br /><a href={(projectData as any).gradeBreakdownUrl} target="_blank" rel="noopener noreferrer" class="specs-cta" data-cursor-hover data-cursor-label="GRADE">Grade breakdown →</a></>
+          )}
         </aside>
 
         <article class="story" data-parallax="0.12">

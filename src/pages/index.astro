@@ -15,13 +15,14 @@ const siteContent = (await getCollection('site'))[0]?.data;
 // Custom order for narrative projects (same as hamburger menu)
 const narrativeOrder: Record<string, number> = {
   'silent-lifts-vitosha': 1,
-  'zasnet': 2,
-  'remake-season-2': 3,
-  'eastern-wind': 4,
+  'lunen-blyasak': 2,
+  'zasnet': 3,
+  'remake-season-2': 4,
+  'eastern-wind': 5,
 };
 
 const narrative = projects
-  .filter((p) => ["silent-lifts-vitosha","eastern-wind","zasnet"].includes(p.data.slug))
+  .filter((p) => ["silent-lifts-vitosha","lunen-blyasak","zasnet"].includes(p.data.slug))
   .sort((a, b) => narrativeOrder[a.data.slug] - narrativeOrder[b.data.slug]);
 
 const broadcast = projects.find((p) => p.data.slug === "remake-season-2");

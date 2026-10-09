@@ -7,6 +7,7 @@ export interface Project {
   kicker: string;
   meta: string;
   youtubeUrl: string;
+  gradeBreakdownUrl?: string;
   thumb: string;
   cover: string;
   synopsis: string;
