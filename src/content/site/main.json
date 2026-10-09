@@ -130,6 +130,7 @@
   "nav": [
     { "href": "/#narrative", "label": "Narrative", "sub": "01 - Shorts & Docs" },
     { "href": "/#commercial", "label": "Commercial", "sub": "02 - 7Arts / Timeless" },
+    { "href": "/projects", "label": "Library", "sub": "All work" },
     { "href": "/#archive", "label": "Archive", "sub": "Film strip" },
     { "href": "/#about", "label": "About", "sub": "Sofia / NBU" },
     { "href": "/#contact", "label": "Contact", "sub": "Get in touch" }

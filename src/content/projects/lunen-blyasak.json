@@ -1,0 +1,28 @@
+{
+  "slug": "lunen-blyasak",
+  "index": "05",
+  "title": "Лунен Блясък",
+  "titleEn": "Лунен Блясък",
+  "year": "2026",
+  "kicker": "Music Video · Assistant and Color Grade",
+  "meta": "Music Video · July 2026 · DaVinci Resolve grade",
+  "youtubeUrl": "https://www.youtube.com/",
+  "thumb": "https://mihailm17.github.io/%D0%BB%D1%83%D0%BD%D0%B5%D0%BD_%D0%B1%D0%BB%D1%8F%D1%81%D1%8A%D0%BA_on_sunset.png",
+  "cover": "https://mihailm17.github.io/%D0%BB%D1%83%D0%BD%D0%B5%D0%BD_%D0%B1%D0%BB%D1%8F%D1%81%D1%8A%D0%BA_on_sunset.png",
+  "synopsis": "A music video where I worked as assistant and created the color grade. One minute color grading showreel coming soon.",
+  "story": [
+    "Лунен Блясък is a music video where I joined the team as assistant and took charge of the color grade in DaVinci Resolve.",
+    "The goal of the grade was a soft moonlit look that keeps skin tones natural while letting the night exteriors and studio shots cut together cleanly.",
+    "A one minute color grading showreel will be added here once it is ready, with before and after stills from the sunset and studio setups."
+  ],
+  "specs": [
+    { "label": "Role", "value": "Assistant and Color Grade" },
+    { "label": "Format", "value": "Music Video" },
+    { "label": "Grade", "value": "DaVinci Resolve" },
+    { "label": "Year", "value": "July 2026" }
+  ],
+  "gallery": [
+    { "src": "/лунен_блясък_on_sunset.png", "caption": "Лунен Блясък on sunset", "alt": "On sunset, Лунен Блясък" },
+    { "src": "/studio_shot_from_лунен_блясък.jpg", "caption": "Лунен Блясък studio shot", "alt": "Studio shot, Лунен Блясък" }
+  ]
+}

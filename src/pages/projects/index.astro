@@ -1,0 +1,296 @@
+---
+// Project Library: aggregates films (projects collection) + companies (site commercial.jobs)
+// Homepage highlights in src/pages/index.astro are intentionally untouched.
+import Layout from '../../layouts/Layout.astro';
+import SpliceStrip from '../../components/SpliceStrip.astro';
+import { getCollection } from 'astro:content';
+
+const projects = await getCollection('projects');
+const siteContent = (await getCollection('site'))[0]?.data;
+
+type LibraryItem = {
+  kind: 'film' | 'company';
+  category: 'narrative' | 'tv' | 'commercial';
+  href: string;
+  watchUrl?: string;
+  title: string;
+  sub?: string;
+  yearLabel: string;
+  years: string[];
+  kicker: string;
+  meta: string;
+  synopsis: string;
+  thumb: string;
+  index: string;
+};
+
+const filmItems: LibraryItem[] = projects.map((p) => {
+  const d = p.data as any;
+  const isVitosha = d.slug === 'silent-lifts-vitosha';
+  const isTv = d.slug === 'remake-season-2' || /TV|Reality/i.test(d.kicker || '');
+  const displayTitle = isVitosha && d.titleEn ? d.titleEn : d.title;
+  return {
+    kind: 'film',
+    category: isTv ? 'tv' : 'narrative',
+    href: `/projects/${d.slug}`,
+    watchUrl: d.youtubeUrl,
+    title: `${displayTitle}, ${d.year}`,
+    sub: isVitosha && d.title ? d.title : undefined,
+    yearLabel: d.year,
+    years: [String(d.year)],
+    kicker: d.kicker,
+    meta: d.meta,
+    synopsis: d.synopsis,
+    thumb: d.thumb || d.cover,
+    index: d.index,
+  };
+});
+
+const jobItems: LibraryItem[] = ((siteContent as any)?.commercial?.jobs || []).map((job: any, i: number) => {
+  const slug = job?.detail?.slug || (job.org.includes('7Arts') ? '7arts-artportal' : 'timeless-production');
+  const yearsFound = Array.from(new Set((String(job.years || '').match(/(19|20)\d{2}/g) || []) as string[]));
+  return {
+    kind: 'company',
+    category: 'commercial',
+    href: `/companies/${slug}`,
+    title: job.org,
+    yearLabel: job.years,
+    years: yearsFound.length ? yearsFound : ['2025'],
+    kicker: job.role,
+    meta: job.years,
+    synopsis: job.desc,
+    thumb: job.items?.[0]?.thumb || '/logo.png',
+    index: `C${i + 1}`,
+  };
+});
+
+const items: LibraryItem[] = [...filmItems, ...jobItems].sort((a, b) => {
+  const ya = parseInt(a.years[0] || '0', 10);
+  const yb = parseInt(b.years[0] || '0', 10);
+  if (yb !== ya) return yb - ya;
+  if (a.kind !== b.kind) return a.kind === 'film' ? -1 : 1;
+  return a.title.localeCompare(b.title);
+});
+
+const allYears = Array.from(new Set(items.flatMap((it) => it.years))).sort((a, b) => parseInt(b) - parseInt(a));
+const counts = {
+  all: items.length,
+  narrative: items.filter((it) => it.category === 'narrative').length,
+  tv: items.filter((it) => it.category === 'tv').length,
+  commercial: items.filter((it) => it.category === 'commercial').length,
+};
+---
+
+<Layout title="Project Library: All work | Mihail Mihaylov">
+  <main>
+    <section class="library-hero">
+      <div class="container">
+        <a href="/" class="back-link" data-cursor-hover data-cursor-label="HOME">← Back home</a>
+        <span class="eyebrow" data-reveal>Project Library: All work</span>
+        <h1 data-reveal><span>Library</span><em>.</em></h1>
+        <p class="library-lede" data-reveal>
+          Every film and company in one place
+        </p>
+        <p class="library-count" data-reveal>
+          <b>{counts.all}</b> works · {counts.narrative} narrative · {counts.tv} TV · {counts.commercial} commercial
+        </p>
+      </div>
+    </section>
+
+    <SpliceStrip />
+
+    <section class="section library-controls-section" style="padding-top: var(--sp-4);">
+      <div class="container">
+        <div class="library-controls" data-reveal>
+          <div class="filter-row" role="group" aria-label="Filter by type">
+            <button class="filter-btn is-active" data-filter="all" aria-pressed="true">All ({counts.all})</button>
+            <button class="filter-btn" data-filter="narrative" aria-pressed="false">Narrative ({counts.narrative})</button>
+            <button class="filter-btn" data-filter="tv" aria-pressed="false">TV ({counts.tv})</button>
+            <button class="filter-btn" data-filter="commercial" aria-pressed="false">Commercial ({counts.commercial})</button>
+          </div>
+          <div class="filter-row secondary">
+            <label class="year-label">Year
+              <select id="year-select" aria-label="Filter by year">
+                <option value="all">All years</option>
+                {allYears.map((y) => <option value={y}>{y}</option>)}
+              </select>
+            </label>
+            <label class="search-label">Search
+              <input id="library-search" type="search" placeholder="title, role, keyword…" autocomplete="off" />
+            </label>
+          </div>
+          <p class="library-status" id="library-status" aria-live="polite">Showing {items.length} / {items.length}</p>
+        </div>
+
+        <div class="library-grid" id="library-grid">
+          {items.map((it) => (
+            <article
+              class="library-card"
+              data-reveal
+              data-category={it.category}
+              data-years={it.years.join(' ')}
+              data-search={`${it.title} ${it.sub || ''} ${it.kicker} ${it.synopsis} ${it.meta}`.toLowerCase()}
+            >
+              <a href={it.href} class="library-thumb" aria-label={`Open ${it.title}`} data-cursor-hover data-cursor-label="OPEN">
+                <img src={it.thumb} alt={`${it.title} cover`} loading="lazy" decoding="async" onerror="this.style.opacity='0.3'" />
+                <span class="library-cat">{it.category === 'tv' ? 'TV' : it.category}</span>
+              </a>
+              <div class="library-body">
+                <div class="library-top"><b>{it.index}</b><span>{it.yearLabel}</span></div>
+                <h3><a href={it.href} data-cursor-hover>{it.title}</a></h3>
+                {it.sub && <p class="library-sub">{it.sub}</p>}
+                <p class="library-kicker">{it.kicker}</p>
+                <p class="library-meta">{it.meta}</p>
+                <p class="library-syn">{it.synopsis}</p>
+                <div class="library-links">
+                  <a href={it.href} class="library-cta" data-cursor-hover>Read story →</a>
+                  {it.watchUrl && <a href={it.watchUrl} target="_blank" rel="noopener noreferrer" class="library-cta ghost" data-cursor-hover>Watch ↗</a>}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div class="empty-state" id="library-empty" hidden>
+          <b>No matches.</b> Try clearing search or choosing a different filter.
+        </div>
+      </div>
+    </section>
+
+    <SpliceStrip />
+  </main>
+</Layout>
+
+<style>
+  .library-hero{
+    padding-block: var(--sp-5) var(--sp-4);
+    background:
+      radial-gradient(ellipse 720px 380px at 78% 10%, rgba(212,162,76,0.12), transparent 58%),
+      radial-gradient(ellipse 560px 360px at 12% 88%, rgba(178,58,46,0.12), transparent 60%),
+      var(--ink);
+  }
+  .back-link{
+    font-family: var(--font-mono); font-size: .76rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ash); border-bottom: 1px solid transparent; padding-bottom: 2px;
+  }
+  .back-link:hover{ color: var(--ecru); border-color: var(--brass); }
+  .library-hero h1{
+    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+    font-size: clamp(2.6rem, 8vw, 5.5rem); line-height: .9; letter-spacing: -.03em; color: var(--ecru);
+    margin: .35em 0 .4em;
+  }
+  .library-hero h1 em{ font-style: normal; color: var(--oxblood); }
+  .library-lede{ max-width: 62ch; color: var(--ecru); font-style: italic; font-size: clamp(1rem, 2vw, 1.2rem); border-left: 2px solid var(--oxblood); padding-left: 1rem; }
+  .library-count{ margin-top: 1rem; font-family: var(--font-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ash); }
+  .library-count b{ color: var(--brass); }
+
+  .library-controls{
+    background: var(--ink-2); border: 1px solid var(--oxblood-dim);
+    padding: 1.2rem; margin-bottom: var(--sp-3);
+    clip-path: polygon(0 0,100% 0,100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+    display: grid; gap: 1rem;
+  }
+  .filter-row{ display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+  .filter-row.secondary{ gap: 1rem; }
+  .filter-btn{
+    font-family: var(--font-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+    background: transparent; color: var(--ash); border: 1px solid rgba(239,230,216,.14);
+    padding: .55rem .85rem; cursor: pointer; transition: all .2s;
+  }
+  .filter-btn:hover{ color: var(--ecru); border-color: var(--brass); }
+  .filter-btn.is-active{ color: var(--ink); background: var(--brass); border-color: var(--brass); font-weight: 700; }
+  .year-label, .search-label{
+    font-family: var(--font-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ash);
+    display: flex; align-items: center; gap: .6rem;
+  }
+  .year-label select, .search-label input{
+    background: var(--ink); border: 1px solid rgba(239,230,216,.14); color: var(--ecru);
+    font-family: var(--font-body); font-size: .95rem; padding: .55rem .7rem; outline: none; text-transform: none; letter-spacing: 0;
+  }
+  .search-label input{ min-width: min(280px, 60vw); }
+  .year-label select:focus, .search-label input:focus{ border-color: var(--brass); }
+  .library-status{ font-family: var(--font-mono); font-size: .72rem; color: var(--ash); text-transform: uppercase; letter-spacing: .08em; margin: 0; }
+
+  .library-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.4rem; }
+  @media (max-width: 480px){ .library-grid{ grid-template-columns: 1fr; } }
+  .library-card{
+    background: var(--ink-2); border: 1px solid var(--oxblood-dim);
+    clip-path: polygon(0 0,100% 0,100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+    overflow: hidden; transition: border-color .25s, transform .25s; display: flex; flex-direction: column;
+  }
+  .library-card:hover{ border-color: var(--brass); transform: translateY(-3px); }
+  .library-card.is-hidden{ display: none; }
+  .library-thumb{ position: relative; display: block; aspect-ratio: 16/9; overflow: hidden; background: var(--ink); }
+  .library-thumb img{ width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.16,1,.3,1); filter: saturate(.92) contrast(1.04); }
+  .library-card:hover .library-thumb img{ transform: scale(1.04); }
+  .library-cat{
+    position: absolute; left: .8rem; bottom: .8rem;
+    font-family: var(--font-mono); font-size: .66rem; letter-spacing: .1em; text-transform: uppercase;
+    background: rgba(28,22,20,.85); border: 1px solid var(--brass); color: var(--brass); padding: .25rem .55rem;
+  }
+  .library-body{ padding: 1.2rem 1.2rem 1.3rem; display: flex; flex-direction: column; flex: 1; }
+  .library-top{ display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: .7rem; color: var(--ash); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .5rem; }
+  .library-top b{ color: var(--brass); }
+  .library-body h3{ font-family: var(--font-display); font-weight: 800; font-size: 1.25rem; line-height: 1.15; color: var(--ecru); }
+  .library-body h3 a:hover{ color: var(--brass); }
+  .library-sub{ font-family: var(--font-body); font-style: italic; color: var(--ash); font-size: .92rem; margin-top: .15rem; }
+  .library-kicker{ font-family: var(--font-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--brass); margin-top: .6rem; }
+  .library-meta{ font-family: var(--font-mono); font-size: .7rem; color: var(--ash); text-transform: uppercase; letter-spacing: .05em; margin-top: .25rem; }
+  .library-syn{ color: var(--ecru); font-size: .95rem; line-height: 1.6; margin-top: .7rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex: 1; }
+  .library-links{ display: flex; gap: 1rem; margin-top: 1rem; }
+  .library-cta{
+    font-family: var(--font-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--brass); border-bottom: 1px solid var(--oxblood); padding-bottom: 2px;
+  }
+  .library-cta:hover{ color: var(--ecru); border-color: var(--brass); }
+  .library-cta.ghost{ color: var(--ash); }
+  #library-empty{ margin-top: 1rem; }
+</style>
+
+<script>
+  // @ts-nocheck
+  function initLibrary() {
+    const grid = document.getElementById('library-grid');
+    if (!grid || grid.dataset.bound === '1') return;
+    grid.dataset.bound = '1';
+    const btns = Array.from(document.querySelectorAll('.filter-btn'));
+    const yearSel = document.getElementById('year-select');
+    const search = document.getElementById('library-search');
+    const status = document.getElementById('library-status');
+    const empty = document.getElementById('library-empty');
+    let cat = 'all';
+
+    function apply() {
+      const y = yearSel ? yearSel.value : 'all';
+      const q = (search ? search.value : '').trim().toLowerCase();
+      const cards = Array.from(grid.querySelectorAll('.library-card'));
+      let shown = 0;
+      cards.forEach((card) => {
+        const okCat = cat === 'all' || card.dataset.category === cat;
+        const years = (card.dataset.years || '').split(' ');
+        const okYear = y === 'all' || years.includes(y);
+        const hay = (card.dataset.search || '');
+        const okQ = !q || hay.includes(q);
+        const show = okCat && okYear && okQ;
+        card.classList.toggle('is-hidden', !show);
+        if (show) shown++;
+      });
+      if (status) status.textContent = `Showing ${shown} / ${cards.length}`;
+      if (empty) empty.hidden = shown !== 0;
+    }
+
+    btns.forEach((b) => b.addEventListener('click', () => {
+      btns.forEach((x) => { x.classList.remove('is-active'); x.setAttribute('aria-pressed', 'false'); });
+      b.classList.add('is-active'); b.setAttribute('aria-pressed', 'true');
+      cat = b.dataset.filter || 'all';
+      apply();
+    }));
+    if (yearSel) yearSel.addEventListener('change', apply);
+    if (search) search.addEventListener('input', apply);
+    apply();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initLibrary);
+  else initLibrary();
+  document.addEventListener('astro:page-load', initLibrary);
+  document.addEventListener('astro:after-swap', initLibrary);
+</script>
