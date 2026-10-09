@@ -23,7 +23,7 @@
     { "label": "Year", "value": "July 2026" }
   ],
   "gallery": [
-    { "src": "/лунен_блясък_on_sunset.png", "caption": "Лунен Блясък on sunset", "alt": "On sunset, Лунен Блясък" },
-    { "src": "/studio_shot_from_лунен_блясък.jpg", "caption": "Лунен Блясък studio shot", "alt": "Studio shot, Лунен Блясък" }
+    { "src": "/lunen-blyasak_on_sunset.png", "caption": "Лунен Блясък on sunset", "alt": "On sunset, Лунен Блясък" },
+    { "src": "/studio-shot-lunen-blyasak.jpg", "caption": "Лунен Блясък studio shot", "alt": "Studio shot, Лунен Блясък" }
   ]
 }
