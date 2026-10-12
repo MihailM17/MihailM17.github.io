@@ -4,15 +4,15 @@
     "eyebrow": "Director - Editor",
     "titleLine1": "Mihail",
     "titleLine2": "Mihaylov",
-    "sub": "Third-year director and editor at New Bulgarian University, with experience directing short films, documentaries, TV, and online short-form content.",
+    "sub": "Fourth-year director and editor at New Bulgarian University, with experience directing short films, documentaries, TV, and online short-form content.",
     "meta": "Sofia, Bulgaria · 42.70°N 23.32°E"
   },
   "about": {
     "kicker": "About - Sofia / NBU",
     "titleLine1": "Crafting",
     "titleLine2": "visual stories.",
-    "lead": "Sofia-based director who lives in post-production - final year, Cinema & Television at New Bulgarian University.",
-    "p1": "Hey, I'm Mihail. I'm a Sofia-based director who also edits videos. I'm currently in my final year studying Cinema and Television at New Bulgarian University.",
+    "lead": "Sofia-based director who lives in post-production - fourth year, Cinema & Television at New Bulgarian University.",
+    "p1": "Hey, I'm Mihail. I'm a Sofia-based director who also edits videos. I'm currently in my fourth year studying Cinema and Television at New Bulgarian University.",
     "p2": "I love the entire post-production puzzle, especially color grading and cutting in DaVinci Resolve. Over the past couple of years, my work has bounced between directing short documentaries and TV reality shows, to editing fast-paced digital content and broadcast deliveries.",
     "stats": [
       { "value": "28", "label": "days to be made - Vitosha doc sprint" },
@@ -86,7 +86,7 @@
       }
     ],
     "credits": [
-      { "org": "New Bulgarian University", "role": "Cinema & Television - Directing & Editing", "note": "final year" },
+      { "org": "New Bulgarian University", "role": "Cinema & Television - Directing & Editing", "note": "fourth year" },
       { "org": "Timeless Production Group", "role": "Post-production editor", "note": "4 episodes delivered" },
       { "org": "7Arts / ArtPortal", "role": "Editor + camera operator", "note": "daily culture coverage" },
       { "org": "Sofia International Film Festival", "role": "Photo & video coverage", "note": "volunteer, 2 years" }
