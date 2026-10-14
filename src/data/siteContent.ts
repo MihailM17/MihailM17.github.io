@@ -50,9 +50,9 @@ export const siteContent = {
         years: "2024 - 2025",
         desc: "Cutting and shooting art-world coverage for Bulgaria's largest cultural platform. Gallery openings, artist profiles, and social-first verticals - often same-day turnarounds.",
         items: [
-          { url: "https://www.instagram.com/reel/DP1d4V7DE5n/", thumb: "/art-portal-cover.png", label: "Art Portal - Reel · 2025", isVertical: true },
-          { url: "https://www.instagram.com/reel/DQwwvU7CGVI/", thumb: "/big-praz-1.png", label: "Big Praz - Announcement · 2025", isVertical: true },
-          { url: "https://www.facebook.com/share/v/1DQJKSR9fR/", thumb: "/big-praz-2.png", label: "Big Praz - Live Reel · 2025", isVertical: true },
+          { url: "https://www.instagram.com/reel/DP1d4V7DE5n/", thumb: "/art-portal-cover.jpg", label: "Art Portal - Reel · 2025", isVertical: true },
+          { url: "https://www.instagram.com/reel/DQwwvU7CGVI/", thumb: "/big-praz-1.jpg", label: "Big Praz - Announcement · 2025", isVertical: true },
+          { url: "https://www.facebook.com/share/v/1DQJKSR9fR/", thumb: "/big-praz-2.jpg", label: "Big Praz - Live Reel · 2025", isVertical: true },
         ],
       },
       {
@@ -81,9 +81,9 @@ export const siteContent = {
     title: "Selected Stills.",
     hint: "SCROLL → hold to scrub",
     items: [
-      { src: "/art-portal-cover.png", alt: "Art Portal still", caption: "Art Portal - Gallery coverage", year: "2025" },
-      { src: "/big-praz-1.png", alt: "Big Praz Show poster", caption: "Big Praz - Announcement", year: "2025" },
-      { src: "/big-praz-2.png", alt: "Big Praz rehearsal still", caption: "Big Praz - Stage", year: "2025" },
+      { src: "/art-portal-cover.jpg", alt: "Art Portal still", caption: "Art Portal - Gallery coverage", year: "2025" },
+      { src: "/big-praz-1.jpg", alt: "Big Praz Show poster", caption: "Big Praz - Announcement", year: "2025" },
+      { src: "/big-praz-2.jpg", alt: "Big Praz rehearsal still", caption: "Big Praz - Stage", year: "2025" },
       { src: "/1000000570.png", alt: "Portrait of Mihail on set", caption: "On set - Sofia", year: "2024" },
       { src: "https://img.youtube.com/vi/_ajdklDn5_k/maxresdefault.jpg", alt: "Silent Lifts still", caption: "Замлъкналите лифтове - Vitosha", year: "2026" },
       { src: "https://img.youtube.com/vi/GpF_UJrMVxk/maxresdefault.jpg", alt: "Zasnet still", caption: "Заснет - Night interior", year: "2024" },

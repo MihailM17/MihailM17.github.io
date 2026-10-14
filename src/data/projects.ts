@@ -45,7 +45,7 @@ export const projects: Project[] = [
     gallery: [
       { src: "https://img.youtube.com/vi/_ajdklDn5_k/maxresdefault.jpg", caption: "Vitosha ridge - empty chairs at golden hour", alt: "Vitosha lifts" },
       { src: "/1000000570.png", caption: "Portrait - on location", alt: "On set portrait" },
-      { src: "/art-portal-cover.png", caption: "Stills - archival poster", alt: "Poster" },
+      { src: "/art-portal-cover.jpg", caption: "Stills - archival poster", alt: "Poster" },
     ],
   },
   {
@@ -73,7 +73,7 @@ export const projects: Project[] = [
     ],
     gallery: [
       { src: "https://img.youtube.com/vi/jGJNPgaQiJE/maxresdefault.jpg", caption: "Interior - kitchen light at 6am", alt: "Eastern Wind still" },
-      { src: "/big-praz-1.png", caption: "Lookbook - Eastern Wind", alt: "Poster" },
+      { src: "/big-praz-1.jpg", caption: "Lookbook - Eastern Wind", alt: "Poster" },
     ],
   },
   {
@@ -101,7 +101,7 @@ export const projects: Project[] = [
     ],
     gallery: [
       { src: "https://img.youtube.com/vi/_ajdklDn5_k/maxresdefault.jpg", caption: "Zasnet - night interior", alt: "Zasnet still" },
-      { src: "/big-praz-2.png", caption: "Set - monitor", alt: "On monitor" },
+      { src: "/big-praz-2.jpg", caption: "Set - monitor", alt: "On monitor" },
     ],
   },
   {
