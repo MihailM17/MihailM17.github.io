@@ -11,13 +11,13 @@
     "kicker": "About - Sofia / NBU",
     "titleLine1": "Crafting",
     "titleLine2": "visual stories.",
-    "lead": "Sofia-based director who lives in post-production - fourth year, Cinema & Television at New Bulgarian University.",
-    "p1": "Hey, I'm Mihail. I'm a Sofia-based director who also edits videos. I'm currently in my fourth year studying Cinema and Television at New Bulgarian University.",
-    "p2": "I love the entire post-production puzzle, especially color grading and cutting in DaVinci Resolve. Over the past couple of years, my work has bounced between directing short documentaries and TV reality shows, to editing fast-paced digital content and broadcast deliveries.",
+    "lead": "Sofia-based director in fourth year, Cinema & Television at New Bulgarian University.",
+    "p1": "Hey, I'm Mihail. I'm a director from Sofia who also edits videos. I'm currently in my fourth year studying Cinema and Television at New Bulgarian University.",
+    "p2": "I love the entire post-production process, especially color grading in DaVinci Resolve. Over the past couple of years, my work has bounced between directing short documentaries and TV reality shows, to editing fast-paced digital content.",
     "stats": [
-      { "value": "28", "label": "days to be made - Vitosha doc sprint" },
-      { "value": "04", "label": "episodes delivered" },
-      { "value": "03", "label": "shorts & docs" }
+      { "value": "28", "label": "days to make a documentary" },
+      { "value": "04", "label": "tv episodes delivered" },
+      { "value": "100+", "label": "shorts & reels" }
     ],
     "lang": "Bulgarian • English - Sofia, Bulgaria",
     "portraitAlt": "Portrait of Mihail Mihaylov"
