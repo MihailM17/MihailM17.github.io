@@ -41,9 +41,21 @@ export const siteContent = {
   commercial: {
     kicker: "Commercial",
     index: "02",
-    count: "7Arts · Timeless · Broadcast",
+    count: "TDB Play · 7Arts · Timeless",
     hint: "Professional work",
     jobs: [
+      {
+        org: "TDB Play",
+        role: "Vision Mixer & Camera Operator",
+        years: "2026",
+        desc: "Brought on as freelance live broadcast crew alongside university colleagues for major gaming events: Vivacom Game-ON and Good Game Festival.",
+        items: [
+          { url: "https://www.youtube.com/watch?v=Epg8ynZ2TDc", thumb: "https://img.youtube.com/vi/Epg8ynZ2TDc/hqdefault.jpg", label: "Good Game Concert Live" },
+          { url: "https://www.goodgame.bg/", thumb: "/goodgame-director-vision-mixer.jpg", label: "Good Game Festival" },
+          { url: "https://www.youtube.com/watch?v=Epg8ynZ2TDc", thumb: "/goodgame-operating-ronin.jpg", label: "Live Camera (Ronin)" },
+          { url: "/companies/tdb-play", thumb: "/vivacom-game-on-group-picture.jpg", label: "Vivacom Game-ON Crew" },
+        ],
+      },
       {
         org: "7Arts / ArtPortal",
         role: "Editor & Camera Operator",
@@ -70,6 +82,7 @@ export const siteContent = {
     ],
     credits: [
       { org: "New Bulgarian University", role: "Cinema & Television - Directing & Editing", note: "fourth year" },
+      { org: "TDB Play", role: "Vision mixer & camera operator", note: "Vivacom Game-ON & Good Game Fest (contract)" },
       { org: "Timeless Production Group", role: "Post-production editor", note: "4 episodes delivered" },
       { org: "7Arts / ArtPortal", role: "Editor + camera operator", note: "daily culture coverage" },
       { org: "Sofia International Film Festival", role: "Photo & video coverage", note: "volunteer, 2 years" },

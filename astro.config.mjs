@@ -11,4 +11,9 @@ export default defineConfig({
   prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
   build: { inlineStylesheets: 'auto' },
   compressHTML: true,
+  redirects: {
+    '/projects/tdb-play': '/companies/tdb-play',
+    '/projects/good-game-festival': '/companies/tdb-play',
+    '/projects/vivacom-game-on': '/companies/tdb-play',
+  },
 });

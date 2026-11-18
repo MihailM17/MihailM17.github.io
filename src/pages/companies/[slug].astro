@@ -2,46 +2,22 @@
 import Layout from '../../layouts/Layout.astro';
 import SpliceStrip from '../../components/SpliceStrip.astro';
 import Lightbox from '../../components/Lightbox.astro';
+import { getCollection } from 'astro:content';
 
-export function getStaticPaths() {
-  const companyDetails = {
-    '7arts-artportal': {
-      slug: '7arts-artportal',
-      title: '7Arts',
-      role: 'Video Producer & Editor',
-      years: 'June 2025 – March 2026',
-      synopsis: `Independently managing the video pipeline, handling shooting, lighting, sound, and editing. I produced a high volume of trailers, social reels, and promos across their streaming platform, news division, and theatre productions.`,
-      description: `Although initially brought on as an editor, I operated as the company's sole video production specialist, managing the entire pipeline from set to final export. I independently handled all cinematography, lighting, and sound recording, followed by cutting and color grading in DaVinci Resolve. I delivered a high volume of content tailored to three distinct branches of the company.\n\n7Arts (Streaming Platform): Shot and edited promotional trailers for the platform itself, alongside dedicated trailers and social marketing reels for individual films and shows.\n\nArtPortal: Handled the end-to-end production of a massive catalog of short-form reels for the arts and news website, successfully translating written articles into engaging, fast-paced video content.\n\nArt Label Productions & The Big Praz Show: Filmed and crafted dynamic announcement videos for upcoming theatre productions and edited high-energy promotional advertisements for The Big Praz Show.`,
-      gallery: [
-        { src: '/reel-making-behind-the-scenes-1.jpg', caption: '7Arts - Reel BTS, ArtPortal', alt: 'Reel BTS - ArtPortal, 7Arts' },
-        { src: '/big_praz_reel-making-bts-2.jpg', caption: '7Arts - Big Praz, reel making BTS', alt: 'Big Praz - Reel BTS, 7Arts' },
-        { src: '/big_praz_reel-making-bts-3.jpg', caption: '7Arts - Big Praz, reel making BTS', alt: 'Big Praz - Reel BTS, 7Arts' }
-      ]
-    },
-    'timeless-production': {
-      slug: 'timeless-production',
-      title: 'Timeless Production Group Ltd',
-      role: 'Video Editing Intern & Production Intern',
-      years: 'July 2022 – Sep 2022 & Feb 2025 – Apr 2025',
-      synopsis: `Two internships - from Production Intern in 2022 to Video Editing Intern in 2025, cutting Deroni recipe videos and Уча, зная и играя.`,
-      description: `Video Editing Intern - February 2025 – April 2025\n\nReturning to the company for a second internship, I stepped directly into an active editing role. During this three-month period, I was trusted to cut commercial YouTube content for clients, specifically focusing on fast-paced, short-form recipe videos featuring Deroni products. Additionally, I took on broadcast responsibilities by editing several episodes of the children's educational television program Уча, зная и играя.\n\nProduction Intern - July 2022 – September 2022\n\nDuring my initial time with the company, I focused on absorbing as much as possible about how a professional production environment operates. I assisted the team with general, day-to-day tasks, doing the foundational, hands-on work required to keep a production moving while learning the industry ropes from the ground up.`,
-      gallery: [
-        { src: 'https://img.youtube.com/vi/vC3i48d0Mms/hqdefault.jpg', caption: 'Сапунените мехури - Episode still', alt: 'Episode 1' },
-        { src: 'https://img.youtube.com/vi/CE5H1h6dpFw/hqdefault.jpg', caption: 'Колелото - Episode still', alt: 'Episode 2' },
-        { src: 'https://img.youtube.com/vi/O9bSfzCGmyg/hqdefault.jpg', caption: 'Фотография - Episode still', alt: 'Episode 3' },
-        { src: 'https://img.youtube.com/vi/l9OJxQ7X9vY/hqdefault.jpg', caption: 'Механика - Episode still', alt: 'Episode 4' }
-      ]
-    }
-  };
-  
-  return Object.keys(companyDetails).map(slug => ({
-    params: { slug },
-    props: { detail: companyDetails[slug] }
+export async function getStaticPaths() {
+  const siteDocs = await getCollection('site');
+  const jobs = siteDocs[0]?.data?.commercial?.jobs || [];
+  return jobs.filter((j: any) => j.detail).map((j: any) => ({
+    params: { slug: j.detail.slug },
+    props: { detail: j.detail }
   }));
 }
 
 const { detail } = Astro.props;
 if (!detail) throw new Error('Company not found');
+
+const videoUrl = (detail as any).videoUrl as string | undefined;
+const videoId = videoUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
 ---
 
 <Layout title={`${detail.title} - Mihail Mihaylov`}>
@@ -60,6 +36,15 @@ if (!detail) throw new Error('Company not found');
         </h1>
         <p class="project-synopsis" data-reveal>{(detail as any).synopsis || detail.description.split('\n')[0]}</p>
       </div>
+
+      {videoUrl && (
+        <div class="project-cover-wrap container" data-reveal data-parallax="0.08">
+          <a href={videoUrl} target="_blank" rel="noopener noreferrer" class="project-cover" aria-label={`Watch ${(detail as any).videoLabel || 'video'} on YouTube`} data-cursor-hover data-cursor-label="PLAY ON YOUTUBE">
+            <img src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`} alt={`${detail.title} video cover`} loading="eager" decoding="async" onerror={`this.onerror=null;this.src='https://img.youtube.com/vi/${videoId}/hqdefault.jpg'`} />
+            <span class="play-badge"><i>▶</i> {(detail as any).videoLabel || 'Watch Video'}</span>
+          </a>
+        </div>
+      )}
     </section>
 
     <SpliceStrip />
@@ -72,28 +57,43 @@ if (!detail) throw new Error('Company not found');
             <li><b>Role</b> <span>{detail.role}</span></li>
             <li><b>Period</b> <span>{detail.years}</span></li>
             <li><b>Company</b> <span>{detail.title}</span></li>
+            {(detail as any).contract && <li><b>Contract</b> <span>{(detail as any).contract}</span></li>}
+            {(detail as any).events && <li><b>Events</b> <span>{(detail as any).events}</span></li>}
+            {(detail as any).gear && <li><b>Gear</b> <span>{(detail as any).gear}</span></li>}
           </ul>
+          {videoUrl && (
+            <a href={videoUrl} target="_blank" rel="noopener noreferrer" class="specs-cta" data-cursor-hover data-cursor-label="YOUTUBE">Watch Concert Live →</a>
+          )}
+          {(detail as any).websiteUrl && (
+            <><br /><a href={(detail as any).websiteUrl} target="_blank" rel="noopener noreferrer" class="specs-cta" data-cursor-hover data-cursor-label="WEBSITE">Good Game Festival →</a></>
+          )}
         </aside>
 
         <article class="story" data-parallax="0.12">
           <span class="eyebrow">About</span>
           {detail.description.split('\n').map((para) => para.trim()).filter(Boolean).map((para, idx) => {
+            const isH3 = para.startsWith('### ');
             const isInternshipHeading = /^(Video Editing Intern|Production Intern)\s-/.test(para);
             const isBranchHeading = /^(7Arts \(Streaming Platform\)|ArtPortal:|Art Label Productions)/.test(para);
+            const formatInline = (text: string) => text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
             let content;
-            if (isInternshipHeading) {
+            if (isH3) {
+              const headingText = para.replace(/^###\s+/, '');
+              content = <h3 data-reveal class="internship-heading">{headingText}</h3>;
+            } else if (isInternshipHeading) {
               content = <p data-reveal class="internship-heading"><b>{para}</b></p>;
             } else if (isBranchHeading) {
               const colonIdx = para.indexOf(':');
               if (colonIdx !== -1) {
                 const head = para.slice(0, colonIdx + 1);
                 const rest = para.slice(colonIdx + 1);
-                content = <p data-reveal><b class="branch-head">{head}</b>{rest}</p>;
+                content = <p data-reveal><b class="branch-head">{head}</b><span set:html={formatInline(rest)} /></p>;
               } else {
-                content = <p data-reveal>{para}</p>;
+                content = <p data-reveal set:html={formatInline(para)} />;
               }
             } else {
-              content = <p data-reveal>{para}</p>;
+              content = <p data-reveal set:html={formatInline(para)} />;
             }
             const showDivider = detail.slug === 'timeless-production' && idx === 1;
             return (
@@ -158,6 +158,22 @@ if (!detail) throw new Error('Company not found');
   .project-hero h1 .line{ display:block; overflow:clip; }
   .project-synopsis{ max-width: 58ch; font-size: clamp(1.05rem, 2vw, 1.25rem); font-style: italic; color: var(--ecru); border-left: 2px solid var(--oxblood); padding-left: 1rem; }
 
+  .project-cover-wrap{ margin-top: var(--sp-4); }
+  .project-cover{
+    position: relative; display: block; aspect-ratio: 16/8.5; overflow: hidden;
+    border: 1px solid rgba(239,230,216,.14); background: var(--ink-2);
+    clip-path: polygon(0 0,100% 0,100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%);
+  }
+  .project-cover img{ width:100%; height:100%; object-fit:cover; transition: transform .7s cubic-bezier(.16,1,.3,1), filter .4s; filter: saturate(.95) contrast(1.04); }
+  .project-cover:hover img{ transform: scale(1.03); filter: saturate(1); }
+  .play-badge{
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    font-family: var(--font-mono); font-size: .78rem; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ecru); background: rgba(28,22,20,.82); border: 1px solid var(--brass);
+    padding: .65rem 1rem; backdrop-filter: blur(6px); display:flex; gap:.5rem; align-items:center;
+  }
+  .play-badge i{ color: var(--brass); font-style: normal; }
+
   .specs-grid{ display:grid; grid-template-columns: 300px 1fr; gap: var(--sp-5); align-items:start; }
   @media (max-width:480px){ .specs-grid{ grid-template-columns:1fr; gap:1.5rem; } }
   .specs-aside{
@@ -170,9 +186,12 @@ if (!detail) throw new Error('Company not found');
   .specs-aside ul{ margin-top: .9rem; display:grid; gap: .65rem; }
   .specs-aside li{ display:flex; justify-content:space-between; gap:1rem; font-family: var(--font-mono); font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ash); border-bottom: 1px solid rgba(239,230,216,.08); padding-bottom: .5rem; }
   .specs-aside li b{ color: var(--ecru); }
+  .specs-cta{ display:inline-block; margin-top: 1rem; font-family: var(--font-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--brass); border-bottom: 1px solid var(--oxblood); padding-bottom: 2px; }
+  .specs-cta:hover{ color: var(--ecru); border-color: var(--brass); }
 
   .story{ display:grid; gap: 1.1rem; }
   .story p{ color: var(--ecru); max-width: 58ch; line-height: 1.7; }
+  .story strong{ color: var(--ecru); font-weight: 700; }
   .internship-heading{
     font-family: var(--font-mono); font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--brass); font-weight: 700; line-height: 1.4;
@@ -180,6 +199,9 @@ if (!detail) throw new Error('Company not found');
     border-bottom: 1px solid rgba(212,162,76,0.18);
   }
   .internship-heading:first-of-type{ margin-top: 0.2rem; }
+  h3.internship-heading{
+    font-size: 0.86rem; margin-top: 1.8rem; margin-bottom: 0.2rem;
+  }
   .branch-head{
     font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.04em;
     color: var(--brass); font-weight: 700;
@@ -206,4 +228,3 @@ if (!detail) throw new Error('Company not found');
   .gallery-card:hover img{ transform: scale(1.04); }
   .gallery-card figcaption{ margin-top: .5rem; font-family: var(--font-mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ash); }
 </style>
-

@@ -21,21 +21,14 @@ const films = [...projects].sort((a, b) => {
 
 const mainLinks = siteContent?.nav || [];
 
-// Companies for hamburger menu - defined inline since detail isn't in content schema
-const companies = [
-  {
-    slug: '7arts-artportal',
-    org: '7Arts',
-    role: 'Video Producer & Editor',
-    years: 'June 2025 – March 2026',
-  },
-  {
-    slug: 'timeless-production',
-    org: 'Timeless Production Group Ltd',
-    role: 'Video Editing Intern & Production Intern',
-    years: 'July 2022 – Sep 2022 & Feb 2025 – Apr 2025',
-  }
-];
+// Companies for hamburger menu - derived from site commercial.jobs
+const jobs = (siteContent as any)?.commercial?.jobs || [];
+const companies = jobs.map((j: any) => ({
+  slug: j.detail?.slug || (j.org.includes('7Arts') ? '7arts-artportal' : j.org.includes('Timeless') ? 'timeless-production' : 'tdb-play'),
+  org: j.org,
+  role: j.role,
+  years: j.years,
+}));
 ---
 
 <button id="hamburger-btn" class="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="site-menu" data-cursor-hover data-cursor-label="MENU">

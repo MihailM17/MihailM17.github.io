@@ -31,9 +31,41 @@
   "commercial": {
     "kicker": "Commercial",
     "index": "02",
-    "count": "7Arts · Timeless · Broadcast",
+    "count": "TDB Play · 7Arts · Timeless",
     "hint": "Professional work",
     "jobs": [
+      {
+        "org": "TDB Play",
+        "role": "Vision Mixer & Camera Operator",
+        "years": "2026",
+        "desc": "Brought on as freelance live broadcast crew alongside university colleagues for major gaming events: Vivacom Game-ON and Good Game Festival.",
+        "items": [
+          { "url": "https://www.youtube.com/watch?v=Epg8ynZ2TDc", "thumb": "https://img.youtube.com/vi/Epg8ynZ2TDc/hqdefault.jpg", "label": "Good Game Concert Live" },
+          { "url": "https://www.goodgame.bg/", "thumb": "/goodgame-director-vision-mixer.jpg", "label": "Good Game Festival" },
+          { "url": "https://www.youtube.com/watch?v=Epg8ynZ2TDc", "thumb": "/goodgame-operating-ronin.jpg", "label": "Live Camera (Ronin)" },
+          { "url": "/companies/tdb-play", "thumb": "/vivacom-game-on-group-picture.jpg", "label": "Vivacom Game-ON Crew" }
+        ],
+        "detail": {
+          "slug": "tdb-play",
+          "title": "TDB Play",
+          "role": "Vision Mixer & Camera Operator",
+          "years": "2026",
+          "synopsis": "Freelance live broadcast crew for Vivacom Game-ON and Good Game Festival. Directing on ATEM switcher software, operating Lumix on a DJI Ronin, and navigating grueling 16-hour festival sprints with fellow NBU peers.",
+          "contract": "Freelance (Day-Rate Contract)",
+          "events": "Vivacom Game-ON & Good Game Festival",
+          "gear": "Lumix, DJI Ronin, ATEM Software Control",
+          "videoUrl": "https://www.youtube.com/watch?v=Epg8ynZ2TDc",
+          "videoLabel": "Videogame Music Concert Live Broadcast",
+          "websiteUrl": "https://www.goodgame.bg/",
+          "description": "I was brought on by esports and gaming agency **TDB Play** on a per-day freelance contract, working alongside several of my Cinema and Television colleagues from New Bulgarian University.\n\n### Vivacom Game-ON: Live Vision Mixer\n\nVivacom Game-ON was a packed, high-energy, one-day event where I served as the live vision mixer (режисьор на пулт). My responsibilities included managing multiple camera feeds, coordinating with commentators, and communicating simultaneously with camera operators and the director while switching between live feeds.\n\n### Good Game Festival: Camera Operator & Multi-Role Support\n\nGood Game Festival was a much larger production, spanning over a week. I worked four full days of the festival, primarily as a live camera operator, either operating a Lumix mirrorless camera mounted on a DJI Ronin gimbal stabilizer or capturing events from a tripod.\n\nMoving throughout the large venue, we covered stage performances, esports matches, and an incredible live concert featuring orchestral arrangements of iconic video game soundtracks. Whenever the live control desk needed additional support, I stepped back in on the switcher or helped wherever the production crew needed an extra pair of hands.\n\nThe biggest challenge was the sheer physical and mental endurance required, with 16-hour shifts running from 8:00 in the morning until midnight. Operating a heavy gimbal rig for hours while maintaining precise framing and staying attentive to live broadcast cues was demanding.\n\nWhat made the experience not just manageable, but genuinely memorable and enjoyable, was the team. The TDB Play crew was incredibly supportive, organised, and collaborative. Having my university colleagues working right alongside me also made those marathon shifts fly by.",
+          "gallery": [
+            { "src": "/goodgame-director-vision-mixer.jpg", "caption": "Live vision mixing at the ATEM switcher desk", "alt": "Mihail at the vision mixer control" },
+            { "src": "/goodgame-operating-ronin.jpg", "caption": "Operating Lumix camera on DJI Ronin stabilizer", "alt": "Operating Lumix on Ronin" },
+            { "src": "/vivacom-game-on-group-picture.jpg", "caption": "Vivacom Game-ON — Broadcast crew group photo", "alt": "Vivacom Game-ON crew group photo" },
+            { "src": "/goodgame-team-group-photo.jpg", "caption": "Good Game Festival — Broadcast crew & university colleagues", "alt": "Good Game Festival crew group photo" }
+          ]
+        }
+      },
       {
         "org": "7Arts",
         "role": "Video Producer & Editor",
@@ -87,6 +119,7 @@
     ],
     "credits": [
       { "org": "New Bulgarian University", "role": "Cinema & Television - Directing & Editing", "note": "fourth year" },
+      { "org": "TDB Play", "role": "Vision mixer & camera operator", "note": "Vivacom Game-ON & Good Game Fest (contract)" },
       { "org": "Timeless Production Group", "role": "Post-production editor", "note": "4 episodes delivered" },
       { "org": "7Arts / ArtPortal", "role": "Editor + camera operator", "note": "daily culture coverage" },
       { "org": "Sofia International Film Festival", "role": "Photo & video coverage", "note": "volunteer, 2 years" }
@@ -104,7 +137,8 @@
       { "src": "/the-silent-lifts-of-vitosha-closed_doors.jpg", "alt": "Closed doors - Silent Lifts, Vitosha", "caption": "Silent Lifts - Closed doors", "year": "2026" },
       { "src": "/me-and-cam-operator_on_semeistvo.jpg", "alt": "BTS shooting Семейство", "caption": "BTS shooting \"Семейство\"", "year": "2025" },
       { "src": "/lunen-blyasak_on_sunset.jpg", "alt": "Лунен блясък - On sunset", "caption": "Лунен блясък - On sunset", "year": "2026" },
-      { "src": "/studio-shot-lunen-blyasak.jpg", "alt": "Лунен блясък - Studio shot", "caption": "Лунен блясък - Studio shot", "year": "2026" }
+      { "src": "/studio-shot-lunen-blyasak.jpg", "alt": "Лунен блясък - Studio shot", "caption": "Лунен блясък - Studio shot", "year": "2026" },
+      { "src": "/goodgame-director-vision-mixer.jpg", "alt": "Mihail at ATEM switcher - Good Game Festival", "caption": "Good Game Festival - Vision mixer", "year": "2026" }
     ]
   },
   "craft": {
