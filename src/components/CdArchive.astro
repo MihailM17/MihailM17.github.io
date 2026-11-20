@@ -32,8 +32,14 @@ const FILM_ORDER = [
   'eastern-wind',
 ];
 
+// Safely sort any unlisted future project to the end instead of index -1
+const orderIndex = (slug: string) => {
+  const idx = FILM_ORDER.indexOf(slug);
+  return idx === -1 ? 999 : idx;
+};
+
 const films = [...allProjects].sort(
-  (a, b) => FILM_ORDER.indexOf(a.data.slug) - FILM_ORDER.indexOf(b.data.slug),
+  (a, b) => orderIndex(a.data.slug) - orderIndex(b.data.slug),
 );
 
 // Two accents only: films use brass, companies use oxblood.
@@ -44,9 +50,6 @@ const ACCENT = {
 
 // Hand-stacked micro offset, one per shelf position (in px).
 const MICRO = [-2, 2, -1, 3, -3, 1, -2, 2];
-
-const lastYear = (value: unknown) =>
-  (String(value ?? '').match(/\d{4}/g) || []).pop() || '';
 
 // YouTube serves hqdefault for every video, so it is a safe second attempt.
 const youTubeFallback = (src: unknown) =>
@@ -137,7 +140,7 @@ const rawDiscs = [...filmDiscs, ...timelessDiscs];
 const discs = rawDiscs.map((disc, i) => ({
   ...disc,
   catalog: `MM-${String(i + 1).padStart(2, '0')}`,
-  microX: MICRO[i] ?? 0,
+  microX: MICRO[i % MICRO.length] ?? 0,
 }));
 
 const total = String(discs.length).padStart(2, '0');
@@ -186,12 +189,14 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
                 data-index={i}
                 style={`--case-accent:${disc.accent};--micro-x:${disc.microX}px;`}
               >
+                {/* FIX: Only mark non-empty cavities as inert initially; slot 0 starts in bay */}
                 <button
                   type="button"
                   class="cd-cavity"
                   data-cavity={i}
-                  tabindex="-1"
-                  inert
+                  tabindex={i === 0 ? 0 : -1}
+                  inert={i !== 0 ? true : undefined}
+                  aria-hidden={i === 0 ? 'false' : 'true'}
                   aria-label={`Return ${disc.title} to the stack`}
                 >
                   <span class="cd-cavity-mark">
@@ -204,6 +209,9 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
                   type="button"
                   class="cd-spine"
                   data-spine={i}
+                  tabindex={i === 0 ? -1 : 0}
+                  inert={i === 0 ? true : undefined}
+                  aria-hidden={i === 0 ? 'true' : 'false'}
                   aria-label={`${disc.catalog}: ${disc.title}, ${disc.year}`}
                 >
                   <span class="cd-spine-shell">
@@ -328,8 +336,11 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 <style is:global>
   /* ==========================================================================
      ROOT / TOKENS
+     FIX: Define --cd-* tokens on BOTH .cd-archive AND .cd-flight-stage so the
+     3D actors appended to <body> inherit every color and easing curve properly!
      ========================================================================== */
-  .cd-archive {
+  .cd-archive,
+  .cd-flight-stage {
     --cd-deep: #120e0c;
     --cd-surface: #1e1815;
     --cd-paper: #241d19;
@@ -337,6 +348,9 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     --cd-line-soft: rgba(239, 230, 216, 0.07);
     --cd-ease: cubic-bezier(0.16, 1, 0.3, 1);
     --slot-h: 36px;
+  }
+
+  .cd-archive {
     position: relative;
     padding-block: var(--sp-5);
     border-top: 1px solid rgba(239, 230, 216, 0.08);
@@ -367,7 +381,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     pointer-events: none;
     opacity: 0;
     will-change: opacity;
-    transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 1.4s var(--cd-ease);
   }
   .cd-ambient-layer.is-active {
     opacity: 1;
@@ -793,7 +807,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     z-index: 0;
     overflow: visible;
   }
-  @media (max-width: 959px) {
+  /* FIX: Align mobile breakpoint consistently at 1023px across CSS & JS */
+  @media (max-width: 1023px) {
     .cd-aura-wrap {
       top: 110px;
       width: clamp(380px, 92vw, 560px);
@@ -808,12 +823,13 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     filter: blur(52px);
     opacity: 0;
     will-change: opacity;
-    transition: opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 1.4s var(--cd-ease);
     pointer-events: none;
   }
   .cd-aura.is-active {
     opacity: 1;
   }
+
   .cd-bay {
     position: relative;
     width: 296px;
@@ -822,7 +838,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     align-items: center;
     justify-content: center;
   }
-  @media (max-width: 959px) {
+  @media (max-width: 1023px) {
     .cd-bay {
       width: 220px;
       height: 220px;
@@ -1020,21 +1036,11 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     transform: translateY(12px);
     animation: cdEnter 0.48s var(--cd-ease) forwards;
   }
-  .cd-stagger > *:nth-child(1) {
-    animation-delay: 0.02s;
-  }
-  .cd-stagger > *:nth-child(2) {
-    animation-delay: 0.07s;
-  }
-  .cd-stagger > *:nth-child(3) {
-    animation-delay: 0.12s;
-  }
-  .cd-stagger > *:nth-child(4) {
-    animation-delay: 0.17s;
-  }
-  .cd-stagger > *:nth-child(5) {
-    animation-delay: 0.22s;
-  }
+  .cd-stagger > *:nth-child(1) { animation-delay: 0.02s; }
+  .cd-stagger > *:nth-child(2) { animation-delay: 0.07s; }
+  .cd-stagger > *:nth-child(3) { animation-delay: 0.12s; }
+  .cd-stagger > *:nth-child(4) { animation-delay: 0.17s; }
+  .cd-stagger > *:nth-child(5) { animation-delay: 0.22s; }
   @keyframes cdEnter {
     to {
       opacity: 1;
@@ -1244,12 +1250,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     background: linear-gradient(180deg, rgba(239, 230, 216, 0.24), rgba(239, 230, 216, 0.06));
     border: 1px solid rgba(239, 230, 216, 0.2);
   }
-  .jc-hinge::before {
-    top: 14px;
-  }
-  .jc-hinge::after {
-    bottom: 14px;
-  }
+  .jc-hinge::before { top: 14px; }
+  .jc-hinge::after { bottom: 14px; }
 
   .jc-window {
     position: relative;
@@ -1275,38 +1277,10 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     border: 1px solid rgba(239, 230, 216, 0.26);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
   }
-  .jc-tab.tl {
-    top: 0;
-    left: 20px;
-    width: 20px;
-    height: 6px;
-    border-radius: 0 0 3px 3px;
-    border-top: none;
-  }
-  .jc-tab.tr {
-    top: 0;
-    right: 24px;
-    width: 20px;
-    height: 6px;
-    border-radius: 0 0 3px 3px;
-    border-top: none;
-  }
-  .jc-tab.bl {
-    bottom: 0;
-    left: 20px;
-    width: 20px;
-    height: 6px;
-    border-radius: 3px 3px 0 0;
-    border-bottom: none;
-  }
-  .jc-tab.br {
-    bottom: 0;
-    right: 24px;
-    width: 20px;
-    height: 6px;
-    border-radius: 3px 3px 0 0;
-    border-bottom: none;
-  }
+  .jc-tab.tl { top: 0; left: 20px; width: 20px; height: 6px; border-radius: 0 0 3px 3px; border-top: none; }
+  .jc-tab.tr { top: 0; right: 24px; width: 20px; height: 6px; border-radius: 0 0 3px 3px; border-top: none; }
+  .jc-tab.bl { bottom: 0; left: 20px; width: 20px; height: 6px; border-radius: 3px 3px 0 0; border-bottom: none; }
+  .jc-tab.br { bottom: 0; right: 24px; width: 20px; height: 6px; border-radius: 3px 3px 0 0; border-bottom: none; }
 
   .jc-vignette {
     position: absolute;
@@ -1369,7 +1343,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       border-color 0.22s ease,
       color 0.22s ease;
   }
-  @media (max-width: 959px) {
+  @media (max-width: 1023px) {
     .jc-open {
       width: 54px;
       height: 54px;
@@ -1423,33 +1397,56 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     );
   }
 
-  /* Disc nestled inside the case */
+  /* FIX: Make the right opening rim translucent polystyrene so the disc glides cleanly past it */
+  .jc-right {
+    background: linear-gradient(
+      90deg,
+      rgba(239, 230, 216, 0.24) 0%,
+      rgba(239, 230, 216, 0.05) 35%,
+      rgba(18, 14, 12, 0.22) 50%,
+      rgba(239, 230, 216, 0.05) 65%,
+      rgba(239, 230, 216, 0.2) 100%
+    );
+    border: 1px solid rgba(239, 230, 216, 0.2);
+    transition: opacity 0.35s ease;
+  }
+  .cd-actor.disc-peeking .jc-right {
+    opacity: 0.28;
+  }
+
+  /* ==========================================================================
+     DISC NESTLED INSIDE THE CASE
+     FIX: Keep transform-only on the 3D plane (no opacity flattening conflict)
+     and restore realistic silver-iridescent optical CD surface!
+     ========================================================================== */
   .jc-disc-slot {
     position: absolute;
     top: 50%;
     left: 50%;
     pointer-events: none;
-    transform-style: preserve-3d;
     transform: translate3d(-50%, -50%, 0px);
-    opacity: 0;
-    transition: transform 0.58s var(--cd-ease), opacity 0.24s ease;
+    visibility: hidden;
+    transition:
+      transform 0.62s var(--cd-ease),
+      visibility 0s linear 0.62s;
   }
   .cd-actor.disc-peeking .jc-disc-slot {
+    visibility: visible;
     transform: translate3d(-8%, -50%, 0px);
-    opacity: 1;
+    transition:
+      transform 0.62s var(--cd-ease),
+      visibility 0s linear 0s;
   }
   .cd-actor.disc-peeking:hover .jc-disc-slot {
     transform: translate3d(-2%, -50%, 0px);
   }
 
   @keyframes cdSpin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
+
+  /* Authentic metallic silver polycarbonate CD with subtle rainbow prism sheen */
   .jc-disc {
     position: relative;
     width: 100%;
@@ -1457,27 +1454,28 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     border-radius: 50%;
     background: conic-gradient(
       from 20deg,
-      #b9b0a4 0deg,
-      #efe6d8 24deg,
-      #d9c9a4 50deg,
-      #c9b98e 74deg,
-      #e8d9b4 96deg,
-      #c2a878 122deg,
-      #a99c8f 152deg,
-      #ded3c2 184deg,
-      #bfae8c 212deg,
-      #d8c9a8 240deg,
-      #f0e4c8 268deg,
-      #cbbb95 294deg,
-      #c9c0b2 328deg,
-      #b9b0a4 360deg
+      #c6cbd4 0deg,
+      #edf1f8 24deg,
+      #96c4f8 50deg,
+      #b7f2d3 74deg,
+      #f8ea9e 98deg,
+      #f4accf 124deg,
+      #989fa9 154deg,
+      #e4e8ef 184deg,
+      #84d2f6 212deg,
+      #d6b8fa 240deg,
+      #fae494 268deg,
+      #a8f0ce 294deg,
+      #cbd1db 328deg,
+      #c6cbd4 360deg
     );
     box-shadow:
-      inset 0 0 0 2px rgba(239, 230, 216, 0.55),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.6),
       inset 0 0 0 5px rgba(18, 14, 12, 0.34),
       inset 0 0 22px rgba(0, 0, 0, 0.24),
       0 14px 28px rgba(0, 0, 0, 0.6);
     animation: cdSpin 13s linear infinite;
+    will-change: transform;
   }
   .jc-disc::before {
     content: '';
@@ -1486,8 +1484,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     border-radius: 50%;
     background: repeating-radial-gradient(
       circle at center,
-      rgba(239, 230, 216, 0.07) 0px,
-      rgba(239, 230, 216, 0.07) 1px,
+      rgba(255, 255, 255, 0.08) 0px,
+      rgba(255, 255, 255, 0.08) 1px,
       transparent 1px,
       transparent 3px
     );
@@ -1504,13 +1502,13 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       circle,
       var(--cd-deep) 0%,
       var(--cd-deep) 38%,
-      rgba(239, 230, 216, 0.42) 40%,
-      rgba(210, 198, 176, 0.2) 62%,
-      rgba(239, 230, 216, 0.44) 66%,
+      rgba(255, 255, 255, 0.46) 40%,
+      rgba(210, 214, 224, 0.22) 62%,
+      rgba(255, 255, 255, 0.48) 66%,
       rgba(18, 14, 12, 0.36) 70%,
-      rgba(239, 230, 216, 0.16) 100%
+      rgba(255, 255, 255, 0.18) 100%
     );
-    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.45);
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.48);
   }
 
   /* Printed marks over the cover artwork */
@@ -1670,17 +1668,20 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     const bayEl = root.querySelector('[data-cd-bay]') as HTMLElement;
     const panelEl = root.querySelector('[data-cd-panel]') as HTMLElement;
     const liveEl = root.querySelector('[data-cd-live]') as HTMLElement;
-    const ambientEl = root.querySelector('[data-cd-ambient]') as HTMLElement;
     const auraA = root.querySelector('[data-aura-a]') as HTMLElement | null;
     const auraB = root.querySelector('[data-aura-b]') as HTMLElement | null;
     const ambientA = root.querySelector('[data-ambient-a]') as HTMLElement | null;
     const ambientB = root.querySelector('[data-ambient-b]') as HTMLElement | null;
-    let activeAuraLayer: 'a' | 'b' = 'a';
     const btnPrev = root.querySelector('[data-cd-prev]') as HTMLButtonElement;
     const btnReturn = root.querySelector('[data-cd-return]') as HTMLButtonElement;
     const btnNext = root.querySelector('[data-cd-next]') as HTMLButtonElement;
 
     if (!towerEl || !bayEl || !panelEl) return;
+
+    // Track active aura layer & last color key so duplicate calls never re-trigger a flash
+    let activeAuraLayer: 'a' | 'b' = 'a';
+    const initAvg = DISCS[0]?.avg;
+    let lastAuraKey: string | null = initAvg ? `${initAvg.r},${initAvg.g},${initAvg.b}` : null;
 
     // ---------------------------------------------------------------- utils
     const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -1714,9 +1715,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     let activeIndex = -1;
     let pendingLaunch: ReturnType<typeof setTimeout> | null = null;
     let panelSwap: ReturnType<typeof setTimeout> | null = null;
-    let userInteracted = false;
+    let syncRafId: number | null = null;
 
-    const byId = (catalog: string) => DISCS.find((d) => d.catalog === catalog);
     const slotEl = (catalog: string) =>
       towerEl.querySelector(`.cd-slot[data-id="${catalog}"]`) as HTMLElement | null;
 
@@ -1745,7 +1745,9 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
       slot.classList.toggle('is-empty', isEmpty);
 
+      // FIX: Properly toggle `inert` so empty slots are actually clickable!
       if (spine) {
+        spine.inert = isEmpty;
         spine.tabIndex = isEmpty ? -1 : 0;
         spine.setAttribute('aria-hidden', isEmpty ? 'true' : 'false');
         if (next === 'docked' || next === 'entering') {
@@ -1755,6 +1757,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         }
       }
       if (cavity) {
+        cavity.inert = !isEmpty;
         cavity.tabIndex = isEmpty ? 0 : -1;
         cavity.setAttribute('aria-hidden', isEmpty ? 'false' : 'true');
       }
@@ -1772,12 +1775,10 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       spine?.addEventListener('blur', clearParting);
 
       spine?.addEventListener('click', () => {
-        markInteraction();
         selectProject(idx);
       });
 
       cavity?.addEventListener('click', () => {
-        markInteraction();
         const disc = DISCS[idx];
         const state = states.get(disc.catalog);
         if (state === 'docked' || state === 'entering') returnToStack(disc.catalog, true);
@@ -1789,7 +1790,6 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     towerEl.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
       e.preventDefault();
-      markInteraction();
       const forward = e.key === 'ArrowDown';
       const next = forward
         ? activeIndex >= DISCS.length - 1 || activeIndex === -1
@@ -1866,6 +1866,12 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
     function setAuraColor(avg: { r: number; g: number; b: number } | null) {
       if (!auraA || !auraB) return;
+
+      const key = avg ? `${avg.r},${avg.g},${avg.b}` : null;
+      // FIX: Skip redundant crossfade when the exact same color is already active
+      if (key === lastAuraKey) return;
+      lastAuraKey = key;
+
       const nextLayer = activeAuraLayer === 'a' ? 'b' : 'a';
       const curAura = activeAuraLayer === 'a' ? auraA : auraB;
       const nextAura = activeAuraLayer === 'a' ? auraB : auraA;
@@ -1890,7 +1896,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       }
     }
 
-    function updateChrome(disc: Disc | null, idx: number) {
+    function updateChrome(disc: Disc | null) {
       if (disc) {
         setAuraColor(disc.avg || null);
         bayEl.classList.add('has-disc');
@@ -1962,7 +1968,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         el.style.marginTop = `${-halfW}px`;
         el.style.setProperty('--case-accent', disc.accent);
 
-        // 1. Disc nestled inside
+        // 1. Disc nestled inside (at Z = 0, safely between front +halfD and back -halfD)
         const discSlot = document.createElement('div');
         discSlot.className = 'jc-disc-slot';
         discSlot.style.width = `${discSize}px`;
@@ -2046,12 +2052,12 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         left.style.transform = `rotateY(-90deg) translateZ(${halfW}px)`;
         el.appendChild(left);
 
+        // Translucent clear-plastic right edge
         const right = document.createElement('div');
-        right.className = 'jc-face jc-edge';
+        right.className = 'jc-face jc-right';
         right.style.width = `${D}px`;
         right.style.height = `${W}px`;
         right.style.left = `${(W - D) / 2}px`;
-        right.style.opacity = '0.68';
         right.style.transform = `rotateY(90deg) translateZ(${halfW}px)`;
         el.appendChild(right);
 
@@ -2213,7 +2219,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         this.mode = 'docked';
         this.el.classList.add('is-docked', 'disc-peeking', 'show-open');
         this.el.style.zIndex = '45';
-        const isOffscreen = bay.y < -this.W * 1.5 || bay.y > window.innerHeight + this.W * 1.5;
+        const isOffscreen =
+          bay.y + this.W * 0.75 < 0 || bay.y - this.W * 0.75 > window.innerHeight;
         this.el.style.visibility = isOffscreen ? 'hidden' : 'visible';
         setState(this.disc.catalog, 'docked');
       }
@@ -2227,13 +2234,15 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         this.stop();
         this.mode = 'entering';
         this.tiltX = this.tiltY = this.targetTiltX = this.targetTiltY = 0;
+        this.el.style.visibility = 'visible';
         this.el.classList.remove('is-docked', 'disc-peeking', 'show-open');
         this.el.style.zIndex = '50';
 
         const start = { ...this.pose };
         const duration = 840;
         const t0 = performance.now();
-        const desktop = window.innerWidth >= 960;
+        // FIX: Match CSS @media (min-width: 1024px) breakpoint
+        const desktop = window.innerWidth >= 1024;
         const idx = DISCS.indexOf(this.disc);
 
         applyParting(idx);
@@ -2295,6 +2304,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         this.mode = 'returning';
         setState(this.disc.catalog, 'returning');
 
+        this.el.style.visibility = 'visible';
         this.el.classList.remove('is-docked', 'show-open', 'disc-peeking');
         this.el.style.zIndex = '42';
 
@@ -2310,7 +2320,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
           }
           const duration = 680;
           const t0 = performance.now();
-          const desktop = window.innerWidth >= 960;
+          // FIX: Match CSS @media (min-width: 1024px) breakpoint
+          const desktop = window.innerWidth >= 1024;
 
           const tick = (now: number) => {
             if (this.mode !== 'returning') return;
@@ -2350,7 +2361,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
           this.rafId = requestAnimationFrame(tick);
         };
 
-        if (wasDocked && !reduced) this.timers.push(setTimeout(seat, 110));
+        if (wasDocked && !reduced) this.timers.push(setTimeout(seat, 160));
         else seat();
       }
 
@@ -2386,7 +2397,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         this.pose.y = bay.y;
         this.pose.scale = bay.scale;
         this.applyPose(this.pose);
-        const isOffscreen = bay.y < -this.W * 1.5 || bay.y > window.innerHeight + this.W * 1.5;
+        const isOffscreen =
+          bay.y + this.W * 0.75 < 0 || bay.y - this.W * 0.75 > window.innerHeight;
         this.el.style.visibility = isOffscreen ? 'hidden' : 'visible';
       }
 
@@ -2410,7 +2422,6 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         actors.set(disc.catalog, actor);
       }
       setState(disc.catalog, 'entering');
-      updateChrome(disc, idx);
       actor.flyToBay();
     }
 
@@ -2441,6 +2452,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
       activeIndex = idx;
       announce(disc);
+      // FIX: Update chrome/aura ONCE here (not a second time inside launch())
+      updateChrome(disc);
 
       if (occupied) {
         swapPanel(disc, 340);
@@ -2449,7 +2462,6 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         swapPanel(disc, 210);
         launch(idx);
       }
-      updateChrome(disc, idx);
     }
 
     function returnToStack(catalog: string | null = null, reset = true) {
@@ -2466,41 +2478,40 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
       if (reset && activeIndex !== -1 && DISCS[activeIndex]?.catalog === target) {
         activeIndex = -1;
-        updateChrome(null, -1);
+        updateChrome(null);
         swapPanel(null, 220);
         announce(null);
       }
     }
 
-    function markInteraction() {
-      userInteracted = true;
-    }
-
     // ---------------------------------------------------------------- chrome
     btnPrev?.addEventListener('click', () => {
-      markInteraction();
       const idx = activeIndex <= 0 ? DISCS.length - 1 : activeIndex - 1;
       selectProject(idx);
     });
     btnNext?.addEventListener('click', () => {
-      markInteraction();
       const idx = activeIndex >= DISCS.length - 1 || activeIndex === -1 ? 0 : activeIndex + 1;
       selectProject(idx);
     });
     btnReturn?.addEventListener('click', () => {
-      markInteraction();
       returnToStack(null, true);
     });
 
-    const onScroll = () => actors.forEach((a) => a.syncToBay());
-    const onResize = () => actors.forEach((a) => a.syncToBay());
+    // Sync via rAF on scroll/resize for silky-smooth tracking with LenisSmoothScroll
+    const scheduleSync = () => {
+      if (syncRafId !== null) return;
+      syncRafId = requestAnimationFrame(() => {
+        syncRafId = null;
+        actors.forEach((a) => a.syncToBay());
+      });
+    };
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize);
+    window.addEventListener('scroll', scheduleSync, { passive: true });
+    window.addEventListener('resize', scheduleSync);
 
     let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(() => actors.forEach((a) => a.syncToBay()));
+      ro = new ResizeObserver(scheduleSync);
       ro.observe(bayEl);
     }
 
@@ -2517,7 +2528,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         actors.set(DISCS[0].catalog, actor);
         actor.dockInstantly();
       }
-      updateChrome(DISCS[0], 0);
+      updateChrome(DISCS[0]);
       requestAnimationFrame(() => actors.forEach((a) => a.syncToBay()));
     }
 
@@ -2525,9 +2536,10 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     teardown = () => {
       if (pendingLaunch) clearTimeout(pendingLaunch);
       if (panelSwap) clearTimeout(panelSwap);
+      if (syncRafId !== null) cancelAnimationFrame(syncRafId);
       ro?.disconnect();
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
+      window.removeEventListener('scroll', scheduleSync);
+      window.removeEventListener('resize', scheduleSync);
       actors.forEach((a) => a.stop());
       actors.clear();
       stage.remove();
