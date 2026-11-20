@@ -54,10 +54,22 @@ const youTubeFallback = (src: unknown) =>
     ? src.replace('maxresdefault', 'hqdefault')
     : null;
 
+// Dominant / average cover artwork colors for atmospheric ambient illumination
+const DISC_COLORS: Record<string, { r: number; g: number; b: number; hex: string }> = {
+  'silent-lifts-vitosha': { r: 68, g: 122, b: 100, hex: '#447a64' }, // Mountain forest pine green
+  'lunen-blyasak':        { r: 38, g: 78,  b: 132, hex: '#264e84' }, // Moonlit sapphire blue
+  'zasnet':               { r: 88, g: 124, b: 138, hex: '#587c8a' }, // Cool misty winter lake teal
+  'remake-season-2':      { r: 74, g: 88,  b: 162, hex: '#4a58a2' }, // Studio royal cobalt
+  'eastern-wind':         { r: 168, g: 116, b: 68, hex: '#a87444' }, // Villa roasted cedar amber
+  'timeless-ep1':         { r: 56, g: 136, b: 156, hex: '#38889c' }, // Soap bubbles iridescent cyan
+  'timeless-ep2':         { r: 158, g: 114, b: 52, hex: '#9e7234' }, // Wheels golden kinetic ochre
+};
+
 const filmDiscs = films.map((entry) => {
   const d = entry.data;
   const displayTitle =
     d.slug === 'silent-lifts-vitosha' && d.titleEn ? d.titleEn : d.title;
+  const color = DISC_COLORS[d.slug] || { r: 212, g: 162, b: 76, hex: '#D4A24C' };
   return {
     kind: 'film',
     title: displayTitle,
@@ -70,7 +82,8 @@ const filmDiscs = films.map((entry) => {
     href: `/projects/${d.slug}`,
     watchUrl: d.youtubeUrl,
     accent: ACCENT.film.hex,
-    glow: ACCENT.film.glow,
+    glow: `rgba(${color.r}, ${color.g}, ${color.b}, 0.42)`,
+    avg: color,
   };
 });
 
@@ -80,6 +93,9 @@ const timelessJob = site?.commercial?.jobs?.find((job: any) =>
 );
 const ep1Item = timelessJob?.items?.[0];
 const ep2Item = timelessJob?.items?.[1];
+
+const ep1Color = DISC_COLORS['timeless-ep1'];
+const ep2Color = DISC_COLORS['timeless-ep2'];
 
 const timelessDiscs = [
   {
@@ -95,7 +111,8 @@ const timelessDiscs = [
     href: '/companies/timeless-production',
     watchUrl: ep1Item?.url || 'https://youtu.be/vC3i48d0Mms',
     accent: ACCENT.company.hex,
-    glow: ACCENT.company.glow,
+    glow: `rgba(${ep1Color.r}, ${ep1Color.g}, ${ep1Color.b}, 0.42)`,
+    avg: ep1Color,
   },
   {
     kind: 'episode',
@@ -110,7 +127,8 @@ const timelessDiscs = [
     href: '/companies/timeless-production',
     watchUrl: ep2Item?.url || 'https://youtu.be/CE5H1h6dpFw',
     accent: ACCENT.company.hex,
-    glow: ACCENT.company.glow,
+    glow: `rgba(${ep2Color.r}, ${ep2Color.g}, ${ep2Color.b}, 0.42)`,
+    avg: ep2Color,
   },
 ];
 
@@ -123,10 +141,19 @@ const discs = rawDiscs.map((disc, i) => ({
 }));
 
 const total = String(discs.length).padStart(2, '0');
+const initialDisc = discs[0];
+const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 ---
 
 <section id={id} class="cd-archive" data-cd-archive>
-  <div class="cd-ambient" data-cd-ambient aria-hidden="true"></div>
+  <div class="cd-ambient" data-cd-ambient aria-hidden="true">
+    <div
+      class="cd-ambient-layer cd-ambient-a is-active"
+      data-ambient-a
+      style={`background: radial-gradient(ellipse 65% 55% at 58% 46%, rgba(${initialAvg.r}, ${initialAvg.g}, ${initialAvg.b}, 0.18) 0%, rgba(${initialAvg.r}, ${initialAvg.g}, ${initialAvg.b}, 0.05) 52%, transparent 76%);`}
+    ></div>
+    <div class="cd-ambient-layer cd-ambient-b" data-ambient-b></div>
+  </div>
 
   <div class="container cd-inner">
     <div class="cd-head" data-reveal>
@@ -154,7 +181,7 @@ const total = String(discs.length).padStart(2, '0');
           >
             {discs.map((disc, i) => (
               <div
-                class="cd-slot"
+                class={`cd-slot ${i === 0 ? 'is-empty' : ''}`}
                 data-id={disc.catalog}
                 data-index={i}
                 style={`--case-accent:${disc.accent};--micro-x:${disc.microX}px;`}
@@ -210,7 +237,16 @@ const total = String(discs.length).padStart(2, '0');
       <!-- ---------------------------------------------------------------- -->
       <div class="cd-bay-col">
         <div class="cd-bay-wrap">
-          <div class="cd-bay" data-cd-bay aria-label="Display bay">
+          <div class="cd-aura-wrap" aria-hidden="true">
+            <div
+              class="cd-aura cd-aura-a is-active"
+              data-aura-a
+              style={`background: radial-gradient(circle closest-side, rgba(${initialAvg.r}, ${initialAvg.g}, ${initialAvg.b}, 0.44) 0%, rgba(${initialAvg.r}, ${initialAvg.g}, ${initialAvg.b}, 0.22) 42%, rgba(${initialAvg.r}, ${initialAvg.g}, ${initialAvg.b}, 0.07) 72%, transparent 100%);`}
+            ></div>
+            <div class="cd-aura cd-aura-b" data-aura-b></div>
+          </div>
+
+          <div class="cd-bay has-disc" data-cd-bay aria-label="Display bay">
             <div class="cd-bay-spot" aria-hidden="true"></div>
             <span class="cd-bay-corner tl" aria-hidden="true"></span>
             <span class="cd-bay-corner tr" aria-hidden="true"></span>
@@ -239,7 +275,6 @@ const total = String(discs.length).padStart(2, '0');
               class="cd-tbtn"
               data-cd-return
               aria-label="Return current disc to the tower"
-              disabled
             >
               Return to Stack
             </button>
@@ -324,10 +359,17 @@ const total = String(discs.length).padStart(2, '0');
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.7s var(--cd-ease), background 0.7s var(--cd-ease);
+    overflow: hidden;
   }
-  .cd-ambient.is-active {
+  .cd-ambient-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    will-change: opacity;
+    transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .cd-ambient-layer.is-active {
     opacity: 1;
   }
 
@@ -737,6 +779,40 @@ const total = String(discs.length).padStart(2, '0');
     flex-direction: column;
     align-items: center;
     justify-content: center;
+  }
+
+  /* Wide atmospheric background aura directly behind the CD in the bay */
+  .cd-aura-wrap {
+    position: absolute;
+    top: 148px;
+    left: 50%;
+    width: clamp(520px, 75vw, 780px);
+    height: clamp(520px, 75vw, 780px);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+    overflow: visible;
+  }
+  @media (max-width: 959px) {
+    .cd-aura-wrap {
+      top: 110px;
+      width: clamp(380px, 92vw, 560px);
+      height: clamp(380px, 92vw, 560px);
+    }
+  }
+
+  .cd-aura {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    filter: blur(52px);
+    opacity: 0;
+    will-change: opacity;
+    transition: opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  .cd-aura.is-active {
+    opacity: 1;
   }
   .cd-bay {
     position: relative;
@@ -1552,7 +1628,7 @@ const total = String(discs.length).padStart(2, '0');
 <script>
   // @ts-nocheck
   type Disc = {
-    kind: 'film' | 'company';
+    kind: string;
     catalog: string;
     title: string;
     year: string;
@@ -1566,6 +1642,7 @@ const total = String(discs.length).padStart(2, '0');
     microX: number;
     accent: string;
     glow: string;
+    avg: { r: number; g: number; b: number; hex: string };
   };
 
   const ROOT = '[data-cd-archive]';
@@ -1594,6 +1671,11 @@ const total = String(discs.length).padStart(2, '0');
     const panelEl = root.querySelector('[data-cd-panel]') as HTMLElement;
     const liveEl = root.querySelector('[data-cd-live]') as HTMLElement;
     const ambientEl = root.querySelector('[data-cd-ambient]') as HTMLElement;
+    const auraA = root.querySelector('[data-aura-a]') as HTMLElement | null;
+    const auraB = root.querySelector('[data-aura-b]') as HTMLElement | null;
+    const ambientA = root.querySelector('[data-ambient-a]') as HTMLElement | null;
+    const ambientB = root.querySelector('[data-ambient-b]') as HTMLElement | null;
+    let activeAuraLayer: 'a' | 'b' = 'a';
     const btnPrev = root.querySelector('[data-cd-prev]') as HTMLButtonElement;
     const btnReturn = root.querySelector('[data-cd-return]') as HTMLButtonElement;
     const btnNext = root.querySelector('[data-cd-next]') as HTMLButtonElement;
@@ -1782,14 +1864,39 @@ const total = String(discs.length).padStart(2, '0');
         : 'Display bay empty';
     }
 
+    function setAuraColor(avg: { r: number; g: number; b: number } | null) {
+      if (!auraA || !auraB) return;
+      const nextLayer = activeAuraLayer === 'a' ? 'b' : 'a';
+      const curAura = activeAuraLayer === 'a' ? auraA : auraB;
+      const nextAura = activeAuraLayer === 'a' ? auraB : auraA;
+      const curAmb = activeAuraLayer === 'a' ? ambientA : ambientB;
+      const nextAmb = activeAuraLayer === 'a' ? ambientB : ambientA;
+
+      if (avg) {
+        const { r, g, b } = avg;
+        nextAura.style.background = `radial-gradient(circle closest-side, rgba(${r}, ${g}, ${b}, 0.44) 0%, rgba(${r}, ${g}, ${b}, 0.22) 42%, rgba(${r}, ${g}, ${b}, 0.07) 72%, transparent 100%)`;
+        if (nextAmb) {
+          nextAmb.style.background = `radial-gradient(ellipse 65% 55% at 58% 46%, rgba(${r}, ${g}, ${b}, 0.18) 0%, rgba(${r}, ${g}, ${b}, 0.05) 52%, transparent 76%)`;
+          nextAmb.classList.add('is-active');
+        }
+        nextAura.classList.add('is-active');
+
+        curAura.classList.remove('is-active');
+        curAmb?.classList.remove('is-active');
+        activeAuraLayer = nextLayer;
+      } else {
+        curAura.classList.remove('is-active');
+        curAmb?.classList.remove('is-active');
+      }
+    }
+
     function updateChrome(disc: Disc | null, idx: number) {
       if (disc) {
-        ambientEl.style.background = `radial-gradient(ellipse 52% 48% at 66% 42%, ${disc.glow} 0%, transparent 62%)`;
-        ambientEl.classList.add('is-active');
+        setAuraColor(disc.avg || null);
         bayEl.classList.add('has-disc');
         btnReturn.disabled = false;
       } else {
-        ambientEl.classList.remove('is-active');
+        setAuraColor(null);
         bayEl.classList.remove('has-disc');
         btnReturn.disabled = true;
       }
@@ -2105,6 +2212,9 @@ const total = String(discs.length).padStart(2, '0');
         this.applyPose(this.pose);
         this.mode = 'docked';
         this.el.classList.add('is-docked', 'disc-peeking', 'show-open');
+        this.el.style.zIndex = '45';
+        const isOffscreen = bay.y < -this.W * 1.5 || bay.y > window.innerHeight + this.W * 1.5;
+        this.el.style.visibility = isOffscreen ? 'hidden' : 'visible';
         setState(this.disc.catalog, 'docked');
       }
 
@@ -2276,6 +2386,8 @@ const total = String(discs.length).padStart(2, '0');
         this.pose.y = bay.y;
         this.pose.scale = bay.scale;
         this.applyPose(this.pose);
+        const isOffscreen = bay.y < -this.W * 1.5 || bay.y > window.innerHeight + this.W * 1.5;
+        this.el.style.visibility = isOffscreen ? 'hidden' : 'visible';
       }
 
       destroy() {
@@ -2362,10 +2474,6 @@ const total = String(discs.length).padStart(2, '0');
 
     function markInteraction() {
       userInteracted = true;
-      if (autoTimer) {
-        clearTimeout(autoTimer);
-        autoTimer = null;
-      }
     }
 
     // ---------------------------------------------------------------- chrome
@@ -2396,56 +2504,27 @@ const total = String(discs.length).padStart(2, '0');
       ro.observe(bayEl);
     }
 
-    // ---------------------------------------------------------------- intro
-    let autoTimer: ReturnType<typeof setTimeout> | null = null;
-    let io: IntersectionObserver | null = null;
-
+    // ---------------------------------------------------------------- initial state: open from the start
     if (!panelEl.firstElementChild && DISCS[0]) {
       panelEl.innerHTML = panelHTML(DISCS[0]);
     }
     activeIndex = 0;
-    if (DISCS[0]) announce(DISCS[0]);
-
-    if (reduced) {
-      if (DISCS[0]) {
-        const slot = slotEl(DISCS[0].catalog);
-        if (slot) {
-          const actor = new JewelCase(DISCS[0], slot);
-          actors.set(DISCS[0].catalog, actor);
-          actor.dockInstantly();
-          updateChrome(DISCS[0], 0);
-        }
+    if (DISCS[0]) {
+      announce(DISCS[0]);
+      const slot0 = slotEl(DISCS[0].catalog);
+      if (slot0) {
+        const actor = new JewelCase(DISCS[0], slot0);
+        actors.set(DISCS[0].catalog, actor);
+        actor.dockInstantly();
       }
-    } else if (typeof IntersectionObserver !== 'undefined') {
-      io = new IntersectionObserver(
-        (entries) => {
-          const visible = entries.some((e) => e.isIntersecting);
-          if (!visible) return;
-          io?.disconnect();
-          io = null;
-          if (userInteracted) return;
-          autoTimer = setTimeout(() => {
-            if (!userInteracted) {
-              const state = states.get(DISCS[0].catalog);
-              if (state !== 'docked' && state !== 'entering') {
-                launch(0);
-              }
-            }
-          }, 120);
-        },
-        { threshold: 0.12 },
-      );
-      io.observe(root);
-    } else if (DISCS[0]) {
-      launch(0);
+      updateChrome(DISCS[0], 0);
+      requestAnimationFrame(() => actors.forEach((a) => a.syncToBay()));
     }
 
     // ---------------------------------------------------------------- teardown
     teardown = () => {
       if (pendingLaunch) clearTimeout(pendingLaunch);
       if (panelSwap) clearTimeout(panelSwap);
-      if (autoTimer) clearTimeout(autoTimer);
-      io?.disconnect();
       ro?.disconnect();
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
