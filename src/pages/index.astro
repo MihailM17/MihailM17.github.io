@@ -13,6 +13,20 @@ import portraitImg from '../assets/portrait.jpg';
 const projects = await getCollection('projects');
 const siteContent = (await getCollection('site'))[0]?.data;
 
+// Custom order for narrative projects (same as hamburger menu)
+const narrativeOrder: Record<string, number> = {
+  'silent-lifts-vitosha': 1,
+  'lunen-blyasak': 2,
+  'zasnet': 3,
+  'remake-season-2': 4,
+  'eastern-wind': 5,
+};
+
+const narrative = projects
+  .filter((p) => ["silent-lifts-vitosha","lunen-blyasak","zasnet"].includes(p.data.slug))
+  .sort((a, b) => narrativeOrder[a.data.slug] - narrativeOrder[b.data.slug]);
+
+const broadcast = projects.find((p) => p.data.slug === "remake-season-2");
 const commercial = siteContent.commercial.jobs;
 const galleryItems = siteContent.gallery.items;
 const c = siteContent;
@@ -30,8 +44,12 @@ const c = siteContent;
         <p class="hero-sub" data-reveal>{c.hero.sub}</p>
         <p class="hero-meta" data-reveal>{c.hero.meta}</p>
       </div>
-      <a href="#about" class="scroll-cue" aria-label="Scroll to About" data-cursor-hover data-cursor-label="SCROLL"><span></span></a>
+      <a href="#selects" class="scroll-cue" aria-label="Scroll to Selects" data-cursor-hover data-cursor-label="SCROLL"><span></span></a>
     </section>
+
+    <SpliceStrip />
+
+    <CdArchive />
 
     <SpliceStrip />
 
@@ -63,7 +81,62 @@ const c = siteContent;
 
     <SpliceStrip />
 
-    <CdArchive id="selects" />
+    <section id="narrative" class="split-section">
+      <div class="container">
+        <div class="split-label" data-reveal>
+          <h2>{c.narrative.kicker} <em>{c.narrative.index}</em></h2>
+          <span class="split-count"><b>{c.narrative.count.split(' ')[0]}</b> {c.narrative.count.split(' ').slice(1).join(' ')}</span>
+        </div>
+        {c.narrative.hint && (
+          <p class="eyebrow" style="margin-top:-1.2rem; margin-bottom:var(--sp-3);" data-reveal>{c.narrative.hint}</p>
+        )}
+
+        <div class="narrative-list">
+          {narrative.length === 0 ? (
+            <div class="empty-state"><b>No narrative films published yet.</b> - Add projects to <code>src/content/projects/*.json</code> (needs <code>index, title, youtubeUrl, thumb</code>). The 28-day Vitosha sprint will appear here when published.</div>
+          ) : narrative.map((film) => {
+            const f = film.data;
+            return (
+              <article class="narrative-row" data-reveal data-slug={f.slug} data-youtube={f.youtubeUrl}>
+                <div class="narrative-index"><b>{f.index}</b> {f.year}</div>
+                <div class="narrative-main">
+                  <h3>
+                    <a href={`/projects/${f.slug}`} data-cursor-hover data-cursor-label="OPEN STORY">
+                      {f.slug === 'silent-lifts-vitosha' ? f.titleEn : f.title}, {f.year}
+                    </a>
+                  </h3>
+                  <div class="narrative-meta"><b>{f.kicker}</b> - {f.meta}</div>
+                  <p class="case-synopsis" style="margin-top:0.7rem; max-width:52ch;">{f.synopsis}</p>
+                  <a href={`/projects/${f.slug}`} class="narrative-cta" data-cursor-hover>Read story →</a>
+                </div>
+                <a href={f.youtubeUrl} target="_blank" rel="noopener noreferrer" class="narrative-thumb" aria-label={`Watch ${f.slug === 'silent-lifts-vitosha' ? f.titleEn : f.title} on YouTube`} data-cursor-hover data-cursor-label="PLAY">
+                  <img src={f.thumb} alt={`${f.slug === 'silent-lifts-vitosha' ? f.titleEn : f.title} thumbnail`} loading="lazy" decoding="async" onerror="this.style.opacity='0.3'" />
+                  <span class="play-overlay" aria-hidden="true">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="rgba(28,22,20,0.85)"/><path d="M18 16v16l14-8-14-8z" fill="var(--brass)"/></svg>
+                  </span>
+                </a>
+              </article>
+            );
+          })}
+        </div>
+
+        {broadcast && (
+          <div class="case-card" style="margin-top: var(--sp-4);" data-reveal>
+            <span class="case-kicker">{broadcast.data.kicker}</span>
+            <h3 class="case-title"><a href={`/projects/${broadcast.data.slug}`} data-cursor-hover data-cursor-label="OPEN STORY">{broadcast.data.title}, {broadcast.data.year}</a></h3>
+            <p class="case-title-bg">{broadcast.data.meta}</p>
+            <div class="case-grid">
+              <div class="reel-frame">
+                <a href={broadcast.data.youtubeUrl} target="_blank" rel="noopener noreferrer" data-cursor-hover data-cursor-label="PLAY">
+                  <img src={broadcast.data.thumb} alt="РимейкЪТ thumbnail" style="width:100%; height:100%; object-fit:cover; position:absolute; inset:0;" loading="lazy" decoding="async">
+                </a>
+              </div>
+              <div class="case-copy"><p class="case-synopsis">{broadcast.data.synopsis}</p><a href={`/projects/${broadcast.data.slug}`} class="narrative-cta" data-cursor-hover>Read story →</a></div>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
 
     <SpliceStrip />
 
@@ -77,73 +150,31 @@ const c = siteContent;
           <p class="eyebrow" style="margin-top:-1.2rem; margin-bottom:var(--sp-3);" data-reveal>{c.commercial.hint}</p>
         )}
 
-        <div class="commercial-list">
+        <div class="commercial-grid">
           {commercial.length === 0 ? (
             <div class="empty-state"><b>No commercial jobs listed.</b> - Add to <code>src/content/site/main.json → commercial.jobs</code>.</div>
-          ) : commercial.map((job, idx) => {
-            const fallbackSlug = job.org.includes('7Arts') ? '7arts-artportal' : job.org.includes('Timeless') ? 'timeless-production' : 'tdb-play';
+          ) : commercial.map((job) => {
+            const fallbackSlug = job.org.includes('7Arts') ? '7arts-artportal' : job.org.includes('Timeless') ? 'timeless-production' : null;
             const slug = (job as any).detail?.slug || fallbackSlug;
-            const indexStr = String(idx + 1).padStart(2, '0');
-            const featuredItem = job.items?.[0];
             return (
-              <article class="commercial-row" data-reveal data-company-slug={slug}>
-                <div class="commercial-index">
-                  <b>{indexStr}</b>
-                  <span>{job.years}</span>
-                </div>
-                <div class="commercial-main">
-                  <h3>
-                    <a href={slug ? `/companies/${slug}` : undefined} class="commercial-title-link" data-cursor-hover data-cursor-label="OPEN">
-                      {job.org}
+            <article class="commercial-card" data-reveal data-company-slug={slug} data-cursor-hover data-cursor-label="OPEN">
+              <div class="commercial-card-content">
+                <h3><a href={slug ? `/companies/${slug}` : undefined} class="commercial-card-title-link" data-cursor-hover>{job.org}</a></h3>
+                <span class="role">{job.role} - {job.years}</span>
+                <p class="desc">{job.desc}</p>
+              </div>
+              <div class="mini-grid">
+                {job.items.map((it: any) => (
+                  <div class="mini-item">
+                    <a href={it.url} target={/^https?:/i.test(it.url) ? '_blank' : undefined} rel={/^https?:/i.test(it.url) ? 'noopener noreferrer' : undefined} class={`mini-thumb ${it.isVertical ? 'is-vertical' : ''}`} data-cursor-hover data-cursor-label={it.isVertical ? "REEL" : "PLAY"}>
+                      <img src={it.thumb} alt={it.label} loading="lazy" decoding="async" />
                     </a>
-                  </h3>
-                  <div class="commercial-meta">
-                    <b>{job.role}</b> <span class="commercial-meta-sep">·</span> {job.years}
+                    <span class="mini-label">{it.label}</span>
                   </div>
-                  <p class="commercial-synopsis">{job.desc}</p>
-                  <div class="commercial-row-footer">
-                    {slug && (
-                      <a href={`/companies/${slug}`} class="commercial-cta" data-cursor-hover>
-                        View production details →
-                      </a>
-                    )}
-                    {job.items && job.items.length > 0 && (
-                      <div class="commercial-quick-links">
-                        {job.items.slice(0, 3).map((it: any) => (
-                          <a
-                            href={it.url}
-                            target={/^https?:/i.test(it.url) ? '_blank' : undefined}
-                            rel={/^https?:/i.test(it.url) ? 'noopener noreferrer' : undefined}
-                            class="commercial-tag"
-                            data-cursor-hover
-                            data-cursor-label={it.isVertical ? "REEL" : "PLAY"}
-                          >
-                            <span>{it.label}</span>
-                            <span class="commercial-tag-arrow">↗</span>
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {featuredItem && (
-                  <a
-                    href={featuredItem.url}
-                    target={/^https?:/i.test(featuredItem.url) ? '_blank' : undefined}
-                    rel={/^https?:/i.test(featuredItem.url) ? 'noopener noreferrer' : undefined}
-                    class="commercial-thumb"
-                    aria-label={`Watch ${featuredItem.label}`}
-                    data-cursor-hover
-                    data-cursor-label={featuredItem.isVertical ? "REEL" : "PLAY"}
-                  >
-                    <img src={featuredItem.thumb} alt={`${job.org} - ${featuredItem.label}`} loading="lazy" decoding="async" onerror="this.style.opacity='0.3'" />
-                    <span class="play-overlay" aria-hidden="true">
-                      <svg width="44" height="44" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="rgba(28,22,20,0.85)"/><path d="M18 16v16l14-8-14-8z" fill="var(--brass)"/></svg>
-                    </span>
-                    <span class="commercial-thumb-badge">{featuredItem.label}</span>
-                  </a>
-                )}
-              </article>
+                ))}
+              </div>
+              {slug && <a href={`/companies/${slug}`} class="commercial-card-cta" data-cursor-hover>View detail →</a>}
+            </article>
             );
           })}
         </div>
@@ -318,44 +349,91 @@ const c = siteContent;
 
     <script>
       // @ts-nocheck
-      function initCommercialRows() {
+      function initNarrativeRows() {
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', initCommercialRows);
+          document.addEventListener('DOMContentLoaded', initNarrativeRows);
           return;
         }
-        if (document.body.dataset.commercialRowsBound === '1') return;
-        document.body.dataset.commercialRowsBound = '1';
+        if (document.body.dataset.narrativeBound === '1') return;
+        document.body.dataset.narrativeBound = '1';
 
-        document.querySelectorAll('.commercial-row[data-company-slug]').forEach(row => {
-          const slug = row.dataset.companySlug;
+        document.querySelectorAll('.narrative-row').forEach(row => {
+          const slug = row.dataset.slug;
           if (!slug) return;
 
+          row.style.cursor = 'pointer';
+
           row.addEventListener('click', (e) => {
-            // Keep direct video/link clicks working
-            if (e.target.closest('.commercial-thumb') || e.target.closest('.commercial-tag')) return;
+            // Don't navigate if clicking on a link inside (title, cta, or thumbnail)
+            if (e.target.closest('a')) return;
+            window.location.href = `/projects/${slug}`;
+          });
+
+          // Keyboard accessibility
+          row.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (!e.target.closest('a')) {
+                window.location.href = `/projects/${slug}`;
+              }
+            }
+          });
+
+          // Make focus visible
+          row.setAttribute('tabindex', '0');
+        });
+      }
+
+      initNarrativeRows();
+      document.addEventListener('astro:page-load', initNarrativeRows);
+      document.addEventListener('astro:after-swap', initNarrativeRows);
+    </script>
+
+    <script>
+      // @ts-nocheck
+      function initCommercialCards() {
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initCommercialCards);
+          return;
+        }
+        if (document.body.dataset.commercialBound === '1') return;
+        document.body.dataset.commercialBound = '1';
+
+        document.querySelectorAll('.commercial-card[data-company-slug]').forEach(card => {
+          const slug = card.dataset.companySlug;
+          if (!slug) return;
+
+          card.style.cursor = 'pointer';
+
+          card.addEventListener('click', (e) => {
+            // Keep thumbnail/video links intact - don't redirect to company page
+            if (e.target.closest('.mini-thumb')) return;
+            // If clicking the title link itself, let native navigation handle it
             if (e.target.closest('a[href^="/companies"]')) return;
+            // Also avoid capturing clicks on any external link (video reels)
             if (e.target.closest('a[target="_blank"]')) return;
             window.location.href = `/companies/${slug}`;
           });
 
-          row.addEventListener('keydown', (e) => {
+          // Keyboard accessibility
+          card.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
-              const target = e.target;
-              if (target.closest && (target.closest('.commercial-thumb') || target.closest('.commercial-tag') || target.closest('a[target="_blank"]'))) return;
               e.preventDefault();
+              const target = e.target;
+              if (target.closest && (target.closest('.mini-thumb') || target.closest('a[target="_blank"]'))) return;
               window.location.href = `/companies/${slug}`;
             }
           });
 
-          row.setAttribute('tabindex', '0');
-          row.setAttribute('role', 'link');
-          row.setAttribute('aria-label', `View ${row.querySelector('h3')?.textContent?.trim()} production details`);
+          card.setAttribute('tabindex', '0');
+          card.setAttribute('role', 'link');
+          card.setAttribute('aria-label', `View ${card.querySelector('h3')?.textContent?.trim()} detail`);
         });
       }
 
-      initCommercialRows();
-      document.addEventListener('astro:page-load', initCommercialRows);
-      document.addEventListener('astro:after-swap', initCommercialRows);
+      initCommercialCards();
+      document.addEventListener('astro:page-load', initCommercialCards);
+      document.addEventListener('astro:after-swap', initCommercialCards);
     </script>
     <Lightbox />
   </main>
