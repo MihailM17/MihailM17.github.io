@@ -26,13 +26,13 @@
     "kicker": "Narrative",
     "index": "01",
     "count": "03 / Short Films & Docs",
-    "hint": "Strict editorial - title, comma, year. No fluff."
+    "hint": ""
   },
   "commercial": {
     "kicker": "Commercial",
     "index": "02",
     "count": "TDB Play · 7Arts · Timeless",
-    "hint": "Professional work",
+    "hint": "",
     "jobs": [
       {
         "org": "TDB Play",
@@ -40,7 +40,7 @@
         "years": "2026",
         "desc": "Brought on as freelance live broadcast crew alongside university colleagues for major gaming events: Vivacom Game-ON and Good Game Festival.",
         "items": [
-          { "url": "https://www.youtube.com/watch?v=Epg8ynZ2TDc", "thumb": "https://img.youtube.com/vi/Epg8ynZ2TDc/hqdefault.jpg", "label": "Good Game Concert Live" },
+          { "url": "https://www.youtube.com/watch?v=Epg8ynZ2TDc", "thumb": "https://img.youtube.com/vi/Epg8ynZ2TDc/maxresdefault.jpg", "label": "Good Game Concert Live" },
           { "url": "https://www.goodgame.bg/", "thumb": "/goodgame-director-vision-mixer.jpg", "label": "Good Game Festival" },
           { "url": "https://www.youtube.com/watch?v=Epg8ynZ2TDc", "thumb": "/goodgame-operating-ronin.jpg", "label": "Live Camera (Ronin)" },
           { "url": "/companies/tdb-play", "thumb": "/vivacom-game-on-group-picture.jpg", "label": "Vivacom Game-ON Crew" }
@@ -96,10 +96,10 @@
         "years": "July 2022 – Sep 2022 & Feb 2025 – Apr 2025",
         "desc": "Two internships - Production Intern in 2022 and Video Editing Intern in 2025, cutting Deroni recipe videos and Уча, зная и играя episodes.",
         "items": [
-          { "url": "https://youtu.be/vC3i48d0Mms", "thumb": "https://img.youtube.com/vi/vC3i48d0Mms/hqdefault.jpg", "label": "Сапунените мехури" },
-          { "url": "https://youtu.be/CE5H1h6dpFw", "thumb": "https://img.youtube.com/vi/CE5H1h6dpFw/hqdefault.jpg", "label": "Колелото" },
-          { "url": "https://youtu.be/O9bSfzCGmyg", "thumb": "https://img.youtube.com/vi/O9bSfzCGmyg/hqdefault.jpg", "label": "Фотография" },
-          { "url": "https://youtu.be/l9OJxQ7X9vY", "thumb": "https://img.youtube.com/vi/l9OJxQ7X9vY/hqdefault.jpg", "label": "Механика" }
+          { "url": "https://youtu.be/vC3i48d0Mms", "thumb": "https://img.youtube.com/vi/vC3i48d0Mms/maxresdefault.jpg", "label": "Сапунените мехури" },
+          { "url": "https://youtu.be/CE5H1h6dpFw", "thumb": "https://img.youtube.com/vi/CE5H1h6dpFw/maxresdefault.jpg", "label": "Колелото" },
+          { "url": "https://youtu.be/O9bSfzCGmyg", "thumb": "https://img.youtube.com/vi/O9bSfzCGmyg/mqdefault.jpg", "label": "Фотография" },
+          { "url": "https://youtu.be/l9OJxQ7X9vY", "thumb": "https://img.youtube.com/vi/l9OJxQ7X9vY/maxresdefault.jpg", "label": "Механика" }
         ],
         "detail": {
           "slug": "timeless-production",
@@ -109,17 +109,17 @@
           "synopsis": "Two internships - from Production Intern in 2022 to Video Editing Intern in 2025, cutting Deroni recipe videos and Уча, зная и играя.",
           "description": "Video Editing Intern - February 2025 – April 2025\n\nReturning to the company for a second internship, I stepped directly into an active editing role. During this three-month period, I was trusted to cut commercial YouTube content for clients, specifically focusing on fast-paced, short-form recipe videos featuring Deroni products. Additionally, I took on broadcast responsibilities by editing several episodes of the children's educational television program Уча, зная и играя.\n\nProduction Intern - July 2022 – September 2022\n\nDuring my initial time with the company, I focused on absorbing as much as possible about how a professional production environment operates. I assisted the team with general, day-to-day tasks, doing the foundational, hands-on work required to keep a production moving while learning the industry ropes from the ground up.",
           "gallery": [
-            { "src": "https://img.youtube.com/vi/vC3i48d0Mms/hqdefault.jpg", "caption": "Сапунените мехури - Episode still", "alt": "Episode 1" },
-            { "src": "https://img.youtube.com/vi/CE5H1h6dpFw/hqdefault.jpg", "caption": "Колелото - Episode still", "alt": "Episode 2" },
-            { "src": "https://img.youtube.com/vi/O9bSfzCGmyg/hqdefault.jpg", "caption": "Фотография - Episode still", "alt": "Episode 3" },
-            { "src": "https://img.youtube.com/vi/l9OJxQ7X9vY/hqdefault.jpg", "caption": "Механика - Episode still", "alt": "Episode 4" }
+            { "src": "https://img.youtube.com/vi/vC3i48d0Mms/maxresdefault.jpg", "caption": "Сапунените мехури - Episode still", "alt": "Episode 1" },
+            { "src": "https://img.youtube.com/vi/CE5H1h6dpFw/maxresdefault.jpg", "caption": "Колелото - Episode still", "alt": "Episode 2" },
+            { "src": "https://img.youtube.com/vi/O9bSfzCGmyg/mqdefault.jpg", "caption": "Фотография - Episode still", "alt": "Episode 3" },
+            { "src": "https://img.youtube.com/vi/l9OJxQ7X9vY/maxresdefault.jpg", "caption": "Механика - Episode still", "alt": "Episode 4" }
           ]
         }
       }
     ],
     "credits": [
       { "org": "New Bulgarian University", "role": "Cinema & Television - Directing & Editing", "note": "fourth year" },
-      { "org": "TDB Play", "role": "Vision mixer & camera operator", "note": "Vivacom Game-ON & Good Game Fest (contract)" },
+      { "org": "TDB Play", "role": "Vision mixer & camera operator", "note": "Vivacom Game-ON & Good Game Fest, contract" },
       { "org": "Timeless Production Group", "role": "Post-production editor", "note": "4 episodes delivered" },
       { "org": "7Arts / ArtPortal", "role": "Editor + camera operator", "note": "daily culture coverage" },
       { "org": "Sofia International Film Festival", "role": "Photo & video coverage", "note": "volunteer, 2 years" }

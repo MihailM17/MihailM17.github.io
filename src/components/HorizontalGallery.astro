@@ -33,8 +33,7 @@ const { eyebrow = "Archive / Selected Frames", title = "Selected Stills.", items
       ) : items.map((item) => (
         <figure class="gallery-panel" data-cursor-hover data-cursor-label="VIEW" data-lightbox data-src={item.src} data-caption={item.caption || item.alt}>
           <div class="panel-media skeleton" data-img-wrap>
-            <img src={item.src} alt={item.alt} loading="eager" decoding="async" onload="this.closest('[data-img-wrap]')?.classList.remove('skeleton')" onerror="this.style.display='none'; const fb=this.nextElementSibling; if(fb) fb.style.display='block'; this.closest('[data-img-wrap]')?.classList.remove('skeleton')" />
-            <div class="img-error-fallback" style="display:none;">Image failed to load<br/><small>{item.src}</small><br/><span style="color:var(--brass)">Check file exists in /public</span></div>
+            <img src={item.src} alt={item.alt} loading="lazy" decoding="async" onload="this.closest('[data-img-wrap]')?.classList.remove('skeleton')" onerror="this.closest('[data-img-wrap]')?.classList.remove('skeleton'); this.style.opacity='0.25'" />
           </div>
           <figcaption>
             <span class="panel-caption">{item.caption || item.alt}</span>

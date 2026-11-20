@@ -4,6 +4,7 @@
 import Layout from '../layouts/Layout.astro';
 import SpliceStrip from '../components/SpliceStrip.astro';
 import HorizontalGallery from '../components/HorizontalGallery.astro';
+import CdArchive from '../components/CdArchive.astro';
 import Lightbox from '../components/Lightbox.astro';
 import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
@@ -43,8 +44,12 @@ const c = siteContent;
         <p class="hero-sub" data-reveal>{c.hero.sub}</p>
         <p class="hero-meta" data-reveal>{c.hero.meta}</p>
       </div>
-      <a href="#narrative" class="scroll-cue" aria-label="Scroll to Narrative" data-cursor-hover data-cursor-label="SCROLL"><span></span></a>
+      <a href="#selects" class="scroll-cue" aria-label="Scroll to Selects" data-cursor-hover data-cursor-label="SCROLL"><span></span></a>
     </section>
+
+    <SpliceStrip />
+
+    <CdArchive />
 
     <SpliceStrip />
 
@@ -82,7 +87,9 @@ const c = siteContent;
           <h2>{c.narrative.kicker} <em>{c.narrative.index}</em></h2>
           <span class="split-count"><b>{c.narrative.count.split(' ')[0]}</b> {c.narrative.count.split(' ').slice(1).join(' ')}</span>
         </div>
-        <p class="eyebrow" style="margin-top:-1.2rem; margin-bottom:var(--sp-3);" data-reveal>{c.narrative.hint}</p>
+        {c.narrative.hint && (
+          <p class="eyebrow" style="margin-top:-1.2rem; margin-bottom:var(--sp-3);" data-reveal>{c.narrative.hint}</p>
+        )}
 
         <div class="narrative-list">
           {narrative.length === 0 ? (
@@ -139,7 +146,9 @@ const c = siteContent;
           <h2>{c.commercial.kicker} <em>{c.commercial.index}</em></h2>
           <span class="split-count"><b>{c.commercial.count.split(' ')[0]}</b> {c.commercial.count.split(' ').slice(1).join(' ')}</span>
         </div>
-        <p class="eyebrow" style="margin-top:-1.2rem; margin-bottom:var(--sp-3);" data-reveal>{c.commercial.hint}</p>
+        {c.commercial.hint && (
+          <p class="eyebrow" style="margin-top:-1.2rem; margin-bottom:var(--sp-3);" data-reveal>{c.commercial.hint}</p>
+        )}
 
         <div class="commercial-grid">
           {commercial.length === 0 ? (
@@ -157,14 +166,14 @@ const c = siteContent;
               <div class="mini-grid">
                 {job.items.map((it: any) => (
                   <div class="mini-item">
-                    <a href={it.url} target="_blank" rel="noopener noreferrer" class={`mini-thumb ${it.isVertical ? 'is-vertical' : ''}`} data-cursor-hover data-cursor-label={it.isVertical ? "REEL" : "PLAY"}>
+                    <a href={it.url} target={/^https?:/i.test(it.url) ? '_blank' : undefined} rel={/^https?:/i.test(it.url) ? 'noopener noreferrer' : undefined} class={`mini-thumb ${it.isVertical ? 'is-vertical' : ''}`} data-cursor-hover data-cursor-label={it.isVertical ? "REEL" : "PLAY"}>
                       <img src={it.thumb} alt={it.label} loading="lazy" decoding="async" />
                     </a>
                     <span class="mini-label">{it.label}</span>
                   </div>
                 ))}
               </div>
-              {slug && <span class="commercial-card-cta">View detail →</span>}
+              {slug && <a href={`/companies/${slug}`} class="commercial-card-cta" data-cursor-hover>View detail →</a>}
             </article>
             );
           })}
@@ -450,6 +459,7 @@ const c = siteContent;
   .commercial-card-cta{
     display: inline-block; margin-top: 1rem; font-family: var(--font-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
     color: var(--brass); border-bottom: 1px solid var(--oxblood); padding-bottom: 2px; align-self: flex-start;
+    text-decoration: none;
     transition: color .2s, border-color .2s;
   }
   .commercial-card:hover .commercial-card-cta{ color: var(--ecru); border-color: var(--brass); }

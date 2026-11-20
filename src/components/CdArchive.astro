@@ -1,0 +1,2471 @@
+---
+// ============================================================================
+// CdArchive - physical CD jewel-case archive browser
+// Data comes from the content collections (projects + site.commercial.jobs).
+// All colour/typography is mapped to the site tokens in Layout.astro.
+// ============================================================================
+import { getCollection } from 'astro:content';
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  countLabel?: string;
+}
+
+const {
+  id = 'selects',
+  eyebrow = 'Selects · Archive',
+  title = 'Selected works',
+  countLabel = 'Works · 2025—2026',
+} = Astro.props;
+
+const allProjects = await getCollection('projects');
+const site = (await getCollection('site'))[0]?.data;
+
+// Same curated order used by the homepage narrative list and the menu.
+const FILM_ORDER = [
+  'silent-lifts-vitosha',
+  'lunen-blyasak',
+  'zasnet',
+  'remake-season-2',
+  'eastern-wind',
+];
+
+const films = [...allProjects].sort(
+  (a, b) => FILM_ORDER.indexOf(a.data.slug) - FILM_ORDER.indexOf(b.data.slug),
+);
+
+// Two accents only: films use brass, companies use oxblood.
+const ACCENT = {
+  film: { hex: '#D4A24C', glow: 'rgba(212,162,76,0.17)' },
+  company: { hex: '#B23A2E', glow: 'rgba(178,58,46,0.17)' },
+};
+
+// Hand-stacked micro offset, one per shelf position (in px).
+const MICRO = [-2, 2, -1, 3, -3, 1, -2, 2];
+
+const lastYear = (value: unknown) =>
+  (String(value ?? '').match(/\d{4}/g) || []).pop() || '';
+
+// YouTube serves hqdefault for every video, so it is a safe second attempt.
+const youTubeFallback = (src: unknown) =>
+  typeof src === 'string' && src.includes('maxresdefault')
+    ? src.replace('maxresdefault', 'hqdefault')
+    : null;
+
+const filmDiscs = films.map((entry) => {
+  const d = entry.data;
+  const displayTitle =
+    d.slug === 'silent-lifts-vitosha' && d.titleEn ? d.titleEn : d.title;
+  return {
+    kind: 'film',
+    title: displayTitle,
+    year: d.year,
+    role: d.kicker,
+    format: d.meta,
+    description: d.synopsis,
+    cover: d.thumb,
+    fallback: youTubeFallback(d.thumb),
+    href: `/projects/${d.slug}`,
+    watchUrl: d.youtubeUrl,
+    accent: ACCENT.film.hex,
+    glow: ACCENT.film.glow,
+  };
+});
+
+// Timeless Production Group - the two TV episodes edited by Mihail
+const timelessJob = site?.commercial?.jobs?.find((job: any) =>
+  job.org.toLowerCase().includes('timeless'),
+);
+const ep1Item = timelessJob?.items?.[0];
+const ep2Item = timelessJob?.items?.[1];
+
+const timelessDiscs = [
+  {
+    kind: 'episode',
+    title: ep1Item?.label || 'Сапунените мехури',
+    year: '2025',
+    role: 'Video Editor · Уча, зная и играя',
+    format: 'TV Broadcast Episode · Timeless Production',
+    description:
+      "Broadcast episode for children's educational series 'Уча, зная и играя' on national television, cut and edited for Timeless Production Group.",
+    cover: ep1Item?.thumb || 'https://img.youtube.com/vi/vC3i48d0Mms/maxresdefault.jpg',
+    fallback: youTubeFallback(ep1Item?.thumb || 'https://img.youtube.com/vi/vC3i48d0Mms/maxresdefault.jpg'),
+    href: '/companies/timeless-production',
+    watchUrl: ep1Item?.url || 'https://youtu.be/vC3i48d0Mms',
+    accent: ACCENT.company.hex,
+    glow: ACCENT.company.glow,
+  },
+  {
+    kind: 'episode',
+    title: ep2Item?.label || 'Колелото',
+    year: '2025',
+    role: 'Video Editor · Уча, зная и играя',
+    format: 'TV Broadcast Episode · Timeless Production',
+    description:
+      "Broadcast episode exploring how wheels work for 'Уча, зная и играя', cut and edited for Timeless Production Group.",
+    cover: ep2Item?.thumb || 'https://img.youtube.com/vi/CE5H1h6dpFw/maxresdefault.jpg',
+    fallback: youTubeFallback(ep2Item?.thumb || 'https://img.youtube.com/vi/CE5H1h6dpFw/maxresdefault.jpg'),
+    href: '/companies/timeless-production',
+    watchUrl: ep2Item?.url || 'https://youtu.be/CE5H1h6dpFw',
+    accent: ACCENT.company.hex,
+    glow: ACCENT.company.glow,
+  },
+];
+
+const rawDiscs = [...filmDiscs, ...timelessDiscs];
+
+const discs = rawDiscs.map((disc, i) => ({
+  ...disc,
+  catalog: `MM-${String(i + 1).padStart(2, '0')}`,
+  microX: MICRO[i] ?? 0,
+}));
+
+const total = String(discs.length).padStart(2, '0');
+---
+
+<section id={id} class="cd-archive" data-cd-archive>
+  <div class="cd-ambient" data-cd-ambient aria-hidden="true"></div>
+
+  <div class="container cd-inner">
+    <div class="cd-head" data-reveal>
+      <span class="eyebrow">{eyebrow}</span>
+      <h2>{title}<em>.</em></h2>
+      <p class="cd-count"><b>{total}</b> {countLabel}</p>
+    </div>
+
+    <div class="cd-layout">
+      <!-- ---------------------------------------------------------------- -->
+      <!-- TOWER                                                             -->
+      <!-- ---------------------------------------------------------------- -->
+      <div class="cd-tower-col">
+        <div class="cd-tower-frame">
+          <div class="cd-tower-meta">
+            <span>Stack · {total} Discs</span>
+            <span class="cd-tower-meta-dim">2025—2026</span>
+          </div>
+
+          <div
+            class="cd-tower"
+            data-cd-tower
+            role="group"
+            aria-label="Work stack - select a disc"
+          >
+            {discs.map((disc, i) => (
+              <div
+                class="cd-slot"
+                data-id={disc.catalog}
+                data-index={i}
+                style={`--case-accent:${disc.accent};--micro-x:${disc.microX}px;`}
+              >
+                <button
+                  type="button"
+                  class="cd-cavity"
+                  data-cavity={i}
+                  tabindex="-1"
+                  inert
+                  aria-label={`Return ${disc.title} to the stack`}
+                >
+                  <span class="cd-cavity-mark">
+                    <span>{disc.catalog} · In bay</span>
+                  </span>
+                  <span class="cd-cavity-action">Return ↩</span>
+                </button>
+
+                <button
+                  type="button"
+                  class="cd-spine"
+                  data-spine={i}
+                  aria-label={`${disc.catalog}: ${disc.title}, ${disc.year}`}
+                >
+                  <span class="cd-spine-shell">
+                    <span class="cd-spine-hinge" aria-hidden="true"></span>
+                    <span class="cd-spine-paper">
+                      <span class="cd-spine-band" aria-hidden="true"></span>
+                      <span class="cd-spine-main">
+                        <span class="cd-spine-code">{disc.catalog}</span>
+                        <span class="cd-spine-title">{disc.title}</span>
+                      </span>
+                      <span class="cd-spine-year">{disc.year}</span>
+                    </span>
+                    <span class="cd-spine-cap" aria-hidden="true"></span>
+                    <span class="cd-spine-glare" aria-hidden="true"></span>
+                  </span>
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div class="cd-plinth" aria-hidden="true"></div>
+
+          <p class="cd-hint">
+            Click a disc to load it into the bay · click the empty slot to return it
+          </p>
+        </div>
+      </div>
+
+      <!-- ---------------------------------------------------------------- -->
+      <!-- BAY                                                               -->
+      <!-- ---------------------------------------------------------------- -->
+      <div class="cd-bay-col">
+        <div class="cd-bay-wrap">
+          <div class="cd-bay" data-cd-bay aria-label="Display bay">
+            <div class="cd-bay-spot" aria-hidden="true"></div>
+            <span class="cd-bay-corner tl" aria-hidden="true"></span>
+            <span class="cd-bay-corner tr" aria-hidden="true"></span>
+            <span class="cd-bay-corner bl" aria-hidden="true"></span>
+            <span class="cd-bay-corner br" aria-hidden="true"></span>
+
+            <div class="cd-standby">
+              <div class="cd-standby-ring">
+                <div class="cd-standby-hub">
+                  <div class="cd-standby-pin"></div>
+                </div>
+                <span class="cd-standby-label">Display Bay</span>
+              </div>
+              <p class="cd-standby-text">Select a disc from the tower</p>
+            </div>
+
+            <div class="cd-bay-shadow" aria-hidden="true"></div>
+          </div>
+
+          <div class="cd-transport">
+            <button type="button" class="cd-tbtn" data-cd-prev aria-label="Previous disc">
+              ← Prev
+            </button>
+            <button
+              type="button"
+              class="cd-tbtn"
+              data-cd-return
+              aria-label="Return current disc to the tower"
+              disabled
+            >
+              Return to Stack
+            </button>
+            <button type="button" class="cd-tbtn" data-cd-next aria-label="Next disc">
+              Next →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="cd-panel" data-cd-panel aria-label="Selected work details">
+        {discs[0] && (
+          <div class="cd-stagger">
+            <div class="cd-kicker">
+              <span style={`color:${discs[0].accent}`}>{discs[0].catalog} · {discs[0].year}</span>
+            </div>
+            <h3 class="cd-panel-title">{discs[0].title}</h3>
+            <div class="cd-panel-meta">
+              <p class="cd-panel-role">{discs[0].role}</p>
+              <p class="cd-panel-format">{discs[0].format}</p>
+            </div>
+            <p class="cd-panel-desc">{discs[0].description}</p>
+            <div class="cd-panel-actions">
+              {discs[0].href && (
+                <a class="cd-action" href={discs[0].href}>
+                  Open project <span aria-hidden="true">→</span>
+                </a>
+              )}
+              {discs[0].watchUrl && (
+                <a
+                  class="cd-action cd-action-ghost"
+                  href={discs[0].watchUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Watch <span aria-hidden="true">↗</span>
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+      </aside>
+    </div>
+
+    <p class="cd-live" data-cd-live aria-live="polite"></p>
+  </div>
+
+  <script type="application/json" data-cd-data set:html={JSON.stringify(discs)}></script>
+</section>
+
+<style is:global>
+  /* ==========================================================================
+     ROOT / TOKENS
+     ========================================================================== */
+  .cd-archive {
+    --cd-deep: #120e0c;
+    --cd-surface: #1e1815;
+    --cd-paper: #241d19;
+    --cd-line: rgba(239, 230, 216, 0.12);
+    --cd-line-soft: rgba(239, 230, 216, 0.07);
+    --cd-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --slot-h: 36px;
+    position: relative;
+    padding-block: var(--sp-5);
+    border-top: 1px solid rgba(239, 230, 216, 0.08);
+    overflow: clip;
+    scroll-margin-top: 84px;
+  }
+
+  /* Warm tungsten studio light pooled behind the bay */
+  .cd-archive::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 48% 46% at 68% 40%, rgba(255, 224, 185, 0.055) 0%, rgba(255, 206, 160, 0.015) 50%, transparent 76%),
+      linear-gradient(180deg, rgba(37, 30, 26, 0.5) 0%, transparent 45%);
+  }
+
+  .cd-ambient {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.7s var(--cd-ease), background 0.7s var(--cd-ease);
+  }
+  .cd-ambient.is-active {
+    opacity: 1;
+  }
+
+  .cd-inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Header - mirrors the Archive section's rhythm */
+  .cd-head {
+    margin-bottom: var(--sp-3);
+  }
+  .cd-head h2 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.9rem, 4.4vw, 2.9rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.6rem;
+    color: var(--ecru);
+  }
+  .cd-head h2 em {
+    font-style: normal;
+    color: var(--brass);
+  }
+  .cd-count {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ash);
+    margin: 0;
+  }
+  .cd-count b {
+    color: var(--brass);
+  }
+
+  /* ==========================================================================
+     LAYOUT
+     Mobile: bay, then details, then the stack.
+     1024px: stack on the left, bay above details on the right.
+     1180px: stack, bay, details side by side.
+     ========================================================================== */
+  .cd-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'bay'
+      'panel'
+      'tower';
+    gap: clamp(2.25rem, 5vw, 3.5rem);
+    align-items: center;
+  }
+  .cd-tower-col {
+    grid-area: tower;
+    min-width: 0;
+  }
+  .cd-bay-col {
+    grid-area: bay;
+    min-width: 0;
+  }
+  .cd-panel {
+    grid-area: panel;
+  }
+
+  @media (min-width: 1024px) {
+    .cd-layout {
+      grid-template-columns: 300px minmax(0, 1fr);
+      grid-template-areas:
+        'tower bay'
+        'tower panel';
+      column-gap: clamp(2rem, 4vw, 3rem);
+      row-gap: clamp(2.5rem, 4vw, 3.25rem);
+      align-items: start;
+    }
+  }
+
+  @media (min-width: 1180px) {
+    .cd-layout {
+      grid-template-columns: 320px 340px minmax(0, 1fr);
+      grid-template-areas: 'tower bay panel';
+      column-gap: clamp(2rem, 5vw, 4.5rem);
+      align-items: center;
+    }
+  }
+
+  /* ==========================================================================
+     TOWER
+     ========================================================================== */
+  .cd-tower-frame {
+    position: relative;
+    width: 100%;
+    max-width: 392px;
+    margin: 0 auto;
+  }
+  .cd-tower-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding-inline: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ash);
+  }
+  .cd-tower-meta-dim {
+    opacity: 0.6;
+  }
+
+  .cd-tower {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 0 18px;
+  }
+
+  .cd-plinth {
+    position: relative;
+    height: 12px;
+    margin: -6px -8px 0;
+    border-radius: 4px;
+    background: linear-gradient(180deg, var(--cd-surface) 0%, var(--cd-deep) 60%, #0a0806 100%);
+    border-top: 1px solid rgba(239, 230, 216, 0.09);
+    box-shadow: 0 18px 30px rgba(0, 0, 0, 0.72), 0 4px 10px rgba(0, 0, 0, 0.6);
+  }
+  .cd-plinth::after {
+    content: '';
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: -10px;
+    height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.7) 0%, transparent 72%);
+    filter: blur(5px);
+    pointer-events: none;
+  }
+
+  .cd-hint {
+    margin-top: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    line-height: 1.6;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ash);
+    opacity: 0.72;
+    text-align: center;
+  }
+  @media (min-width: 1024px) {
+    .cd-hint {
+      text-align: left;
+    }
+  }
+
+  .cd-slot {
+    position: relative;
+    height: var(--slot-h);
+    width: 100%;
+    transition: transform 0.34s var(--cd-ease);
+  }
+  .cd-slot.part-up {
+    transform: translateY(-2.5px);
+  }
+  .cd-slot.part-down {
+    transform: translateY(2.5px);
+  }
+
+  /* Recessed cavity left behind when a disc is out */
+  .cd-cavity {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #0b0806 0%, #100c0a 55%, #0c0908 100%);
+    border: 1px dashed rgba(239, 230, 216, 0.09);
+    box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.8), inset 0 -3px 6px rgba(0, 0, 0, 0.65);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease, border-color 0.25s ease, background-color 0.25s ease;
+    font: inherit;
+    color: inherit;
+  }
+  .cd-slot.is-empty .cd-cavity {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .cd-slot.is-empty .cd-cavity:hover {
+    border-color: rgba(239, 230, 216, 0.22);
+    background: linear-gradient(180deg, #100c0a 0%, #15100d 100%);
+  }
+  .cd-cavity-mark {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(239, 230, 216, 0.3);
+    user-select: none;
+  }
+  .cd-cavity-action {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(239, 230, 216, 0.22);
+    transition: color 0.2s ease;
+  }
+  .cd-cavity:hover .cd-cavity-action {
+    color: rgba(239, 230, 216, 0.7);
+  }
+
+  /* Seated spine */
+  .cd-spine {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    display: block;
+    transform: translate3d(var(--micro-x, 0px), 0, 0);
+    transition: transform 0.34s var(--cd-ease);
+  }
+  .cd-spine:hover,
+  .cd-spine:focus-visible {
+    transform: translate3d(calc(var(--micro-x, 0px) + 18px), 0, 0);
+  }
+  .cd-spine:focus-visible .cd-spine-shell {
+    box-shadow: 0 0 0 1.5px var(--case-accent), 0 10px 22px rgba(0, 0, 0, 0.8);
+  }
+  .cd-slot.is-empty .cd-spine {
+    visibility: hidden;
+    pointer-events: none;
+    transition: none;
+  }
+
+  .cd-spine-shell {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 3px;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+    background: linear-gradient(
+      180deg,
+      rgba(239, 230, 216, 0.16) 0%,
+      rgba(239, 230, 216, 0.04) 20%,
+      rgba(18, 14, 12, 0.94) 50%,
+      rgba(239, 230, 216, 0.06) 100%
+    );
+    border: 1px solid rgba(239, 230, 216, 0.15);
+    border-top-color: rgba(239, 230, 216, 0.26);
+    border-bottom-color: rgba(0, 0, 0, 0.8);
+    box-shadow:
+      inset 0 1px 0 rgba(239, 230, 216, 0.22),
+      inset 0 -1px 0 rgba(239, 230, 216, 0.07),
+      0 5px 12px rgba(0, 0, 0, 0.6),
+      0 1px 2px rgba(0, 0, 0, 0.8);
+    transition: border-color 0.25s ease, box-shadow 0.3s ease;
+  }
+  .cd-spine:hover .cd-spine-shell {
+    border-color: rgba(239, 230, 216, 0.3);
+    box-shadow:
+      inset 0 1px 0 rgba(239, 230, 216, 0.36),
+      inset 0 -1px 0 rgba(239, 230, 216, 0.13),
+      0 12px 24px rgba(0, 0, 0, 0.7),
+      0 0 18px -6px var(--case-accent);
+  }
+
+  .cd-spine-hinge {
+    position: relative;
+    width: 24px;
+    flex-shrink: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(239, 230, 216, 0.1) 0px,
+      rgba(239, 230, 216, 0.1) 2px,
+      rgba(12, 9, 7, 0.88) 2px,
+      rgba(12, 9, 7, 0.88) 4.5px
+    );
+    border-right: 1px solid rgba(239, 230, 216, 0.14);
+    box-shadow: inset 2px 0 4px rgba(239, 230, 216, 0.08);
+  }
+  .cd-spine-hinge::before,
+  .cd-spine-hinge::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    height: 2px;
+    background: rgba(239, 230, 216, 0.18);
+    border-radius: 1px;
+  }
+  .cd-spine-hinge::before {
+    top: 3px;
+  }
+  .cd-spine-hinge::after {
+    bottom: 3px;
+  }
+
+  .cd-spine-paper {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    margin: 2px 0;
+    padding: 0 12px 0 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: linear-gradient(180deg, var(--cd-paper) 0%, var(--cd-surface) 52%, #191310 100%);
+    border-top: 1px solid rgba(239, 230, 216, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+  }
+  .cd-spine-band {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--case-accent);
+    opacity: 0.92;
+  }
+  .cd-spine-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .cd-spine-code {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--ash);
+    flex-shrink: 0;
+  }
+  .cd-spine-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    color: var(--ecru);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cd-spine-year {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: rgba(239, 230, 216, 0.6);
+    flex-shrink: 0;
+  }
+  .cd-spine-cap {
+    width: 12px;
+    flex-shrink: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(239, 230, 216, 0.04) 0%,
+      rgba(239, 230, 216, 0.15) 55%,
+      rgba(239, 230, 216, 0.04) 100%
+    );
+    border-left: 1px solid rgba(239, 230, 216, 0.12);
+  }
+  .cd-spine-glare {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      112deg,
+      transparent 14%,
+      rgba(239, 230, 216, 0.09) 26%,
+      rgba(239, 230, 216, 0.02) 33%,
+      transparent 44%,
+      rgba(239, 230, 216, 0.05) 74%,
+      transparent 86%
+    );
+    opacity: 0.72;
+    transition: opacity 0.25s ease, transform 0.35s ease;
+  }
+  .cd-spine:hover .cd-spine-glare {
+    opacity: 1;
+    transform: translateX(10px);
+  }
+
+  /* ==========================================================================
+     DISPLAY BAY
+     ========================================================================== */
+  .cd-bay-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .cd-bay {
+    position: relative;
+    width: 296px;
+    height: 296px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  @media (max-width: 959px) {
+    .cd-bay {
+      width: 220px;
+      height: 220px;
+    }
+  }
+
+  .cd-bay-corner {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: rgba(239, 230, 216, 0.14);
+    pointer-events: none;
+    transition: border-color 0.5s ease;
+  }
+  .cd-bay-corner.tl {
+    top: -14px;
+    left: -14px;
+    border-top: 1px solid;
+    border-left: 1px solid;
+  }
+  .cd-bay-corner.tr {
+    top: -14px;
+    right: -14px;
+    border-top: 1px solid;
+    border-right: 1px solid;
+  }
+  .cd-bay-corner.bl {
+    bottom: -14px;
+    left: -14px;
+    border-bottom: 1px solid;
+    border-left: 1px solid;
+  }
+  .cd-bay-corner.br {
+    bottom: -14px;
+    right: -14px;
+    border-bottom: 1px solid;
+    border-right: 1px solid;
+  }
+  .cd-bay.has-disc .cd-bay-corner {
+    border-color: rgba(239, 230, 216, 0.26);
+  }
+
+  .cd-bay-spot {
+    position: absolute;
+    inset: -44px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 50% 42%,
+      rgba(255, 224, 185, 0.075) 0%,
+      rgba(255, 210, 170, 0.02) 45%,
+      transparent 72%
+    );
+    pointer-events: none;
+  }
+
+  .cd-bay-shadow {
+    position: absolute;
+    bottom: -26px;
+    left: 50%;
+    width: 82%;
+    height: 20px;
+    transform: translateX(-50%) scale(0.75);
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0.8) 0%,
+      rgba(0, 0, 0, 0.4) 46%,
+      transparent 75%
+    );
+    filter: blur(8px);
+    opacity: 0.35;
+    pointer-events: none;
+    transition: opacity 0.55s var(--cd-ease), transform 0.55s var(--cd-ease);
+  }
+  .cd-bay.has-disc .cd-bay-shadow {
+    opacity: 0.95;
+    transform: translateX(-50%) scale(1.06);
+  }
+
+  .cd-standby {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    pointer-events: none;
+    transition: opacity 0.38s ease, transform 0.45s var(--cd-ease);
+  }
+  .cd-bay.has-disc .cd-standby {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  .cd-standby-ring {
+    position: relative;
+    width: 144px;
+    height: 144px;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    border: 1px dashed var(--cd-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cd-standby-hub {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--cd-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cd-standby-pin {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--cd-line);
+  }
+  .cd-standby-label {
+    position: absolute;
+    bottom: -10px;
+    padding: 0 10px;
+    background: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ash);
+  }
+  .cd-standby-text {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ash);
+    opacity: 0.8;
+  }
+
+  .cd-transport {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .cd-tbtn {
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--cd-line);
+    background: transparent;
+    color: var(--ash);
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .cd-tbtn:hover {
+    color: var(--ecru);
+    border-color: rgba(239, 230, 216, 0.35);
+  }
+  .cd-tbtn:disabled {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  /* ==========================================================================
+     EDITORIAL PANEL
+     ========================================================================== */
+  .cd-panel {
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: opacity 0.24s ease, transform 0.34s var(--cd-ease);
+  }
+  @media (min-width: 768px) {
+    .cd-panel {
+      padding-left: 1.5rem;
+      border-left: 1px solid var(--cd-line);
+    }
+  }
+  .cd-panel.is-exiting {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  .cd-stagger > * {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: cdEnter 0.48s var(--cd-ease) forwards;
+  }
+  .cd-stagger > *:nth-child(1) {
+    animation-delay: 0.02s;
+  }
+  .cd-stagger > *:nth-child(2) {
+    animation-delay: 0.07s;
+  }
+  .cd-stagger > *:nth-child(3) {
+    animation-delay: 0.12s;
+  }
+  .cd-stagger > *:nth-child(4) {
+    animation-delay: 0.17s;
+  }
+  .cd-stagger > *:nth-child(5) {
+    animation-delay: 0.22s;
+  }
+  @keyframes cdEnter {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .cd-kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .cd-panel-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    color: var(--ecru);
+    margin: 0 0 1rem;
+  }
+  .cd-panel-meta {
+    padding-bottom: 0.9rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--cd-line);
+  }
+  .cd-panel-role {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(239, 230, 216, 0.9);
+    margin: 0;
+  }
+  .cd-panel-format {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    color: var(--ash);
+    margin: 0.25rem 0 0;
+  }
+  .cd-panel-desc {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--ash);
+    margin: 0;
+  }
+  .cd-panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+  .cd-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid var(--brass);
+    background: rgba(212, 162, 76, 0.08);
+    color: var(--brass);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .cd-action:hover {
+    background: var(--brass);
+    color: var(--ink);
+  }
+  .cd-action-ghost {
+    border-color: var(--cd-line);
+    background: transparent;
+    color: var(--ash);
+  }
+  .cd-action-ghost:hover {
+    background: transparent;
+    border-color: rgba(239, 230, 216, 0.35);
+    color: var(--ecru);
+  }
+
+  .cd-standby-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--ecru);
+    margin: 0 0 0.9rem;
+  }
+  .cd-standby-title em {
+    font-style: normal;
+    color: var(--ash);
+  }
+  .cd-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--cd-line);
+  }
+  .cd-stat-value {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--ecru);
+  }
+  .cd-stat-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ash);
+  }
+
+  .cd-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ==========================================================================
+     FLIGHT STAGE + 3D JEWEL CASE (appended to <body>)
+     ========================================================================== */
+  .cd-flight-stage {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    perspective: 1400px;
+    perspective-origin: 50% 50%;
+    overflow: visible;
+  }
+
+  .cd-actor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform-style: preserve-3d;
+    will-change: transform;
+    pointer-events: none;
+  }
+  .cd-actor.is-docked {
+    pointer-events: auto;
+  }
+
+  .jc-face {
+    position: absolute;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .jc-front {
+    inset: 0;
+    border-radius: 5px;
+    display: flex;
+    overflow: hidden;
+    background: var(--cd-surface);
+    border: 1.5px solid rgba(239, 230, 216, 0.24);
+    box-shadow:
+      inset 0 1px 0 rgba(239, 230, 216, 0.4),
+      inset 0 -1px 0 rgba(239, 230, 216, 0.13),
+      inset 1px 0 0 rgba(239, 230, 216, 0.2),
+      inset -1px 0 0 rgba(239, 230, 216, 0.16),
+      0 26px 52px -12px rgba(0, 0, 0, 0.7);
+  }
+
+  .jc-hinge {
+    position: relative;
+    flex-shrink: 0;
+    background: repeating-linear-gradient(
+      180deg,
+      rgba(239, 230, 216, 0.1) 0px,
+      rgba(239, 230, 216, 0.1) 2px,
+      rgba(14, 10, 8, 0.9) 2px,
+      rgba(14, 10, 8, 0.9) 5px
+    );
+    border-right: 1px solid rgba(239, 230, 216, 0.18);
+    box-shadow: inset 3px 0 6px rgba(239, 230, 216, 0.13), inset -2px 0 5px rgba(0, 0, 0, 0.6);
+  }
+  .jc-hinge::before,
+  .jc-hinge::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    right: 3px;
+    height: 14px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, rgba(239, 230, 216, 0.24), rgba(239, 230, 216, 0.06));
+    border: 1px solid rgba(239, 230, 216, 0.2);
+  }
+  .jc-hinge::before {
+    top: 14px;
+  }
+  .jc-hinge::after {
+    bottom: 14px;
+  }
+
+  .jc-window {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+    background: var(--cd-deep);
+  }
+  .jc-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    user-select: none;
+  }
+
+  .jc-tab {
+    position: absolute;
+    z-index: 12;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(239, 230, 216, 0.4), rgba(239, 230, 216, 0.13));
+    border: 1px solid rgba(239, 230, 216, 0.26);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  }
+  .jc-tab.tl {
+    top: 0;
+    left: 20px;
+    width: 20px;
+    height: 6px;
+    border-radius: 0 0 3px 3px;
+    border-top: none;
+  }
+  .jc-tab.tr {
+    top: 0;
+    right: 24px;
+    width: 20px;
+    height: 6px;
+    border-radius: 0 0 3px 3px;
+    border-top: none;
+  }
+  .jc-tab.bl {
+    bottom: 0;
+    left: 20px;
+    width: 20px;
+    height: 6px;
+    border-radius: 3px 3px 0 0;
+    border-bottom: none;
+  }
+  .jc-tab.br {
+    bottom: 0;
+    right: 24px;
+    width: 20px;
+    height: 6px;
+    border-radius: 3px 3px 0 0;
+    border-bottom: none;
+  }
+
+  .jc-vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    pointer-events: none;
+    box-shadow: inset 0 0 34px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.15) 0%,
+      transparent 28%,
+      transparent 66%,
+      rgba(0, 0, 0, 0.6) 100%
+    );
+  }
+
+  .jc-glare {
+    position: absolute;
+    inset: -40%;
+    z-index: 11;
+    pointer-events: none;
+    background: linear-gradient(
+      122deg,
+      transparent 22%,
+      rgba(239, 230, 216, 0.24) 36%,
+      rgba(239, 230, 216, 0.07) 44%,
+      transparent 54%,
+      rgba(239, 230, 216, 0.08) 66%,
+      transparent 76%
+    );
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+  }
+
+  .jc-open {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 18;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(18, 14, 12, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1.5px solid rgba(239, 230, 216, 0.5);
+    color: var(--ecru);
+    text-decoration: none;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(239, 230, 216, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.28s ease,
+      transform 0.36s var(--cd-ease),
+      background-color 0.22s ease,
+      border-color 0.22s ease,
+      color 0.22s ease;
+  }
+  @media (max-width: 959px) {
+    .jc-open {
+      width: 54px;
+      height: 54px;
+    }
+  }
+  .cd-actor.show-open .jc-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .cd-actor.show-open .jc-open:hover {
+    background: var(--case-accent);
+    border-color: var(--case-accent);
+    color: var(--ink);
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+
+  .jc-back {
+    inset: 0;
+    border-radius: 5px;
+    background:
+      radial-gradient(circle at 52% 50%, rgba(239, 230, 216, 0.07) 0%, rgba(239, 230, 216, 0.02) 15%, transparent 16%),
+      radial-gradient(circle at 52% 50%, transparent 40%, rgba(239, 230, 216, 0.03) 41%, transparent 42%),
+      linear-gradient(145deg, var(--cd-surface) 0%, var(--cd-deep) 100%);
+    border: 1px solid rgba(239, 230, 216, 0.15);
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.7);
+  }
+
+  .jc-bottom {
+    left: 0;
+    width: 100%;
+  }
+
+  .jc-edge {
+    background: linear-gradient(
+      180deg,
+      rgba(239, 230, 216, 0.2) 0%,
+      rgba(30, 24, 21, 0.88) 45%,
+      rgba(239, 230, 216, 0.12) 100%
+    );
+    border: 1px solid rgba(239, 230, 216, 0.16);
+    box-shadow: inset 0 0 6px rgba(239, 230, 216, 0.1);
+  }
+  .jc-left {
+    background: repeating-linear-gradient(
+      180deg,
+      rgba(239, 230, 216, 0.15) 0px,
+      rgba(239, 230, 216, 0.15) 2px,
+      rgba(18, 14, 12, 0.9) 2px,
+      rgba(18, 14, 12, 0.9) 5px
+    );
+  }
+
+  /* Disc nestled inside the case */
+  .jc-disc-slot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    pointer-events: none;
+    transform-style: preserve-3d;
+    transform: translate3d(-50%, -50%, 0px);
+    opacity: 0;
+    transition: transform 0.58s var(--cd-ease), opacity 0.24s ease;
+  }
+  .cd-actor.disc-peeking .jc-disc-slot {
+    transform: translate3d(-8%, -50%, 0px);
+    opacity: 1;
+  }
+  .cd-actor.disc-peeking:hover .jc-disc-slot {
+    transform: translate3d(-2%, -50%, 0px);
+  }
+
+  @keyframes cdSpin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .jc-disc {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(
+      from 20deg,
+      #b9b0a4 0deg,
+      #efe6d8 24deg,
+      #d9c9a4 50deg,
+      #c9b98e 74deg,
+      #e8d9b4 96deg,
+      #c2a878 122deg,
+      #a99c8f 152deg,
+      #ded3c2 184deg,
+      #bfae8c 212deg,
+      #d8c9a8 240deg,
+      #f0e4c8 268deg,
+      #cbbb95 294deg,
+      #c9c0b2 328deg,
+      #b9b0a4 360deg
+    );
+    box-shadow:
+      inset 0 0 0 2px rgba(239, 230, 216, 0.55),
+      inset 0 0 0 5px rgba(18, 14, 12, 0.34),
+      inset 0 0 22px rgba(0, 0, 0, 0.24),
+      0 14px 28px rgba(0, 0, 0, 0.6);
+    animation: cdSpin 13s linear infinite;
+  }
+  .jc-disc::before {
+    content: '';
+    position: absolute;
+    inset: 8%;
+    border-radius: 50%;
+    background: repeating-radial-gradient(
+      circle at center,
+      rgba(239, 230, 216, 0.07) 0px,
+      rgba(239, 230, 216, 0.07) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+  .jc-hub {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 31%;
+    height: 31%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      var(--cd-deep) 0%,
+      var(--cd-deep) 38%,
+      rgba(239, 230, 216, 0.42) 40%,
+      rgba(210, 198, 176, 0.2) 62%,
+      rgba(239, 230, 216, 0.44) 66%,
+      rgba(18, 14, 12, 0.36) 70%,
+      rgba(239, 230, 216, 0.16) 100%
+    );
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Printed marks over the cover artwork */
+  .jc-code {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    padding: 2px 6px;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(239, 230, 216, 0.92);
+    pointer-events: none;
+  }
+  .jc-foot {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 10px;
+    z-index: 10;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .jc-foot-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.9rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: rgba(239, 230, 216, 0.96);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .jc-foot-year {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    color: rgba(239, 230, 216, 0.75);
+  }
+
+  /* Editorial fallback cover (no artwork available) */
+  .jc-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    user-select: none;
+  }
+  .jc-fallback-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(239, 230, 216, 0.7);
+  }
+  .jc-fallback-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.6rem;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    color: var(--ecru);
+    margin: 0;
+  }
+  .jc-fallback-role {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(239, 230, 216, 0.65);
+    margin: 0.5rem 0 0;
+  }
+  .jc-fallback-foot {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(239, 230, 216, 0.55);
+    border-top: 1px solid rgba(239, 230, 216, 0.15);
+    padding-top: 8px;
+  }
+
+  /* ==========================================================================
+     REDUCED MOTION
+     ========================================================================== */
+  @media (prefers-reduced-motion: reduce) {
+    .cd-archive *,
+    .cd-flight-stage * {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+    .jc-disc {
+      animation: none !important;
+    }
+  }
+</style>
+
+<script>
+  // @ts-nocheck
+  type Disc = {
+    kind: 'film' | 'company';
+    catalog: string;
+    title: string;
+    year: string;
+    role: string;
+    format: string;
+    description: string;
+    cover: string | null;
+    fallback: string | null;
+    href: string | null;
+    watchUrl: string | null;
+    microX: number;
+    accent: string;
+    glow: string;
+  };
+
+  const ROOT = '[data-cd-archive]';
+  let teardown: (() => void) | null = null;
+
+  function bootCdArchive() {
+    const root = document.querySelector(ROOT) as HTMLElement | null;
+    if (!root || root.dataset.cdBound === '1') return;
+    root.dataset.cdBound = '1';
+
+    const dataEl = root.querySelector('[data-cd-data]');
+    if (!dataEl?.textContent) return;
+
+    let DISCS: Disc[] = [];
+    try {
+      DISCS = JSON.parse(dataEl.textContent);
+    } catch {
+      return;
+    }
+    if (!DISCS.length) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const towerEl = root.querySelector('[data-cd-tower]') as HTMLElement;
+    const bayEl = root.querySelector('[data-cd-bay]') as HTMLElement;
+    const panelEl = root.querySelector('[data-cd-panel]') as HTMLElement;
+    const liveEl = root.querySelector('[data-cd-live]') as HTMLElement;
+    const ambientEl = root.querySelector('[data-cd-ambient]') as HTMLElement;
+    const btnPrev = root.querySelector('[data-cd-prev]') as HTMLButtonElement;
+    const btnReturn = root.querySelector('[data-cd-return]') as HTMLButtonElement;
+    const btnNext = root.querySelector('[data-cd-next]') as HTMLButtonElement;
+
+    if (!towerEl || !bayEl || !panelEl) return;
+
+    // ---------------------------------------------------------------- utils
+    const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
+    const easeInOutCubic = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    const easeInOutQuart = (t: number) =>
+      t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+
+    const esc = (s: string) =>
+      String(s).replace(
+        /[&<>"']/g,
+        (c) =>
+          ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[
+            c
+          ] as string,
+      );
+
+    // ---------------------------------------------------------------- stage
+    const stage = document.createElement('div');
+    stage.className = 'cd-flight-stage';
+    document.body.appendChild(stage);
+
+    // ---------------------------------------------------------------- state
+    const states = new Map<string, string>();
+    const actors = new Map<string, any>();
+    DISCS.forEach((d) => states.set(d.catalog, 'seated'));
+
+    let activeIndex = -1;
+    let pendingLaunch: ReturnType<typeof setTimeout> | null = null;
+    let panelSwap: ReturnType<typeof setTimeout> | null = null;
+    let userInteracted = false;
+
+    const byId = (catalog: string) => DISCS.find((d) => d.catalog === catalog);
+    const slotEl = (catalog: string) =>
+      towerEl.querySelector(`.cd-slot[data-id="${catalog}"]`) as HTMLElement | null;
+
+    // ---------------------------------------------------------------- tower
+    function applyParting(centerIdx: number) {
+      Array.from(towerEl.children).forEach((child, i) => {
+        const el = child as HTMLElement;
+        el.classList.remove('part-up', 'part-down');
+        if (i === centerIdx - 1) el.classList.add('part-up');
+        if (i === centerIdx + 1) el.classList.add('part-down');
+      });
+    }
+    function clearParting() {
+      Array.from(towerEl.children).forEach((child) => {
+        (child as HTMLElement).classList.remove('part-up', 'part-down');
+      });
+    }
+
+    function setState(catalog: string, next: string) {
+      states.set(catalog, next);
+      const slot = slotEl(catalog);
+      if (!slot) return;
+      const spine = slot.querySelector('.cd-spine') as HTMLElement;
+      const cavity = slot.querySelector('.cd-cavity') as HTMLElement;
+      const isEmpty = next !== 'seated';
+
+      slot.classList.toggle('is-empty', isEmpty);
+
+      if (spine) {
+        spine.tabIndex = isEmpty ? -1 : 0;
+        spine.setAttribute('aria-hidden', isEmpty ? 'true' : 'false');
+        if (next === 'docked' || next === 'entering') {
+          spine.setAttribute('aria-current', 'true');
+        } else {
+          spine.removeAttribute('aria-current');
+        }
+      }
+      if (cavity) {
+        cavity.tabIndex = isEmpty ? 0 : -1;
+        cavity.setAttribute('aria-hidden', isEmpty ? 'false' : 'true');
+      }
+    }
+
+    towerEl.querySelectorAll('.cd-slot').forEach((slot) => {
+      const el = slot as HTMLElement;
+      const idx = Number(el.dataset.index);
+      const spine = el.querySelector('.cd-spine') as HTMLElement;
+      const cavity = el.querySelector('.cd-cavity') as HTMLElement;
+
+      spine?.addEventListener('mouseenter', () => applyParting(idx));
+      spine?.addEventListener('mouseleave', clearParting);
+      spine?.addEventListener('focus', () => applyParting(idx));
+      spine?.addEventListener('blur', clearParting);
+
+      spine?.addEventListener('click', () => {
+        markInteraction();
+        selectProject(idx);
+      });
+
+      cavity?.addEventListener('click', () => {
+        markInteraction();
+        const disc = DISCS[idx];
+        const state = states.get(disc.catalog);
+        if (state === 'docked' || state === 'entering') returnToStack(disc.catalog, true);
+        else if (state === 'returning') selectProject(idx);
+      });
+    });
+
+    // Arrow keys are scoped to the tower so they never hijack page scrolling.
+    towerEl.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      e.preventDefault();
+      markInteraction();
+      const forward = e.key === 'ArrowDown';
+      const next = forward
+        ? activeIndex >= DISCS.length - 1 || activeIndex === -1
+          ? 0
+          : activeIndex + 1
+        : activeIndex <= 0
+          ? DISCS.length - 1
+          : activeIndex - 1;
+      selectProject(next);
+      const spine = slotEl(DISCS[next].catalog)?.querySelector('.cd-spine') as HTMLElement;
+      spine?.focus({ preventScroll: true });
+    });
+
+    // ---------------------------------------------------------------- panel
+    function panelHTML(disc: Disc) {
+      const href = disc.href ? esc(disc.href) : null;
+      return `
+        <div class="cd-stagger">
+          <div class="cd-kicker">
+            <span style="color:${disc.accent}">${esc(disc.catalog)} · ${esc(disc.year)}</span>
+          </div>
+          <h3 class="cd-panel-title">${esc(disc.title)}</h3>
+          <div class="cd-panel-meta">
+            <p class="cd-panel-role">${esc(disc.role)}</p>
+            <p class="cd-panel-format">${esc(disc.format)}</p>
+          </div>
+          <p class="cd-panel-desc">${esc(disc.description)}</p>
+          <div class="cd-panel-actions">
+            ${
+              href
+                ? `<a class="cd-action" href="${href}">Open project <span aria-hidden="true">→</span></a>`
+                : ''
+            }
+            ${
+              disc.watchUrl
+                ? `<a class="cd-action cd-action-ghost" href="${esc(disc.watchUrl)}" target="_blank" rel="noopener noreferrer">Watch <span aria-hidden="true">↗</span></a>`
+                : ''
+            }
+          </div>
+        </div>`;
+    }
+
+    function standbyHTML() {
+      return `
+        <div class="cd-stagger">
+          <div class="cd-kicker" style="color:var(--ash)">
+            <span>Curated Archive · Sofia</span>
+          </div>
+          <h3 class="cd-standby-title">Selected Works<br /><em>Vol. 01 — ${String(DISCS.length).padStart(2, '0')}</em></h3>
+          <p class="cd-panel-desc">Narrative short films, documentaries, music videos and multi-camera live broadcasts directed and edited by Mihail Mihaylov.</p>
+          <div class="cd-stats">
+            <div><span class="cd-stat-value">${String(DISCS.length).padStart(2, '0')}</span><span class="cd-stat-label">Releases</span></div>
+            <div><span class="cd-stat-value">100+</span><span class="cd-stat-label">Delivered cuts</span></div>
+          </div>
+        </div>`;
+    }
+
+    function swapPanel(disc: Disc | null, delay = 220) {
+      if (panelSwap) clearTimeout(panelSwap);
+      panelEl.classList.add('is-exiting');
+      panelSwap = setTimeout(() => {
+        panelEl.innerHTML = disc ? panelHTML(disc) : standbyHTML();
+        void panelEl.offsetWidth;
+        panelEl.classList.remove('is-exiting');
+      }, delay);
+    }
+
+    function announce(disc: Disc | null) {
+      if (!liveEl) return;
+      liveEl.textContent = disc
+        ? `Now showing ${disc.title}, ${disc.year}`
+        : 'Display bay empty';
+    }
+
+    function updateChrome(disc: Disc | null, idx: number) {
+      if (disc) {
+        ambientEl.style.background = `radial-gradient(ellipse 52% 48% at 66% 42%, ${disc.glow} 0%, transparent 62%)`;
+        ambientEl.classList.add('is-active');
+        bayEl.classList.add('has-disc');
+        btnReturn.disabled = false;
+      } else {
+        ambientEl.classList.remove('is-active');
+        bayEl.classList.remove('has-disc');
+        btnReturn.disabled = true;
+      }
+    }
+
+    // ---------------------------------------------------------------- actor
+    class JewelCase {
+      disc: Disc;
+      slotEl: HTMLElement;
+      W: number;
+      D: number;
+      scaleStart: number;
+      pose: any;
+      el!: HTMLElement;
+      glareEl!: HTMLElement;
+      rafId: number | null = null;
+      tiltRafId: number | null = null;
+      tiltX = 0;
+      tiltY = 0;
+      targetTiltX = 0;
+      targetTiltY = 0;
+      mode = 'entering';
+      timers: ReturnType<typeof setTimeout>[] = [];
+
+      constructor(disc: Disc, slot: HTMLElement) {
+        this.disc = disc;
+        this.slotEl = slot;
+
+        const bayRect = bayEl.getBoundingClientRect();
+        const spine = slot.querySelector('.cd-spine') as HTMLElement;
+        const startRect = spine.getBoundingClientRect();
+
+        this.W = Math.round(bayRect.width);
+        this.scaleStart = startRect.width / this.W;
+        this.D = startRect.height / this.scaleStart;
+
+        this.pose = {
+          x: startRect.left + startRect.width / 2,
+          y: startRect.top + startRect.height / 2,
+          z: 0,
+          localZ: -this.W / 2,
+          rx: 90,
+          ry: 0,
+          rz: 0,
+          scale: this.scaleStart,
+        };
+
+        this.build();
+        this.applyPose(this.pose);
+      }
+
+      build() {
+        const { W, D, disc } = this;
+        const halfW = W / 2;
+        const halfD = D / 2;
+        const discSize = Math.round(W * 0.86);
+
+        const el = document.createElement('div');
+        el.className = 'cd-actor';
+        el.style.width = `${W}px`;
+        el.style.height = `${W}px`;
+        el.style.marginLeft = `${-halfW}px`;
+        el.style.marginTop = `${-halfW}px`;
+        el.style.setProperty('--case-accent', disc.accent);
+
+        // 1. Disc nestled inside
+        const discSlot = document.createElement('div');
+        discSlot.className = 'jc-disc-slot';
+        discSlot.style.width = `${discSize}px`;
+        discSlot.style.height = `${discSize}px`;
+        discSlot.innerHTML = '<div class="jc-disc"><div class="jc-hub"></div></div>';
+        el.appendChild(discSlot);
+
+        // 2. Front cover
+        const front = document.createElement('div');
+        front.className = 'jc-face jc-front';
+        front.style.transform = `translateZ(${halfD}px)`;
+
+        const hinge = document.createElement('div');
+        hinge.className = 'jc-hinge';
+        hinge.style.width = `${Math.round(W * 0.074)}px`;
+
+        const win = document.createElement('div');
+        win.className = 'jc-window';
+        win.appendChild(this.buildCover());
+
+        ['tl', 'tr', 'bl', 'br'].forEach((pos) => {
+          const tab = document.createElement('span');
+          tab.className = `jc-tab ${pos}`;
+          tab.setAttribute('aria-hidden', 'true');
+          win.appendChild(tab);
+        });
+
+        const vig = document.createElement('div');
+        vig.className = 'jc-vignette';
+        win.appendChild(vig);
+
+        const glare = document.createElement('div');
+        glare.className = 'jc-glare';
+        win.appendChild(glare);
+        this.glareEl = glare;
+
+        // Centre button -> internal project page (keeps viewers on site)
+        if (disc.href) {
+          const open = document.createElement('a');
+          open.className = 'jc-open';
+          open.href = disc.href;
+          open.setAttribute('aria-label', `Open ${disc.title} project page`);
+          open.innerHTML =
+            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+          win.appendChild(open);
+        }
+
+        front.appendChild(hinge);
+        front.appendChild(win);
+        el.appendChild(front);
+
+        // 3. Back
+        const back = document.createElement('div');
+        back.className = 'jc-face jc-back';
+        back.style.transform = `rotateY(180deg) translateZ(${halfD}px)`;
+        el.appendChild(back);
+
+        // 4. Bottom spine (matches the tower spine)
+        const bottom = document.createElement('div');
+        bottom.className = 'jc-face jc-bottom';
+        bottom.style.height = `${D}px`;
+        bottom.style.top = `${(W - D) / 2}px`;
+        bottom.style.transform = `rotateX(-90deg) translateZ(${halfW}px)`;
+        bottom.innerHTML = this.spineHTML();
+        el.appendChild(bottom);
+
+        // 5-7. Top / left / right edges
+        const top = document.createElement('div');
+        top.className = 'jc-face jc-edge';
+        top.style.width = `${W}px`;
+        top.style.height = `${D}px`;
+        top.style.top = `${(W - D) / 2}px`;
+        top.style.transform = `rotateX(90deg) translateZ(${halfW}px)`;
+        el.appendChild(top);
+
+        const left = document.createElement('div');
+        left.className = 'jc-face jc-edge jc-left';
+        left.style.width = `${D}px`;
+        left.style.height = `${W}px`;
+        left.style.left = `${(W - D) / 2}px`;
+        left.style.transform = `rotateY(-90deg) translateZ(${halfW}px)`;
+        el.appendChild(left);
+
+        const right = document.createElement('div');
+        right.className = 'jc-face jc-edge';
+        right.style.width = `${D}px`;
+        right.style.height = `${W}px`;
+        right.style.left = `${(W - D) / 2}px`;
+        right.style.opacity = '0.68';
+        right.style.transform = `rotateY(90deg) translateZ(${halfW}px)`;
+        el.appendChild(right);
+
+        if (!reduced) {
+          el.addEventListener('mousemove', (e: MouseEvent) => {
+            if (this.mode !== 'docked') return;
+            const r = el.getBoundingClientRect();
+            const nx = (e.clientX - r.left) / r.width - 0.5;
+            const ny = (e.clientY - r.top) / r.height - 0.5;
+            this.targetTiltY = nx * 16;
+            this.targetTiltX = -ny * 13;
+            this.startTilt();
+          });
+          el.addEventListener('mouseleave', () => {
+            if (this.mode !== 'docked') return;
+            this.targetTiltX = 0;
+            this.targetTiltY = 0;
+            this.startTilt();
+          });
+        }
+
+        this.el = el;
+        stage.appendChild(el);
+      }
+
+      spineHTML() {
+        const d = this.disc;
+        return `
+          <span class="cd-spine-shell">
+            <span class="cd-spine-hinge" aria-hidden="true"></span>
+            <span class="cd-spine-paper">
+              <span class="cd-spine-band" aria-hidden="true"></span>
+              <span class="cd-spine-main">
+                <span class="cd-spine-code">${esc(d.catalog)}</span>
+                <span class="cd-spine-title">${esc(d.title)}</span>
+              </span>
+              <span class="cd-spine-year">${esc(d.year)}</span>
+            </span>
+            <span class="cd-spine-cap" aria-hidden="true"></span>
+            <span class="cd-spine-glare" aria-hidden="true"></span>
+          </span>`;
+      }
+
+      buildCover() {
+        const d = this.disc;
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative;width:100%;height:100%;';
+
+        if (!d.cover) {
+          wrap.innerHTML = this.fallbackHTML();
+          return wrap;
+        }
+
+        const img = document.createElement('img');
+        img.src = d.cover;
+        img.alt = `${d.title} cover artwork`;
+        img.className = 'jc-cover-img';
+        img.loading = 'eager';
+        img.decoding = 'async';
+        img.draggable = false;
+
+        let triedFallback = false;
+        img.addEventListener('error', () => {
+          if (!triedFallback && d.fallback && img.src !== d.fallback) {
+            triedFallback = true;
+            img.src = d.fallback;
+          } else {
+            wrap.innerHTML = this.fallbackHTML();
+          }
+        });
+
+        wrap.appendChild(img);
+
+        const code = document.createElement('div');
+        code.className = 'jc-code';
+        code.textContent = d.catalog;
+
+        const foot = document.createElement('div');
+        foot.className = 'jc-foot';
+        foot.innerHTML = `<span class="jc-foot-title">${esc(d.title)}</span><span class="jc-foot-year">${esc(d.year)}</span>`;
+
+        wrap.appendChild(code);
+        wrap.appendChild(foot);
+        return wrap;
+      }
+
+      fallbackHTML() {
+        const d = this.disc;
+        return `
+          <div class="jc-fallback" style="background:radial-gradient(circle at 24% 20%, ${d.glow} 0%, var(--cd-surface) 62%, var(--cd-deep) 100%)">
+            <div class="jc-fallback-top"><span>${esc(d.catalog)}</span><span>${esc(d.year)}</span></div>
+            <div>
+              <p class="jc-fallback-title">${esc(d.title)}</p>
+              <p class="jc-fallback-role">${esc(d.role)}</p>
+            </div>
+            <div class="jc-fallback-foot">${esc(d.format)}</div>
+          </div>`;
+      }
+
+      applyPose(p: any) {
+        const rx = p.rx + this.tiltX;
+        const ry = p.ry + this.tiltY;
+
+        this.el.style.transform =
+          `translate3d(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px, ${p.z.toFixed(2)}px) ` +
+          `scale3d(${p.scale.toFixed(4)}, ${p.scale.toFixed(4)}, ${p.scale.toFixed(4)}) ` +
+          `translateZ(${p.localZ.toFixed(2)}px) ` +
+          `rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateZ(${p.rz.toFixed(2)}deg)`;
+
+        if (this.glareEl) {
+          const gx = ry * 2.2 - rx * 0.65;
+          const gy = rx * 1.1 - ry * 0.45;
+          const op = 0.52 + Math.min(0.45, Math.abs(Math.sin((rx + ry) * 0.03)) * 0.45);
+          this.glareEl.style.transform = `translate3d(${gx.toFixed(1)}px, ${gy.toFixed(1)}px, 0)`;
+          this.glareEl.style.opacity = op.toFixed(2);
+        }
+      }
+
+      slotAnchor() {
+        const cavity = this.slotEl.querySelector('.cd-cavity') as HTMLElement;
+        const r = cavity.getBoundingClientRect();
+        return {
+          x: r.left + r.width / 2 + this.disc.microX,
+          y: r.top + r.height / 2,
+          scale: r.width / this.W,
+        };
+      }
+
+      bayAnchor() {
+        const r = bayEl.getBoundingClientRect();
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2, scale: r.width / this.W };
+      }
+
+      stop() {
+        if (this.rafId) {
+          cancelAnimationFrame(this.rafId);
+          this.rafId = null;
+        }
+        if (this.tiltRafId) {
+          cancelAnimationFrame(this.tiltRafId);
+          this.tiltRafId = null;
+        }
+        this.timers.forEach(clearTimeout);
+        this.timers = [];
+      }
+
+      dockInstantly() {
+        this.stop();
+        const bay = this.bayAnchor();
+        this.pose.x = bay.x;
+        this.pose.y = bay.y;
+        this.pose.z = 0;
+        this.pose.localZ = 0;
+        this.pose.rx = 3;
+        this.pose.ry = -10;
+        this.pose.rz = 0;
+        this.pose.scale = bay.scale;
+        this.applyPose(this.pose);
+        this.mode = 'docked';
+        this.el.classList.add('is-docked', 'disc-peeking', 'show-open');
+        setState(this.disc.catalog, 'docked');
+      }
+
+      flyToBay(onDocked?: () => void) {
+        if (reduced) {
+          this.dockInstantly();
+          onDocked?.();
+          return;
+        }
+        this.stop();
+        this.mode = 'entering';
+        this.tiltX = this.tiltY = this.targetTiltX = this.targetTiltY = 0;
+        this.el.classList.remove('is-docked', 'disc-peeking', 'show-open');
+        this.el.style.zIndex = '50';
+
+        const start = { ...this.pose };
+        const duration = 840;
+        const t0 = performance.now();
+        const desktop = window.innerWidth >= 960;
+        const idx = DISCS.indexOf(this.disc);
+
+        applyParting(idx);
+        this.timers.push(
+          setTimeout(() => {
+            if (this.mode === 'entering' || this.mode === 'docked') clearParting();
+          }, 260),
+        );
+
+        const tick = (now: number) => {
+          const raw = clamp01((now - t0) / duration);
+          const bay = this.bayAnchor();
+
+          const pull = easeOutCubic(clamp01(raw / 0.24));
+          const release = 1 - easeInOutCubic(clamp01((raw - 0.16) / 0.56));
+          const pullX = desktop ? 46 * pull * release : 0;
+
+          const travel = easeInOutQuart(clamp01((raw - 0.08) / 0.92));
+          const arc = Math.sin(Math.PI * travel);
+
+          const liftY = desktop ? -52 * arc : -22 * arc;
+          const swingX = desktop ? 0 : 28 * arc;
+
+          const rot = easeInOutCubic(clamp01((raw - 0.12) / 0.84));
+          const bank = Math.sin(Math.PI * rot);
+
+          this.pose.x = lerp(start.x, bay.x, travel) + pullX + swingX;
+          this.pose.y = lerp(start.y, bay.y, travel) + liftY;
+          this.pose.z = lerp(start.z, 0, travel) + 96 * arc + 32 * pull * release;
+          this.pose.localZ = lerp(start.localZ, 0, rot);
+          this.pose.rx = lerp(start.rx, 3, rot);
+          this.pose.ry = lerp(start.ry, -10, rot) - 22 * bank;
+          this.pose.rz = lerp(start.rz, 0, rot) - (desktop ? 7.5 : 4.5) * bank;
+          this.pose.scale = lerp(start.scale, bay.scale, easeOutExpo(travel));
+
+          this.applyPose(this.pose);
+
+          if (raw < 1) {
+            this.rafId = requestAnimationFrame(tick);
+          } else {
+            this.rafId = null;
+            this.mode = 'docked';
+            this.el.classList.add('is-docked');
+            this.el.style.zIndex = '45';
+            setState(this.disc.catalog, 'docked');
+            requestAnimationFrame(() => {
+              if (this.mode !== 'docked') return;
+              this.el.classList.add('disc-peeking', 'show-open');
+            });
+            onDocked?.();
+          }
+        };
+        this.rafId = requestAnimationFrame(tick);
+      }
+
+      returnToSlot(onSeated?: () => void) {
+        this.stop();
+        const wasDocked = this.mode === 'docked';
+        this.mode = 'returning';
+        setState(this.disc.catalog, 'returning');
+
+        this.el.classList.remove('is-docked', 'show-open', 'disc-peeking');
+        this.el.style.zIndex = '42';
+
+        const start = { ...this.pose, rx: this.pose.rx + this.tiltX, ry: this.pose.ry + this.tiltY };
+        this.tiltX = this.tiltY = this.targetTiltX = this.targetTiltY = 0;
+
+        const seat = () => {
+          if (reduced) {
+            this.destroy();
+            setState(this.disc.catalog, 'seated');
+            onSeated?.();
+            return;
+          }
+          const duration = 680;
+          const t0 = performance.now();
+          const desktop = window.innerWidth >= 960;
+
+          const tick = (now: number) => {
+            if (this.mode !== 'returning') return;
+            const raw = clamp01((now - t0) / duration);
+            const slot = this.slotAnchor();
+
+            const travel = easeInOutCubic(clamp01(raw / 0.86));
+            const arc = Math.sin(Math.PI * travel);
+
+            const approach = easeOutCubic(clamp01(raw / 0.55));
+            const home = 1 - easeInOutCubic(clamp01((raw - 0.72) / 0.28));
+            const slideX = desktop ? 34 * approach * home : 0;
+
+            const rot = easeInOutCubic(clamp01(raw / 0.82));
+            const bank = Math.sin(Math.PI * rot);
+
+            this.pose.x = lerp(start.x, slot.x, travel) + slideX;
+            this.pose.y = lerp(start.y, slot.y, travel) + (desktop ? -34 * arc : 18 * arc);
+            this.pose.z = lerp(start.z, 0, travel) + 74 * arc;
+            this.pose.localZ = lerp(start.localZ, -this.W / 2, rot);
+            this.pose.rx = lerp(start.rx, 90, rot);
+            this.pose.ry = lerp(start.ry, 0, rot) + 18 * bank;
+            this.pose.rz = lerp(start.rz, 0, rot) + (desktop ? 6 : 3) * bank;
+            this.pose.scale = lerp(start.scale, slot.scale, easeInOutCubic(raw));
+
+            this.applyPose(this.pose);
+
+            if (raw < 1) {
+              this.rafId = requestAnimationFrame(tick);
+            } else {
+              this.rafId = null;
+              this.destroy();
+              setState(this.disc.catalog, 'seated');
+              onSeated?.();
+            }
+          };
+          this.rafId = requestAnimationFrame(tick);
+        };
+
+        if (wasDocked && !reduced) this.timers.push(setTimeout(seat, 110));
+        else seat();
+      }
+
+      startTilt() {
+        if (this.tiltRafId) return;
+        const step = () => {
+          if (this.mode !== 'docked') {
+            this.tiltRafId = null;
+            return;
+          }
+          this.tiltX += (this.targetTiltX - this.tiltX) * 0.14;
+          this.tiltY += (this.targetTiltY - this.tiltY) * 0.14;
+          this.applyPose(this.pose);
+          if (
+            Math.abs(this.targetTiltX - this.tiltX) > 0.03 ||
+            Math.abs(this.targetTiltY - this.tiltY) > 0.03
+          ) {
+            this.tiltRafId = requestAnimationFrame(step);
+          } else {
+            this.tiltX = this.targetTiltX;
+            this.tiltY = this.targetTiltY;
+            this.applyPose(this.pose);
+            this.tiltRafId = null;
+          }
+        };
+        this.tiltRafId = requestAnimationFrame(step);
+      }
+
+      syncToBay() {
+        if (this.mode !== 'docked') return;
+        const bay = this.bayAnchor();
+        this.pose.x = bay.x;
+        this.pose.y = bay.y;
+        this.pose.scale = bay.scale;
+        this.applyPose(this.pose);
+      }
+
+      destroy() {
+        this.stop();
+        this.el?.parentNode?.removeChild(this.el);
+        actors.delete(this.disc.catalog);
+      }
+    }
+
+    // ---------------------------------------------------------------- flow
+    function launch(idx: number) {
+      const disc = DISCS[idx];
+      if (!disc) return;
+      const slot = slotEl(disc.catalog);
+      if (!slot) return;
+
+      let actor = actors.get(disc.catalog);
+      if (!actor) {
+        actor = new JewelCase(disc, slot);
+        actors.set(disc.catalog, actor);
+      }
+      setState(disc.catalog, 'entering');
+      updateChrome(disc, idx);
+      actor.flyToBay();
+    }
+
+    function selectProject(idx: number) {
+      const disc = DISCS[idx];
+      if (!disc) return;
+
+      const state = states.get(disc.catalog);
+      if (activeIndex === idx && (state === 'docked' || state === 'entering')) return;
+
+      if (pendingLaunch) clearTimeout(pendingLaunch);
+
+      // On small screens, bring the bay into view so the docking is visible.
+      if (window.innerWidth < 1024) {
+        const r = bayEl.getBoundingClientRect();
+        if (r.top < 0 || r.bottom > window.innerHeight) {
+          bayEl.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+        }
+      }
+
+      let occupied = false;
+      actors.forEach((actor, id) => {
+        if (id !== disc.catalog && (actor.mode === 'docked' || actor.mode === 'entering')) {
+          occupied = true;
+          actor.returnToSlot();
+        }
+      });
+
+      activeIndex = idx;
+      announce(disc);
+
+      if (occupied) {
+        swapPanel(disc, 340);
+        pendingLaunch = setTimeout(() => launch(idx), 200);
+      } else {
+        swapPanel(disc, 210);
+        launch(idx);
+      }
+      updateChrome(disc, idx);
+    }
+
+    function returnToStack(catalog: string | null = null, reset = true) {
+      if (pendingLaunch) clearTimeout(pendingLaunch);
+
+      let target = catalog;
+      if (!target && activeIndex !== -1) target = DISCS[activeIndex]?.catalog ?? null;
+      if (!target) return;
+
+      const actor = actors.get(target);
+      if (actor && (actor.mode === 'docked' || actor.mode === 'entering')) {
+        actor.returnToSlot();
+      }
+
+      if (reset && activeIndex !== -1 && DISCS[activeIndex]?.catalog === target) {
+        activeIndex = -1;
+        updateChrome(null, -1);
+        swapPanel(null, 220);
+        announce(null);
+      }
+    }
+
+    function markInteraction() {
+      userInteracted = true;
+      if (autoTimer) {
+        clearTimeout(autoTimer);
+        autoTimer = null;
+      }
+    }
+
+    // ---------------------------------------------------------------- chrome
+    btnPrev?.addEventListener('click', () => {
+      markInteraction();
+      const idx = activeIndex <= 0 ? DISCS.length - 1 : activeIndex - 1;
+      selectProject(idx);
+    });
+    btnNext?.addEventListener('click', () => {
+      markInteraction();
+      const idx = activeIndex >= DISCS.length - 1 || activeIndex === -1 ? 0 : activeIndex + 1;
+      selectProject(idx);
+    });
+    btnReturn?.addEventListener('click', () => {
+      markInteraction();
+      returnToStack(null, true);
+    });
+
+    const onScroll = () => actors.forEach((a) => a.syncToBay());
+    const onResize = () => actors.forEach((a) => a.syncToBay());
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => actors.forEach((a) => a.syncToBay()));
+      ro.observe(bayEl);
+    }
+
+    // ---------------------------------------------------------------- intro
+    let autoTimer: ReturnType<typeof setTimeout> | null = null;
+    let io: IntersectionObserver | null = null;
+
+    if (!panelEl.firstElementChild && DISCS[0]) {
+      panelEl.innerHTML = panelHTML(DISCS[0]);
+    }
+    activeIndex = 0;
+    if (DISCS[0]) announce(DISCS[0]);
+
+    if (reduced) {
+      if (DISCS[0]) {
+        const slot = slotEl(DISCS[0].catalog);
+        if (slot) {
+          const actor = new JewelCase(DISCS[0], slot);
+          actors.set(DISCS[0].catalog, actor);
+          actor.dockInstantly();
+          updateChrome(DISCS[0], 0);
+        }
+      }
+    } else if (typeof IntersectionObserver !== 'undefined') {
+      io = new IntersectionObserver(
+        (entries) => {
+          const visible = entries.some((e) => e.isIntersecting);
+          if (!visible) return;
+          io?.disconnect();
+          io = null;
+          if (userInteracted) return;
+          autoTimer = setTimeout(() => {
+            if (!userInteracted) {
+              const state = states.get(DISCS[0].catalog);
+              if (state !== 'docked' && state !== 'entering') {
+                launch(0);
+              }
+            }
+          }, 120);
+        },
+        { threshold: 0.12 },
+      );
+      io.observe(root);
+    } else if (DISCS[0]) {
+      launch(0);
+    }
+
+    // ---------------------------------------------------------------- teardown
+    teardown = () => {
+      if (pendingLaunch) clearTimeout(pendingLaunch);
+      if (panelSwap) clearTimeout(panelSwap);
+      if (autoTimer) clearTimeout(autoTimer);
+      io?.disconnect();
+      ro?.disconnect();
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
+      actors.forEach((a) => a.stop());
+      actors.clear();
+      stage.remove();
+      root.dataset.cdBound = '0';
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootCdArchive, { once: true });
+  } else {
+    bootCdArchive();
+  }
+  document.addEventListener('astro:page-load', bootCdArchive);
+  document.addEventListener('astro:before-swap', () => {
+    if (teardown) {
+      teardown();
+      teardown = null;
+    }
+  });
+</script>
