@@ -23,7 +23,7 @@ const {
 const allProjects = await getCollection('projects');
 const site = (await getCollection('site'))[0]?.data;
 
-// Same curated order used by the homepage narrative list and the menu.
+// Same curated order used by the homepage selects and menu.
 const FILM_ORDER = [
   'silent-lifts-vitosha',
   'lunen-blyasak',
@@ -32,9 +32,17 @@ const FILM_ORDER = [
   'eastern-wind',
 ];
 
-const films = [...allProjects].sort(
-  (a, b) => FILM_ORDER.indexOf(a.data.slug) - FILM_ORDER.indexOf(b.data.slug),
-);
+const films = [...allProjects].sort((a, b) => {
+  const ordA = FILM_ORDER.indexOf(a.data.slug);
+  const ordB = FILM_ORDER.indexOf(b.data.slug);
+  if (ordA !== -1 && ordB !== -1) return ordA - ordB;
+  if (ordA !== -1) return -1;
+  if (ordB !== -1) return 1;
+  const yrA = parseInt(a.data.year || '0', 10);
+  const yrB = parseInt(b.data.year || '0', 10);
+  if (yrB !== yrA) return yrB - yrA;
+  return (a.data.index || '').localeCompare(b.data.index || '');
+});
 
 // Two accents only: films use brass, companies use oxblood.
 const ACCENT = {
@@ -42,8 +50,8 @@ const ACCENT = {
   company: { hex: '#B23A2E', glow: 'rgba(178,58,46,0.17)' },
 };
 
-// Hand-stacked micro offset, one per shelf position (in px).
-const MICRO = [-2, 2, -1, 3, -3, 1, -2, 2];
+// Hand-stacked micro offset, cycling per shelf position (in px).
+const MICRO = [-2, 2, -1, 3, -3, 1, -2, 2, -1, 2, -3, 1];
 
 const lastYear = (value: unknown) =>
   (String(value ?? '').match(/\d{4}/g) || []).pop() || '';
@@ -65,18 +73,30 @@ const DISC_COLORS: Record<string, { r: number; g: number; b: number; hex: string
   'timeless-ep2':         { r: 158, g: 114, b: 52, hex: '#9e7234' }, // Wheels golden kinetic ochre
 };
 
-const filmDiscs = films.map((entry) => {
+const PALETTE = [
+  { r: 212, g: 162, b: 76,  hex: '#D4A24C' },
+  { r: 68,  g: 122, b: 100, hex: '#447a64' },
+  { r: 38,  g: 78,  b: 132, hex: '#264e84' },
+  { r: 178, g: 58,  b: 46,  hex: '#B23A2E' },
+  { r: 88,  g: 124, b: 138, hex: '#587c8a' },
+  { r: 168, g: 116, b: 68,  hex: '#a87444' },
+  { r: 74,  g: 88,  b: 162, hex: '#4a58a2' },
+];
+
+const filmDiscs = films.map((entry, idx) => {
   const d = entry.data;
   const displayTitle =
     d.slug === 'silent-lifts-vitosha' && d.titleEn ? d.titleEn : d.title;
-  const color = DISC_COLORS[d.slug] || { r: 212, g: 162, b: 76, hex: '#D4A24C' };
+  const color = DISC_COLORS[d.slug] || PALETTE[idx % PALETTE.length];
+  // Essential concise description for main view; full synopsis preserved on project page
+  const shortDesc = d.synopsis ? (d.synopsis.split(/(?<=[.!?])\s+/)[0] || d.synopsis) : '';
   return {
     kind: 'film',
     title: displayTitle,
     year: d.year,
     role: d.kicker,
     format: d.meta,
-    description: d.synopsis,
+    description: shortDesc,
     cover: d.thumb,
     fallback: youTubeFallback(d.thumb),
     href: `/projects/${d.slug}`,
@@ -105,7 +125,7 @@ const timelessDiscs = [
     role: 'Video Editor · Уча, зная и играя',
     format: 'TV Broadcast Episode · Timeless Production',
     description:
-      "Broadcast episode for children's educational series 'Уча, зная и играя' on national television, cut and edited for Timeless Production Group.",
+      "Broadcast episode for children's educational series 'Уча, зная и играя' on national television, edited for Timeless Production.",
     cover: ep1Item?.thumb || 'https://img.youtube.com/vi/vC3i48d0Mms/maxresdefault.jpg',
     fallback: youTubeFallback(ep1Item?.thumb || 'https://img.youtube.com/vi/vC3i48d0Mms/maxresdefault.jpg'),
     href: '/companies/timeless-production',
@@ -121,7 +141,7 @@ const timelessDiscs = [
     role: 'Video Editor · Уча, зная и играя',
     format: 'TV Broadcast Episode · Timeless Production',
     description:
-      "Broadcast episode exploring how wheels work for 'Уча, зная и играя', cut and edited for Timeless Production Group.",
+      "Broadcast episode exploring how wheels work for 'Уча, зная и играя', edited for Timeless Production.",
     cover: ep2Item?.thumb || 'https://img.youtube.com/vi/CE5H1h6dpFw/maxresdefault.jpg',
     fallback: youTubeFallback(ep2Item?.thumb || 'https://img.youtube.com/vi/CE5H1h6dpFw/maxresdefault.jpg'),
     href: '/companies/timeless-production',
@@ -137,7 +157,7 @@ const rawDiscs = [...filmDiscs, ...timelessDiscs];
 const discs = rawDiscs.map((disc, i) => ({
   ...disc,
   catalog: `MM-${String(i + 1).padStart(2, '0')}`,
-  microX: MICRO[i] ?? 0,
+  microX: MICRO[i % MICRO.length] ?? 0,
 }));
 
 const total = String(discs.length).padStart(2, '0');
@@ -168,60 +188,57 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       <!-- ---------------------------------------------------------------- -->
       <div class="cd-tower-col">
         <div class="cd-tower-frame">
-          <div class="cd-tower-meta">
-            <span>Stack · {total} Discs</span>
-            <span class="cd-tower-meta-dim">2025—2026</span>
-          </div>
-
-          <div
-            class="cd-tower"
-            data-cd-tower
-            role="group"
-            aria-label="Work stack - select a disc"
-          >
-            {discs.map((disc, i) => (
-              <div
-                class={`cd-slot ${i === 0 ? 'is-empty' : ''}`}
-                data-id={disc.catalog}
-                data-index={i}
-                style={`--case-accent:${disc.accent};--micro-x:${disc.microX}px;`}
-              >
-                <button
-                  type="button"
-                  class="cd-cavity"
-                  data-cavity={i}
-                  tabindex="-1"
-                  inert
-                  aria-label={`Return ${disc.title} to the stack`}
+          <div class="cd-tower-scroll" data-cd-scroll>
+            <div
+              class="cd-tower"
+              data-cd-tower
+              role="group"
+              aria-label="Work stack - select a disc"
+            >
+              {discs.map((disc, i) => (
+                <div
+                  class={`cd-slot ${i === 0 ? 'is-empty' : ''}`}
+                  data-id={disc.catalog}
+                  data-index={i}
+                  style={`--case-accent:${disc.accent};--micro-x:${disc.microX}px;`}
                 >
-                  <span class="cd-cavity-mark">
-                    <span>{disc.catalog} · In bay</span>
-                  </span>
-                  <span class="cd-cavity-action">Return ↩</span>
-                </button>
-
-                <button
-                  type="button"
-                  class="cd-spine"
-                  data-spine={i}
-                  aria-label={`${disc.catalog}: ${disc.title}, ${disc.year}`}
-                >
-                  <span class="cd-spine-shell">
-                    <span class="cd-spine-hinge" aria-hidden="true"></span>
-                    <span class="cd-spine-paper">
-                      <span class="cd-spine-band" aria-hidden="true"></span>
-                      <span class="cd-spine-main">
-                        <span class="cd-spine-code">{disc.catalog}</span>
-                        <span class="cd-spine-title">{disc.title}</span>
-                      </span>
-                      <span class="cd-spine-year">{disc.year}</span>
+                  <button
+                    type="button"
+                    class="cd-cavity"
+                    data-cavity={i}
+                    tabindex="-1"
+                    inert
+                    aria-label={`Return ${disc.title} to the stack`}
+                  >
+                    <span class="cd-cavity-mark">
+                      <span>{disc.catalog} · In bay</span>
                     </span>
-                    <span class="cd-spine-cap" aria-hidden="true"></span>
-                    <span class="cd-spine-glare" aria-hidden="true"></span>
-                  </span>
-                </button>
-              </div>
-            ))}
+                    <span class="cd-cavity-action">Return ↩</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="cd-spine"
+                    data-spine={i}
+                    aria-label={`${disc.catalog}: ${disc.title}, ${disc.year}`}
+                  >
+                    <span class="cd-spine-shell">
+                      <span class="cd-spine-hinge" aria-hidden="true"></span>
+                      <span class="cd-spine-paper">
+                        <span class="cd-spine-band" aria-hidden="true"></span>
+                        <span class="cd-spine-main">
+                          <span class="cd-spine-code">{disc.catalog}</span>
+                          <span class="cd-spine-title">{disc.title}</span>
+                        </span>
+                        <span class="cd-spine-year">{disc.year}</span>
+                      </span>
+                      <span class="cd-spine-cap" aria-hidden="true"></span>
+                      <span class="cd-spine-glare" aria-hidden="true"></span>
+                    </span>
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div class="cd-plinth" aria-hidden="true"></div>
@@ -294,7 +311,6 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
             <h3 class="cd-panel-title">{discs[0].title}</h3>
             <div class="cd-panel-meta">
               <p class="cd-panel-role">{discs[0].role}</p>
-              <p class="cd-panel-format">{discs[0].format}</p>
             </div>
             <p class="cd-panel-desc">{discs[0].description}</p>
             <div class="cd-panel-actions">
@@ -420,7 +436,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       'bay'
       'panel'
       'tower';
-    gap: clamp(2.25rem, 5vw, 3.5rem);
+    gap: clamp(2rem, 4vw, 3rem);
     align-items: center;
   }
   .cd-tower-col {
@@ -437,27 +453,27 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
   @media (min-width: 1024px) {
     .cd-layout {
-      grid-template-columns: 300px minmax(0, 1fr);
+      grid-template-columns: 280px minmax(360px, 1fr);
       grid-template-areas:
         'tower bay'
         'tower panel';
-      column-gap: clamp(2rem, 4vw, 3rem);
-      row-gap: clamp(2.5rem, 4vw, 3.25rem);
+      column-gap: clamp(1.75rem, 3.5vw, 2.75rem);
+      row-gap: clamp(1.75rem, 3vw, 2.5rem);
       align-items: start;
     }
   }
 
   @media (min-width: 1180px) {
     .cd-layout {
-      grid-template-columns: 320px 340px minmax(0, 1fr);
+      grid-template-columns: 280px minmax(380px, 440px) minmax(230px, 300px);
       grid-template-areas: 'tower bay panel';
-      column-gap: clamp(2rem, 5vw, 4.5rem);
+      column-gap: clamp(1.5rem, 3vw, 2.75rem);
       align-items: center;
     }
   }
 
   /* ==========================================================================
-     TOWER
+     TOWER & SCROLL CONTAINER
      ========================================================================== */
   .cd-tower-frame {
     position: relative;
@@ -465,20 +481,32 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     max-width: 392px;
     margin: 0 auto;
   }
-  .cd-tower-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-    padding-inline: 2px;
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--ash);
+
+  .cd-tower-scroll {
+    max-height: 480px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 6px 6px 14px 2px;
+    margin: -6px -6px 0 -2px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 162, 76, 0.4) rgba(28, 22, 20, 0.4);
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
   }
-  .cd-tower-meta-dim {
-    opacity: 0.6;
+  .cd-tower-scroll::-webkit-scrollbar {
+    width: 5px;
+  }
+  .cd-tower-scroll::-webkit-scrollbar-track {
+    background: rgba(239, 230, 216, 0.04);
+    border-radius: 999px;
+  }
+  .cd-tower-scroll::-webkit-scrollbar-thumb {
+    background: rgba(212, 162, 76, 0.32);
+    border-radius: 999px;
+    transition: background 0.2s ease;
+  }
+  .cd-tower-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 162, 76, 0.65);
   }
 
   .cd-tower {
@@ -486,7 +514,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 8px 0 18px;
+    padding: 2px 0 6px;
   }
 
   .cd-plinth {
@@ -784,10 +812,10 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
   /* Wide atmospheric background aura directly behind the CD in the bay */
   .cd-aura-wrap {
     position: absolute;
-    top: 148px;
+    top: 190px;
     left: 50%;
-    width: clamp(520px, 75vw, 780px);
-    height: clamp(520px, 75vw, 780px);
+    width: clamp(560px, 80vw, 840px);
+    height: clamp(560px, 80vw, 840px);
     transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 0;
@@ -795,9 +823,9 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
   }
   @media (max-width: 959px) {
     .cd-aura-wrap {
-      top: 110px;
-      width: clamp(380px, 92vw, 560px);
-      height: clamp(380px, 92vw, 560px);
+      top: 140px;
+      width: clamp(380px, 92vw, 600px);
+      height: clamp(380px, 92vw, 600px);
     }
   }
 
@@ -816,16 +844,22 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
   }
   .cd-bay {
     position: relative;
-    width: 296px;
-    height: 296px;
+    width: 380px;
+    height: 380px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
+  @media (max-width: 1179px) and (min-width: 960px) {
+    .cd-bay {
+      width: 340px;
+      height: 340px;
+    }
+  }
   @media (max-width: 959px) {
     .cd-bay {
-      width: 220px;
-      height: 220px;
+      width: clamp(260px, 75vw, 320px);
+      height: clamp(260px, 75vw, 320px);
     }
   }
 
@@ -999,7 +1033,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
      EDITORIAL PANEL
      ========================================================================== */
   .cd-panel {
-    min-height: 260px;
+    min-height: 200px;
+    max-width: 300px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1007,8 +1042,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
   }
   @media (min-width: 768px) {
     .cd-panel {
-      padding-left: 1.5rem;
-      border-left: 1px solid var(--cd-line);
+      padding-left: 1.25rem;
+      border-left: 1px solid var(--cd-line-soft);
     }
   }
   .cd-panel.is-exiting {
@@ -1046,53 +1081,50 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 10.5px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
   }
   .cd-panel-title {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: clamp(1.5rem, 2.6vw, 2.1rem);
-    line-height: 1.02;
+    font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+    line-height: 1.05;
     letter-spacing: -0.025em;
     color: var(--ecru);
-    margin: 0 0 1rem;
+    margin: 0 0 0.75rem;
   }
   .cd-panel-meta {
-    padding-bottom: 0.9rem;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid var(--cd-line);
+    padding-bottom: 0.65rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--cd-line-soft);
   }
   .cd-panel-role {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 10.5px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(239, 230, 216, 0.9);
     margin: 0;
   }
-  .cd-panel-format {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    letter-spacing: 0.04em;
-    color: var(--ash);
-    margin: 0.25rem 0 0;
-  }
   .cd-panel-desc {
-    font-size: 0.9rem;
-    line-height: 1.6;
+    font-size: 0.86rem;
+    line-height: 1.55;
     color: var(--ash);
     margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .cd-panel-actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
+    gap: 0.65rem;
+    margin-top: 1rem;
   }
   .cd-action {
     display: inline-flex;
@@ -1218,6 +1250,11 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       inset 1px 0 0 rgba(239, 230, 216, 0.2),
       inset -1px 0 0 rgba(239, 230, 216, 0.16),
       0 26px 52px -12px rgba(0, 0, 0, 0.7);
+    transform-origin: 0% 50%;
+    transition: transform 0.65s cubic-bezier(0.2, 0.85, 0.3, 1);
+  }
+  .cd-actor.lid-open .jc-front {
+    transform: translateZ(var(--half-d, 18px)) rotateY(-130deg) !important;
   }
 
   .jc-hinge {
@@ -1346,20 +1383,20 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     top: 50%;
     left: 50%;
     z-index: 18;
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    transform: translate(-50%, -50%) scale(0.8);
+    transform: translate(-50%, -50%) scale(0.85);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(18, 14, 12, 0.55);
+    background: rgba(18, 14, 12, 0.65);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1.5px solid rgba(239, 230, 216, 0.5);
+    border: 1.5px solid rgba(239, 230, 216, 0.55);
     color: var(--ecru);
     text-decoration: none;
-    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(239, 230, 216, 0.3);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(239, 230, 216, 0.35);
     opacity: 0;
     pointer-events: none;
     transition:
@@ -1371,16 +1408,16 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
   }
   @media (max-width: 959px) {
     .jc-open {
-      width: 54px;
-      height: 54px;
+      width: 52px;
+      height: 52px;
     }
   }
-  .cd-actor.show-open .jc-open {
+  .cd-actor.disc-deployed .jc-open {
     opacity: 1;
     pointer-events: auto;
     transform: translate(-50%, -50%) scale(1);
   }
-  .cd-actor.show-open .jc-open:hover {
+  .cd-actor.disc-deployed .jc-open:hover {
     background: var(--case-accent);
     border-color: var(--case-accent);
     color: var(--ink);
@@ -1391,11 +1428,12 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     inset: 0;
     border-radius: 5px;
     background:
-      radial-gradient(circle at 52% 50%, rgba(239, 230, 216, 0.07) 0%, rgba(239, 230, 216, 0.02) 15%, transparent 16%),
-      radial-gradient(circle at 52% 50%, transparent 40%, rgba(239, 230, 216, 0.03) 41%, transparent 42%),
-      linear-gradient(145deg, var(--cd-surface) 0%, var(--cd-deep) 100%);
-    border: 1px solid rgba(239, 230, 216, 0.15);
-    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.7);
+      radial-gradient(circle at 50% 50%, rgba(239, 230, 216, 0.08) 0%, rgba(239, 230, 216, 0.02) 16%, transparent 17%),
+      radial-gradient(circle at 50% 50%, transparent 36%, rgba(239, 230, 216, 0.04) 37%, transparent 38%),
+      radial-gradient(circle at 50% 50%, transparent 48%, rgba(239, 230, 216, 0.03) 49%, transparent 50%),
+      linear-gradient(145deg, #161210 0%, #0d0a08 100%);
+    border: 1.5px solid rgba(239, 230, 216, 0.18);
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.85);
   }
 
   .jc-bottom {
@@ -1423,7 +1461,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     );
   }
 
-  /* Disc nestled inside the case */
+  /* Physical disc inside the jewel case tray */
   .jc-disc-slot {
     position: absolute;
     top: 50%;
@@ -1432,14 +1470,22 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     transform-style: preserve-3d;
     transform: translate3d(-50%, -50%, 0px);
     opacity: 0;
-    transition: transform 0.58s var(--cd-ease), opacity 0.24s ease;
+    transition:
+      transform 0.82s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.32s ease;
+    z-index: 6;
   }
-  .cd-actor.disc-peeking .jc-disc-slot {
-    transform: translate3d(-8%, -50%, 0px);
+  .cd-actor.lid-open .jc-disc-slot {
     opacity: 1;
   }
-  .cd-actor.disc-peeking:hover .jc-disc-slot {
-    transform: translate3d(-2%, -50%, 0px);
+  /* Physical smooth mechanical emergence into the bay focal point */
+  .cd-actor.disc-deployed .jc-disc-slot {
+    transform: translate3d(24%, -50%, 14px) scale(1.03);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .cd-actor.disc-deployed:hover .jc-disc-slot {
+    transform: translate3d(26%, -50%, 18px) scale(1.05);
   }
 
   @keyframes cdSpin {
@@ -1450,67 +1496,184 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       transform: rotate(360deg);
     }
   }
+
   .jc-disc {
     position: relative;
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background: conic-gradient(
-      from 20deg,
-      #b9b0a4 0deg,
-      #efe6d8 24deg,
-      #d9c9a4 50deg,
-      #c9b98e 74deg,
-      #e8d9b4 96deg,
-      #c2a878 122deg,
-      #a99c8f 152deg,
-      #ded3c2 184deg,
-      #bfae8c 212deg,
-      #d8c9a8 240deg,
-      #f0e4c8 268deg,
-      #cbbb95 294deg,
-      #c9c0b2 328deg,
-      #b9b0a4 360deg
+    overflow: hidden;
+    /* Pure metallic specular aluminum base (no beige) */
+    background: radial-gradient(
+      circle at 48% 48%,
+      #a8b4bf 0%,
+      #d2dbe3 24%,
+      #f5f7fa 48%,
+      #c6d0da 72%,
+      #929fa9 100%
     );
     box-shadow:
-      inset 0 0 0 2px rgba(239, 230, 216, 0.55),
-      inset 0 0 0 5px rgba(18, 14, 12, 0.34),
-      inset 0 0 22px rgba(0, 0, 0, 0.24),
-      0 14px 28px rgba(0, 0, 0, 0.6);
-    animation: cdSpin 13s linear infinite;
+      inset 0 0 0 1.5px rgba(255, 255, 255, 0.8),
+      inset 0 0 0 3px rgba(0, 0, 0, 0.28),
+      inset 0 0 18px rgba(0, 0, 0, 0.35),
+      0 20px 45px -10px rgba(0, 0, 0, 0.75),
+      0 4px 12px rgba(0, 0, 0, 0.5);
+    animation: cdSpin 14s linear infinite;
   }
-  .jc-disc::before {
-    content: '';
+
+  /* Iridescent rainbow diffraction grating across the specular base */
+  .jc-disc-rainbow {
     position: absolute;
-    inset: 8%;
+    inset: 0;
     border-radius: 50%;
+    pointer-events: none;
+    background: conic-gradient(
+      from var(--disc-rot, 35deg),
+      rgba(255, 0, 110, 0.44) 0deg,
+      rgba(255, 140, 0, 0.46) 24deg,
+      rgba(255, 235, 40, 0.52) 48deg,
+      rgba(30, 230, 130, 0.48) 72deg,
+      rgba(0, 205, 255, 0.52) 96deg,
+      rgba(140, 60, 255, 0.48) 120deg,
+      rgba(255, 0, 130, 0.42) 144deg,
+      rgba(240, 245, 255, 0.18) 162deg,
+      rgba(255, 0, 110, 0.44) 180deg,
+      rgba(255, 140, 0, 0.46) 204deg,
+      rgba(255, 235, 40, 0.52) 228deg,
+      rgba(30, 230, 130, 0.48) 252deg,
+      rgba(0, 205, 255, 0.52) 276deg,
+      rgba(140, 60, 255, 0.48) 300deg,
+      rgba(255, 0, 130, 0.42) 324deg,
+      rgba(240, 245, 255, 0.18) 342deg,
+      rgba(255, 0, 110, 0.44) 360deg
+    );
+    mix-blend-mode: color-dodge;
+    opacity: 0.88;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Microscopic concentric data tracks */
+  .jc-disc-grooves {
+    position: absolute;
+    inset: 6%;
+    border-radius: 50%;
+    pointer-events: none;
     background: repeating-radial-gradient(
       circle at center,
-      rgba(239, 230, 216, 0.07) 0px,
-      rgba(239, 230, 216, 0.07) 1px,
-      transparent 1px,
-      transparent 3px
+      rgba(255, 255, 255, 0.12) 0px,
+      rgba(255, 255, 255, 0.12) 1px,
+      rgba(0, 0, 0, 0.07) 1.5px,
+      transparent 2px,
+      transparent 3.5px
+    );
+    opacity: 0.78;
+    -webkit-mask-image: radial-gradient(circle at center, transparent 34%, black 35%, black 97%, transparent 98%);
+    mask-image: radial-gradient(circle at center, transparent 34%, black 35%, black 97%, transparent 98%);
+  }
+
+  /* Dynamic specular glare responding to mouse and angle */
+  .jc-disc-specular {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    background: linear-gradient(
+      var(--glare-angle, 125deg),
+      transparent 24%,
+      rgba(255, 255, 255, 0.28) 46%,
+      rgba(255, 255, 255, 0.72) 50%,
+      rgba(255, 255, 255, 0.28) 54%,
+      transparent 76%
+    );
+    mix-blend-mode: screen;
+    opacity: 0.82;
+  }
+
+  /* Lead-in mirror ring */
+  .jc-disc-lead-in {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 38%;
+    height: 38%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(
+      circle,
+      transparent 74%,
+      rgba(255, 255, 255, 0.5) 80%,
+      rgba(150, 168, 185, 0.6) 88%,
+      transparent 100%
     );
   }
+
+  /* Center Hub: clear polycarbonate clamping zone + inner mirror hub + spindle hole */
   .jc-hub {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 31%;
-    height: 31%;
+    width: 33%;
+    height: 33%;
     transform: translate(-50%, -50%);
     border-radius: 50%;
     background: radial-gradient(
       circle,
-      var(--cd-deep) 0%,
-      var(--cd-deep) 38%,
-      rgba(239, 230, 216, 0.42) 40%,
-      rgba(210, 198, 176, 0.2) 62%,
-      rgba(239, 230, 216, 0.44) 66%,
-      rgba(18, 14, 12, 0.36) 70%,
-      rgba(239, 230, 216, 0.16) 100%
+      transparent 34%,
+      rgba(239, 230, 216, 0.08) 38%,
+      rgba(255, 255, 255, 0.2) 54%,
+      rgba(18, 14, 12, 0.52) 74%,
+      rgba(239, 230, 216, 0.22) 100%
     );
-    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.45);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+      inset 0 0 0 2px rgba(0, 0, 0, 0.32);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    overflow: hidden;
+  }
+
+  .jc-hub-clamp {
+    position: absolute;
+    inset: 12%;
+    border-radius: 50%;
+    border: 1px dashed rgba(255, 255, 255, 0.28);
+    pointer-events: none;
+  }
+
+  .jc-hub-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 54%;
+    height: 54%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(160, 175, 190, 0.55) 50%,
+      rgba(255, 255, 255, 0.35) 100%
+    );
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.45),
+      inset 0 0 4px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+  }
+
+  .jc-hub-hole {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 36%;
+    height: 36%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: #0f0c0a;
+    box-shadow:
+      inset 0 2px 5px rgba(0, 0, 0, 0.98),
+      0 0 0 1px rgba(255, 255, 255, 0.5);
+    pointer-events: none;
   }
 
   /* Printed marks over the cover artwork */
@@ -1814,7 +1977,6 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
           <h3 class="cd-panel-title">${esc(disc.title)}</h3>
           <div class="cd-panel-meta">
             <p class="cd-panel-role">${esc(disc.role)}</p>
-            <p class="cd-panel-format">${esc(disc.format)}</p>
           </div>
           <p class="cd-panel-desc">${esc(disc.description)}</p>
           <div class="cd-panel-actions">
@@ -1902,6 +2064,129 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       }
     }
 
+    // ---------------------------------------------------------------- mechanical audio
+    class MechanicalAudio {
+      ctx: AudioContext | null = null;
+
+      init() {
+        if (!this.ctx && typeof AudioContext !== 'undefined') {
+          const AC = window.AudioContext || (window as any).webkitAudioContext;
+          if (AC) this.ctx = new AC();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(() => {});
+        }
+      }
+
+      playDiscSlideOut() {
+        if (!this.ctx) return;
+        try {
+          const t = this.ctx.currentTime;
+          const dur = 0.48;
+          const bSize = Math.floor(this.ctx.sampleRate * dur);
+          const buf = this.ctx.createBuffer(1, bSize, this.ctx.sampleRate);
+          const d = buf.getChannelData(0);
+          for (let i = 0; i < bSize; i++) d[i] = Math.random() * 2 - 1;
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buf;
+
+          const f = this.ctx.createBiquadFilter();
+          f.type = 'bandpass';
+          f.frequency.setValueAtTime(560, t);
+          f.frequency.exponentialRampToValueAtTime(310, t + dur);
+          f.Q.value = 4.2;
+
+          const g = this.ctx.createGain();
+          g.gain.setValueAtTime(0.001, t);
+          g.gain.linearRampToValueAtTime(0.045, t + 0.05);
+          g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+          noise.connect(f);
+          f.connect(g);
+          g.connect(this.ctx.destination);
+          noise.start(t);
+          noise.stop(t + dur);
+
+          setTimeout(() => this.playLatchClick(2100, 0.05), 380);
+        } catch {}
+      }
+
+      playDiscSlideIn() {
+        if (!this.ctx) return;
+        try {
+          const t = this.ctx.currentTime;
+          const dur = 0.38;
+          const bSize = Math.floor(this.ctx.sampleRate * dur);
+          const buf = this.ctx.createBuffer(1, bSize, this.ctx.sampleRate);
+          const d = buf.getChannelData(0);
+          for (let i = 0; i < bSize; i++) d[i] = Math.random() * 2 - 1;
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buf;
+
+          const f = this.ctx.createBiquadFilter();
+          f.type = 'bandpass';
+          f.frequency.setValueAtTime(360, t);
+          f.frequency.exponentialRampToValueAtTime(540, t + dur);
+          f.Q.value = 4.0;
+
+          const g = this.ctx.createGain();
+          g.gain.setValueAtTime(0.001, t);
+          g.gain.linearRampToValueAtTime(0.042, t + 0.04);
+          g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+          noise.connect(f);
+          f.connect(g);
+          g.connect(this.ctx.destination);
+          noise.start(t);
+          noise.stop(t + dur);
+        } catch {}
+      }
+
+      playTraySlide() {
+        if (!this.ctx) return;
+        try {
+          const t = this.ctx.currentTime;
+          const dur = 0.34;
+          const osc = this.ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(125, t);
+          osc.frequency.exponentialRampToValueAtTime(90, t + dur);
+
+          const g = this.ctx.createGain();
+          g.gain.setValueAtTime(0.001, t);
+          g.gain.linearRampToValueAtTime(0.025, t + 0.04);
+          g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+          osc.connect(g);
+          g.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + dur);
+        } catch {}
+      }
+
+      playLatchClick(pitch = 1800, vol = 0.05) {
+        if (!this.ctx) return;
+        try {
+          const t = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(pitch, t);
+          osc.frequency.exponentialRampToValueAtTime(280, t + 0.03);
+
+          const g = this.ctx.createGain();
+          g.gain.setValueAtTime(vol, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
+
+          osc.connect(g);
+          g.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.04);
+        } catch {}
+      }
+    }
+
+    const soundFX = new MechanicalAudio();
+
     // ---------------------------------------------------------------- actor
     class JewelCase {
       disc: Disc;
@@ -1952,7 +2237,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         const { W, D, disc } = this;
         const halfW = W / 2;
         const halfD = D / 2;
-        const discSize = Math.round(W * 0.86);
+        const discSize = Math.round(W * 0.90);
 
         const el = document.createElement('div');
         el.className = 'cd-actor';
@@ -1961,16 +2246,39 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         el.style.marginLeft = `${-halfW}px`;
         el.style.marginTop = `${-halfW}px`;
         el.style.setProperty('--case-accent', disc.accent);
+        el.style.setProperty('--half-d', `${halfD.toFixed(1)}px`);
 
-        // 1. Disc nestled inside
+        // 1. Disc nestled inside tray
         const discSlot = document.createElement('div');
         discSlot.className = 'jc-disc-slot';
         discSlot.style.width = `${discSize}px`;
         discSlot.style.height = `${discSize}px`;
-        discSlot.innerHTML = '<div class="jc-disc"><div class="jc-hub"></div></div>';
+        discSlot.innerHTML = `
+          <div class="jc-disc">
+            <div class="jc-disc-rainbow" aria-hidden="true"></div>
+            <div class="jc-disc-grooves" aria-hidden="true"></div>
+            <div class="jc-disc-specular" aria-hidden="true"></div>
+            <div class="jc-disc-lead-in" aria-hidden="true"></div>
+            <div class="jc-hub">
+              <div class="jc-hub-clamp" aria-hidden="true"></div>
+              <div class="jc-hub-inner" aria-hidden="true"></div>
+              <div class="jc-hub-hole" aria-hidden="true"></div>
+            </div>
+          </div>`;
+
+        // Direct project page link button mounted on the sliding disc
+        if (disc.href) {
+          const open = document.createElement('a');
+          open.className = 'jc-open';
+          open.href = disc.href;
+          open.setAttribute('aria-label', `Open ${disc.title} project page`);
+          open.innerHTML =
+            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+          discSlot.appendChild(open);
+        }
         el.appendChild(discSlot);
 
-        // 2. Front cover
+        // 2. Front cover door (pivots open on left hinge)
         const front = document.createElement('div');
         front.className = 'jc-face jc-front';
         front.style.transform = `translateZ(${halfD}px)`;
@@ -1999,22 +2307,11 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         win.appendChild(glare);
         this.glareEl = glare;
 
-        // Centre button -> internal project page (keeps viewers on site)
-        if (disc.href) {
-          const open = document.createElement('a');
-          open.className = 'jc-open';
-          open.href = disc.href;
-          open.setAttribute('aria-label', `Open ${disc.title} project page`);
-          open.innerHTML =
-            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-          win.appendChild(open);
-        }
-
         front.appendChild(hinge);
         front.appendChild(win);
         el.appendChild(front);
 
-        // 3. Back
+        // 3. Back jewel case tray
         const back = document.createElement('div');
         back.className = 'jc-face jc-back';
         back.style.transform = `rotateY(180deg) translateZ(${halfD}px)`;
@@ -2061,9 +2358,16 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
             const r = el.getBoundingClientRect();
             const nx = (e.clientX - r.left) / r.width - 0.5;
             const ny = (e.clientY - r.top) / r.height - 0.5;
-            this.targetTiltY = nx * 16;
-            this.targetTiltX = -ny * 13;
+            this.targetTiltY = nx * 14;
+            this.targetTiltX = -ny * 11;
             this.startTilt();
+
+            // Calculate live rainbow diffraction angle based on mouse
+            const discCenterX = r.left + r.width * 0.74;
+            const discCenterY = r.top + r.height * 0.5;
+            const angle = Math.atan2(e.clientY - discCenterY, e.clientX - discCenterX) * (180 / Math.PI);
+            el.style.setProperty('--disc-rot', `${(angle + 40).toFixed(1)}deg`);
+            el.style.setProperty('--glare-angle', `${(angle + 115).toFixed(1)}deg`);
           });
           el.addEventListener('mouseleave', () => {
             if (this.mode !== 'docked') return;
@@ -2211,7 +2515,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         this.pose.scale = bay.scale;
         this.applyPose(this.pose);
         this.mode = 'docked';
-        this.el.classList.add('is-docked', 'disc-peeking', 'show-open');
+        this.el.classList.add('is-docked', 'lid-open', 'disc-deployed');
         this.el.style.zIndex = '45';
         const isOffscreen = bay.y < -this.W * 1.5 || bay.y > window.innerHeight + this.W * 1.5;
         this.el.style.visibility = isOffscreen ? 'hidden' : 'visible';
@@ -2227,11 +2531,11 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         this.stop();
         this.mode = 'entering';
         this.tiltX = this.tiltY = this.targetTiltX = this.targetTiltY = 0;
-        this.el.classList.remove('is-docked', 'disc-peeking', 'show-open');
+        this.el.classList.remove('is-docked', 'lid-open', 'disc-deployed');
         this.el.style.zIndex = '50';
 
         const start = { ...this.pose };
-        const duration = 840;
+        const duration = 780;
         const t0 = performance.now();
         const desktop = window.innerWidth >= 960;
         const idx = DISCS.indexOf(this.disc);
@@ -2242,6 +2546,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
             if (this.mode === 'entering' || this.mode === 'docked') clearParting();
           }, 260),
         );
+
+        soundFX.playTraySlide();
 
         const tick = (now: number) => {
           const raw = clamp01((now - t0) / duration);
@@ -2279,9 +2585,21 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
             this.el.classList.add('is-docked');
             this.el.style.zIndex = '45';
             setState(this.disc.catalog, 'docked');
+
+            // 1. Smoothly swing open jewel case front cover
             requestAnimationFrame(() => {
               if (this.mode !== 'docked') return;
-              this.el.classList.add('disc-peeking', 'show-open');
+              this.el.classList.add('lid-open');
+              soundFX.playLatchClick(1600, 0.05);
+
+              // 2. Visibly and gradually slide the disc out from the tray into the bay focal point
+              this.timers.push(
+                setTimeout(() => {
+                  if (this.mode !== 'docked') return;
+                  this.el.classList.add('disc-deployed');
+                  soundFX.playDiscSlideOut();
+                }, 240),
+              );
             });
             onDocked?.();
           }
@@ -2294,23 +2612,22 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         const wasDocked = this.mode === 'docked';
         this.mode = 'returning';
         setState(this.disc.catalog, 'returning');
-
-        this.el.classList.remove('is-docked', 'show-open', 'disc-peeking');
         this.el.style.zIndex = '42';
 
         const start = { ...this.pose, rx: this.pose.rx + this.tiltX, ry: this.pose.ry + this.tiltY };
         this.tiltX = this.tiltY = this.targetTiltX = this.targetTiltY = 0;
 
-        const seat = () => {
+        const performFlight = () => {
           if (reduced) {
             this.destroy();
             setState(this.disc.catalog, 'seated');
             onSeated?.();
             return;
           }
-          const duration = 680;
+          const duration = 650;
           const t0 = performance.now();
           const desktop = window.innerWidth >= 960;
+          soundFX.playTraySlide();
 
           const tick = (now: number) => {
             if (this.mode !== 'returning') return;
@@ -2342,6 +2659,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
               this.rafId = requestAnimationFrame(tick);
             } else {
               this.rafId = null;
+              soundFX.playLatchClick(1900, 0.05);
               this.destroy();
               setState(this.disc.catalog, 'seated');
               onSeated?.();
@@ -2350,8 +2668,26 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
           this.rafId = requestAnimationFrame(tick);
         };
 
-        if (wasDocked && !reduced) this.timers.push(setTimeout(seat, 110));
-        else seat();
+        if (wasDocked && !reduced) {
+          // 1. Disc slides smoothly back into jewel case tray
+          this.el.classList.remove('disc-deployed');
+          soundFX.playDiscSlideIn();
+
+          // 2. Jewel case front lid swings shut
+          this.timers.push(
+            setTimeout(() => {
+              if (this.mode !== 'returning') return;
+              this.el.classList.remove('lid-open');
+              soundFX.playLatchClick(1500, 0.04);
+            }, 340),
+          );
+
+          // 3. Jewel case flies back to tower slot
+          this.timers.push(setTimeout(performFlight, 580));
+        } else {
+          this.el.classList.remove('is-docked', 'disc-deployed', 'lid-open');
+          performFlight();
+        }
       }
 
       startTilt() {
@@ -2421,6 +2757,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       const state = states.get(disc.catalog);
       if (activeIndex === idx && (state === 'docked' || state === 'entering')) return;
 
+      soundFX.init();
       if (pendingLaunch) clearTimeout(pendingLaunch);
 
       // On small screens, bring the bay into view so the docking is visible.
@@ -2443,8 +2780,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       announce(disc);
 
       if (occupied) {
-        swapPanel(disc, 340);
-        pendingLaunch = setTimeout(() => launch(idx), 200);
+        swapPanel(disc, 400);
+        pendingLaunch = setTimeout(() => launch(idx), 460);
       } else {
         swapPanel(disc, 210);
         launch(idx);
