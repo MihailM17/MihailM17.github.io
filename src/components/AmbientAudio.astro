@@ -1,0 +1,133 @@
+---
+// Minimalist cinematic ambient drone toggle for the site header.
+// Audio state persists seamlessly across Astro View Transitions via window.__SITE_SOUND__.
+---
+
+<button
+  type="button"
+  id="ambient-audio-btn"
+  class="ambient-btn"
+  aria-pressed="false"
+  aria-label="Toggle cinematic ambient sound"
+  title="Toggle cinematic ambient drone"
+  data-cursor-hover
+  data-cursor-label="SOUND"
+>
+  <span class="ambient-bars" aria-hidden="true">
+    <span class="bar b1"></span>
+    <span class="bar b2"></span>
+    <span class="bar b3"></span>
+  </span>
+  <span class="ambient-label">Sound</span>
+</button>
+
+<style>
+  .ambient-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    background: transparent;
+    border: 1px solid rgba(239, 230, 216, 0.14);
+    color: var(--ash);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.55rem 0.72rem;
+    cursor: pointer;
+    transition: border-color 0.22s ease, color 0.22s ease, background-color 0.22s ease;
+  }
+  .ambient-btn:hover {
+    border-color: var(--brass);
+    color: var(--ecru);
+  }
+  .ambient-btn.is-active {
+    border-color: var(--brass);
+    background: rgba(212, 162, 76, 0.08);
+    color: var(--brass);
+  }
+
+  .ambient-bars {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2.5px;
+    height: 12px;
+    width: 13px;
+  }
+  .ambient-bars .bar {
+    display: block;
+    width: 2.5px;
+    background: currentColor;
+    border-radius: 1px;
+    transition: height 0.25s ease;
+  }
+  .ambient-bars .b1 { height: 4px; }
+  .ambient-bars .b2 { height: 7px; }
+  .ambient-bars .b3 { height: 5px; }
+
+  .ambient-btn.is-active .b1 {
+    animation: ambWave 1.4s ease-in-out infinite alternate;
+  }
+  .ambient-btn.is-active .b2 {
+    animation: ambWave 1.05s ease-in-out 0.2s infinite alternate;
+  }
+  .ambient-btn.is-active .b3 {
+    animation: ambWave 1.65s ease-in-out 0.45s infinite alternate;
+  }
+
+  @keyframes ambWave {
+    0% { height: 3px; }
+    100% { height: 12px; }
+  }
+
+  @media (max-width: 860px) {
+    .ambient-btn {
+      padding: 0.5rem 0.6rem;
+    }
+    .ambient-label {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ambient-btn.is-active .bar {
+      animation: none;
+    }
+    .ambient-btn.is-active .b1 { height: 7px; }
+    .ambient-btn.is-active .b2 { height: 11px; }
+    .ambient-btn.is-active .b3 { height: 8px; }
+  }
+</style>
+
+<script>
+  import { getSound } from '../lib/sound';
+
+  function initAmbientBtn() {
+    const btn = document.getElementById('ambient-audio-btn') as HTMLButtonElement | null;
+    if (!btn) return;
+    const sound = getSound();
+
+    const sync = (active: boolean) => {
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    };
+
+    sync(sound.isDroneActive());
+
+    if (btn.dataset.bound === '1') return;
+    btn.dataset.bound = '1';
+
+    sound.subscribe(sync);
+    btn.addEventListener('click', () => {
+      sound.toggleDrone();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAmbientBtn);
+  } else {
+    initAmbientBtn();
+  }
+  document.addEventListener('astro:page-load', initAmbientBtn);
+  document.addEventListener('astro:after-swap', initAmbientBtn);
+</script>

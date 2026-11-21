@@ -1834,6 +1834,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
 <script>
   // @ts-nocheck
+  import { getSound } from '../lib/sound';
+
   type Disc = {
     id: string;
     kind: string;
@@ -1855,140 +1857,6 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     glow: string;
     avg: { r: number; g: number; b: number; hex: string };
   };
-
-  // Subtle, tactile mechanical CD bay audio (Web Audio API, zero external assets)
-  class DiscBayAudio {
-    ctx: AudioContext | null = null;
-
-    private getContext(): AudioContext | null {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return null;
-      if (!this.ctx) {
-        try {
-          this.ctx = new AudioCtx();
-        } catch {
-          return null;
-        }
-      }
-      if (this.ctx.state === 'suspended') {
-        this.ctx.resume().catch(() => {});
-      }
-      return this.ctx;
-    }
-
-    private playClick(ctx: AudioContext, when: number, freq: number, gainPeak: number, dur = 0.032) {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, when);
-      osc.frequency.exponentialRampToValueAtTime(Math.max(80, freq * 0.35), when + dur);
-
-      gain.gain.setValueAtTime(0.0001, when);
-      gain.gain.linearRampToValueAtTime(gainPeak, when + 0.003);
-      gain.gain.exponentialRampToValueAtTime(0.0001, when + dur);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(when);
-      osc.stop(when + dur + 0.01);
-    }
-
-    private playSlide(
-      ctx: AudioContext,
-      when: number,
-      duration: number,
-      filterFrom: number,
-      filterTo: number,
-      gainPeak: number,
-    ) {
-      const sampleCount = Math.floor(ctx.sampleRate * duration);
-      const buffer = ctx.createBuffer(1, sampleCount, ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < sampleCount; i++) {
-        data[i] = (Math.random() * 2 - 1) * 0.65;
-      }
-
-      const noise = ctx.createBufferSource();
-      noise.buffer = buffer;
-
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'bandpass';
-      filter.Q.value = 2.4;
-      filter.frequency.setValueAtTime(filterFrom, when);
-      filter.frequency.exponentialRampToValueAtTime(filterTo, when + duration);
-
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.0001, when);
-      gain.gain.linearRampToValueAtTime(gainPeak, when + duration * 0.22);
-      gain.gain.exponentialRampToValueAtTime(0.0001, when + duration);
-
-      noise.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-      noise.start(when);
-      noise.stop(when + duration + 0.02);
-    }
-
-    private playServo(ctx: AudioContext, when: number, fStart: number, fEnd: number, duration: number, gainPeak: number) {
-      const osc = ctx.createOscillator();
-      const filter = ctx.createBiquadFilter();
-      const gain = ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(fStart, when);
-      osc.frequency.exponentialRampToValueAtTime(fEnd, when + duration);
-
-      filter.type = 'lowpass';
-      filter.frequency.value = 340;
-
-      gain.gain.setValueAtTime(0.0001, when);
-      gain.gain.linearRampToValueAtTime(gainPeak, when + duration * 0.25);
-      gain.gain.exponentialRampToValueAtTime(0.0001, when + duration);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(when);
-      osc.stop(when + duration + 0.02);
-    }
-
-    playLoad() {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      // Soft plastic pull from shelf + gentle tray servo glide
-      this.playClick(ctx, now, 1150, 0.035, 0.024);
-      this.playSlide(ctx, now + 0.02, 0.18, 680, 1280, 0.028);
-      this.playServo(ctx, now + 0.04, 118, 174, 0.24, 0.022);
-    }
-
-    playDockLatch() {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      // Tactile spindle seat + subtle disc peek slide
-      this.playClick(ctx, now, 2100, 0.042, 0.022);
-      this.playClick(ctx, now + 0.018, 360, 0.048, 0.038);
-      this.playSlide(ctx, now + 0.05, 0.22, 1400, 880, 0.018);
-    }
-
-    playEject() {
-      const ctx = this.getContext();
-      if (!ctx) return;
-      const now = ctx.currentTime;
-      // Unlatch + quiet downward return glide
-      this.playClick(ctx, now, 1650, 0.036, 0.022);
-      this.playServo(ctx, now + 0.03, 152, 92, 0.2, 0.02);
-      this.playSlide(ctx, now + 0.04, 0.16, 1120, 620, 0.022);
-    }
-
-    dispose() {
-      if (this.ctx) {
-        this.ctx.close().catch(() => {});
-        this.ctx = null;
-      }
-    }
-  }
 
   const ROOT = '[data-cd-archive]';
   let teardown: (() => void) | null = null;
@@ -2027,7 +1895,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
     if (!towerEl || !bayEl || !panelEl) return;
 
-    const audio = new DiscBayAudio();
+    const sound = getSound();
 
     let activeCategory = 'all';
     const visibleIndices = (): number[] =>
@@ -2668,14 +2536,14 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
       flyToBay(onDocked?: () => void) {
         if (reduced) {
-          audio.playDockLatch();
+          sound.playCdDock();
           this.dockInstantly();
           onDocked?.();
           return;
         }
         this.stop();
         this.mountInStage();
-        audio.playLoad();
+        sound.playCdLoad();
         this.mode = 'entering';
         this.tiltX = this.tiltY = this.targetTiltX = this.targetTiltY = 0;
         this.el.style.visibility = 'visible';
@@ -2740,7 +2608,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
               this.el.style.zIndex = '45';
             }
             setState(this.disc.catalog, 'docked');
-            audio.playDockLatch();
+            sound.playCdDock();
             requestAnimationFrame(() => {
               if (this.mode !== 'docked') return;
               this.el.classList.add('disc-peeking', 'show-open');
@@ -2755,7 +2623,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         this.stop();
         const wasDocked = this.mode === 'docked';
         this.mountInStage();
-        if (wasDocked) audio.playEject();
+        if (wasDocked) sound.playCdReturn();
         this.mode = 'returning';
         setState(this.disc.catalog, 'returning');
 
@@ -2994,6 +2862,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
     filterBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
+        sound.playFilter();
         applyCategory(btn.dataset.cdFilter || 'all');
       });
     });
@@ -3143,7 +3012,6 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       clearMobileCenterHover();
       Array.from(actors.values()).forEach((a) => a.destroy());
       actors.clear();
-      audio.dispose();
       stage.remove();
       root.dataset.cdBound = '0';
     };

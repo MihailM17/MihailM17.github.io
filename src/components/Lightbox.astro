@@ -122,6 +122,8 @@
 
 <script>
   // @ts-nocheck
+  import { getSound } from '../lib/sound';
+
   let lightboxImages = [];
   let currentIndex = 0;
 
@@ -155,12 +157,14 @@
       lightbox.classList.add('is-open');
       document.body.style.overflow = 'hidden';
       document.addEventListener('keydown', onKeydown);
+      getSound().playOpen();
     }
 
     function closeLightbox() {
       lightbox.classList.remove('is-open');
       document.body.style.overflow = '';
       document.removeEventListener('keydown', onKeydown);
+      getSound().playClose();
     }
 
     function updateLightbox() {
@@ -174,6 +178,7 @@
     function navigate(dir) {
       currentIndex = (currentIndex + dir + lightboxImages.length) % lightboxImages.length;
       updateLightbox();
+      getSound().playStep(dir > 0 ? 1 : -1);
     }
 
     function onKeydown(e) {

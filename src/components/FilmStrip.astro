@@ -300,6 +300,8 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
 
 <script>
   // @ts-nocheck
+  import { getSound } from '../lib/sound';
+
   function initFilmStrip() {
     const section = document.querySelector('[data-filmstrip]');
     if (!section || section.dataset.stripBound === '1') return;
@@ -313,9 +315,11 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
     const stepSize = () => Math.max(280, Math.round(viewport.clientWidth * 0.65));
 
     prevBtn?.addEventListener('click', () => {
+      getSound().playStep(-1);
       viewport.scrollBy({ left: -stepSize(), behavior: 'smooth' });
     });
     nextBtn?.addEventListener('click', () => {
+      getSound().playStep(1);
       viewport.scrollBy({ left: stepSize(), behavior: 'smooth' });
     });
 

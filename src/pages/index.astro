@@ -263,6 +263,7 @@ const featuredStill = '/vitosha_shot_on_film.jpg';
     <script>
       // @ts-nocheck
       import { actions } from 'astro:actions';
+      import { getSound } from '../lib/sound';
 
       function initContactForm() {
         const form = document.getElementById('contact-form');
@@ -332,13 +333,16 @@ const featuredStill = '/vitosha_shot_on_film.jpg';
             hasError = true;
           }
           if (hasError) {
+            getSound().playError();
             if (status) status.textContent = 'Fix the fields above - not sent yet.';
             return;
           }
           if (!navigator.onLine) {
+            getSound().playError();
             if (status) status.textContent = 'You appear offline - message not sent. Copy your text and email directly.';
             return;
           }
+          getSound().playSend();
           if (status) status.textContent = 'Sending…';
           const submitBtn = form.querySelector('.form-submit');
           if (submitBtn) {
@@ -348,14 +352,17 @@ const featuredStill = '/vitosha_shot_on_film.jpg';
           try {
             const { error } = await actions.sendEmail({ name, email, subject, message });
             if (error) {
+              getSound().playError();
               if (status) {
                 status.textContent = `Couldn’t send: ${error.message} - try email directly: ${form.querySelector('a[href^="mailto:"]')?.href || 'mohailmihaylov2004@gmail.com'}`;
               }
             } else {
+              getSound().playSuccess();
               if (status) status.textContent = 'Sent - I’ll reply within 24h (Sofia time). Check spam if you don’t hear back.';
               form.reset();
             }
           } catch (err) {
+            getSound().playError();
             if (status) status.textContent = 'Network error - not sent. Please email directly or try again.';
             console.error(err);
           } finally {
@@ -374,6 +381,7 @@ const featuredStill = '/vitosha_shot_on_film.jpg';
             const addr = copyBtn.getAttribute('data-copy-email') || '';
             try {
               await navigator.clipboard.writeText(addr);
+              getSound().playCopy();
               copyBtn.textContent = 'Copied ✓';
               copyBtn.classList.add('is-copied');
               setTimeout(() => {

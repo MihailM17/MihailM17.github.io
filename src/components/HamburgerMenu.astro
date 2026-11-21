@@ -264,6 +264,8 @@ const companies = jobs.map((j: any) => ({
 
 <script>
   // @ts-nocheck
+  import { getSound } from '../lib/sound';
+
   function initHamburger() {
     const btn = document.getElementById('hamburger-btn');
     const menu = document.getElementById('site-menu');
@@ -290,6 +292,7 @@ const companies = jobs.map((j: any) => ({
       menu.removeAttribute('inert');
       menu.classList.add('is-open');
       document.documentElement.style.overflow = 'hidden';
+      getSound().playOpen();
       // focus first link for a11y
       const first = menu.querySelector('[data-menu-link]');
       if (first) first.focus();
@@ -300,6 +303,7 @@ const companies = jobs.map((j: any) => ({
       menu.setAttribute('inert', '');
       menu.classList.remove('is-open');
       document.documentElement.style.overflow = '';
+      getSound().playClose();
       btn.focus();
     }
     function toggle() {
