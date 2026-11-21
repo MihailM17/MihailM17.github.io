@@ -783,6 +783,23 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
   .cd-spine:focus-visible {
     transform: translate3d(calc(var(--micro-x, 0px) + 18px), 0, 0);
   }
+  @media (max-width: 1023px) {
+    .cd-spine.is-center-hover {
+      transform: translate3d(calc(var(--micro-x, 0px) + 18px), 0, 0);
+    }
+    .cd-spine.is-center-hover .cd-spine-shell {
+      border-color: rgba(239, 230, 216, 0.3);
+      box-shadow:
+        inset 0 1px 0 rgba(239, 230, 216, 0.36),
+        inset 0 -1px 0 rgba(239, 230, 216, 0.13),
+        0 12px 24px rgba(0, 0, 0, 0.7),
+        0 0 18px -6px var(--case-accent);
+    }
+    .cd-spine.is-center-hover .cd-spine-glare {
+      opacity: 1;
+      transform: translateX(10px);
+    }
+  }
   .cd-spine:focus-visible .cd-spine-shell {
     box-shadow: 0 0 0 1.5px var(--case-accent), 0 10px 22px rgba(0, 0, 0, 0.8);
   }
@@ -1012,6 +1029,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     .cd-bay {
       width: clamp(232px, 64vw, 290px);
       height: clamp(232px, 64vw, 290px);
+      perspective: 1400px;
+      perspective-origin: 50% 50%;
     }
   }
 
@@ -1384,6 +1403,14 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
   }
   .cd-actor.is-docked {
     pointer-events: auto;
+  }
+  /* Mobile in-bay docking: scrolls natively with the page via CSS (zero JS scroll chasing) */
+  .cd-actor.is-in-bay {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 12;
+    visibility: visible !important;
   }
 
   .jc-face {
@@ -2258,6 +2285,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       targetTiltX = 0;
       targetTiltY = 0;
       mode = 'entering';
+      inBay = false;
       timers: ReturnType<typeof setTimeout>[] = [];
 
       constructor(disc: Disc, slot: HTMLElement) {
@@ -2548,6 +2576,55 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         this.timers = [];
       }
 
+      mountInBay() {
+        const bay = this.bayAnchor();
+        this.inBay = true;
+        this.pose.x = bay.x;
+        this.pose.y = bay.y;
+        this.pose.scale = bay.scale;
+        this.el.classList.add('is-in-bay');
+        this.el.style.visibility = 'visible';
+        this.el.style.opacity = '1';
+        if (this.el.parentElement !== bayEl) {
+          bayEl.appendChild(this.el);
+        }
+        this.applyBayLocalPose();
+      }
+
+      mountInStage() {
+        if (!this.inBay) return;
+        const bay = this.bayAnchor();
+        this.inBay = false;
+        this.pose.x = bay.x;
+        this.pose.y = bay.y;
+        this.pose.scale = bay.scale;
+        this.el.classList.remove('is-in-bay');
+        if (this.el.parentElement !== stage) {
+          stage.appendChild(this.el);
+        }
+        this.applyPose(this.pose);
+      }
+
+      applyBayLocalPose() {
+        const p = this.pose;
+        const rx = p.rx + this.tiltX;
+        const ry = p.ry + this.tiltY;
+        const scale = bayEl.getBoundingClientRect().width / this.W;
+        this.pose.scale = scale;
+
+        this.el.style.transform =
+          `scale3d(${scale.toFixed(4)}, ${scale.toFixed(4)}, ${scale.toFixed(4)}) ` +
+          `rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateZ(${p.rz.toFixed(2)}deg)`;
+
+        if (this.glareEl) {
+          const gx = ry * 2.2 - rx * 0.65;
+          const gy = rx * 1.1 - ry * 0.45;
+          const op = 0.52 + Math.min(0.45, Math.abs(Math.sin((rx + ry) * 0.03)) * 0.45);
+          this.glareEl.style.transform = `translate3d(${gx.toFixed(1)}px, ${gy.toFixed(1)}px, 0)`;
+          this.glareEl.style.opacity = op.toFixed(2);
+        }
+      }
+
       dockInstantly() {
         this.stop();
         const bay = this.bayAnchor();
@@ -2559,14 +2636,19 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         this.pose.ry = -10;
         this.pose.rz = 0;
         this.pose.scale = bay.scale;
-        this.applyPose(this.pose);
         this.mode = 'docked';
         this.el.style.opacity = '1';
         this.el.classList.add('is-docked', 'disc-peeking', 'show-open');
-        this.el.style.zIndex = '45';
-        const isOffscreen =
-          bay.y + this.W * 0.75 < 0 || bay.y - this.W * 0.75 > window.innerHeight;
-        this.el.style.visibility = isOffscreen ? 'hidden' : 'visible';
+        if (window.innerWidth < 1024) {
+          this.mountInBay();
+        } else {
+          this.mountInStage();
+          this.applyPose(this.pose);
+          this.el.style.zIndex = '45';
+          const isOffscreen =
+            bay.y + this.W * 0.75 < 0 || bay.y - this.W * 0.75 > window.innerHeight;
+          this.el.style.visibility = isOffscreen ? 'hidden' : 'visible';
+        }
         setState(this.disc.catalog, 'docked');
       }
 
@@ -2578,6 +2660,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
           return;
         }
         this.stop();
+        this.mountInStage();
         audio.playLoad();
         this.mode = 'entering';
         this.tiltX = this.tiltY = this.targetTiltX = this.targetTiltY = 0;
@@ -2589,53 +2672,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         // FIX: Match CSS @media (min-width: 1024px) breakpoint
         const desktop = window.innerWidth >= 1024;
         const idx = DISCS.indexOf(this.disc);
-
-        // On mobile/tablet (< 1024px), keep the animation anchored directly to the bay's live
-        // coordinates so smooth scrolling up to the bay never causes jarring vertical jumps.
-        if (!desktop) {
-          const duration = 460;
-          const t0 = performance.now();
-          const tickMobile = (now: number) => {
-            if (this.mode !== 'entering') return;
-            const raw = clamp01((now - t0) / duration);
-            const t = easeOutExpo(raw);
-            const bay = this.bayAnchor();
-
-            this.pose.x = bay.x;
-            this.pose.y = bay.y + lerp(36, 0, t);
-            this.pose.z = lerp(-24, 0, t);
-            this.pose.localZ = 0;
-            this.pose.rx = lerp(16, 3, t);
-            this.pose.ry = lerp(-4, -10, t);
-            this.pose.rz = 0;
-            this.pose.scale = bay.scale * lerp(0.92, 1, t);
-
-            this.el.style.opacity = clamp01(raw * 2.4).toFixed(3);
-            this.applyPose(this.pose);
-
-            if (raw < 1) {
-              this.rafId = requestAnimationFrame(tickMobile);
-            } else {
-              this.rafId = null;
-              this.el.style.opacity = '1';
-              this.mode = 'docked';
-              this.el.classList.add('is-docked');
-              this.el.style.zIndex = '45';
-              setState(this.disc.catalog, 'docked');
-              audio.playDockLatch();
-              requestAnimationFrame(() => {
-                if (this.mode !== 'docked') return;
-                this.el.classList.add('disc-peeking', 'show-open');
-              });
-              onDocked?.();
-            }
-          };
-          this.rafId = requestAnimationFrame(tickMobile);
-          return;
-        }
-
         const start = { ...this.pose };
-        const duration = 840;
+        const duration = desktop ? 840 : 760;
         const t0 = performance.now();
 
         applyParting(idx);
@@ -2648,27 +2686,30 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         const tick = (now: number) => {
           const raw = clamp01((now - t0) / duration);
           const bay = this.bayAnchor();
+          // On mobile, read live slot anchor every frame so smooth page scroll never breaks the flight arc
+          const origin = desktop ? start : this.slotAnchor();
 
           const pull = easeOutCubic(clamp01(raw / 0.24));
           const release = 1 - easeInOutCubic(clamp01((raw - 0.16) / 0.56));
-          const pullX = 46 * pull * release;
+          const pullX = desktop ? 46 * pull * release : 0;
 
           const travel = easeInOutQuart(clamp01((raw - 0.08) / 0.92));
           const arc = Math.sin(Math.PI * travel);
 
-          const liftY = -52 * arc;
+          const liftY = desktop ? -52 * arc : -18 * arc;
+          const swingX = desktop ? 0 : 22 * arc;
 
           const rot = easeInOutCubic(clamp01((raw - 0.12) / 0.84));
           const bank = Math.sin(Math.PI * rot);
 
-          this.pose.x = lerp(start.x, bay.x, travel) + pullX;
-          this.pose.y = lerp(start.y, bay.y, travel) + liftY;
-          this.pose.z = lerp(start.z, 0, travel) + 96 * arc + 32 * pull * release;
+          this.pose.x = lerp(origin.x, bay.x, travel) + pullX + swingX;
+          this.pose.y = lerp(origin.y, bay.y, travel) + liftY;
+          this.pose.z = lerp(start.z, 0, travel) + (desktop ? 96 : 56) * arc + (desktop ? 32 : 12) * pull * release;
           this.pose.localZ = lerp(start.localZ, 0, rot);
           this.pose.rx = lerp(start.rx, 3, rot);
-          this.pose.ry = lerp(start.ry, -10, rot) - 22 * bank;
-          this.pose.rz = lerp(start.rz, 0, rot) - 7.5 * bank;
-          this.pose.scale = lerp(start.scale, bay.scale, easeOutExpo(travel));
+          this.pose.ry = lerp(start.ry, -10, rot) - (desktop ? 22 : 14) * bank;
+          this.pose.rz = lerp(start.rz, 0, rot) - (desktop ? 7.5 : 3.5) * bank;
+          this.pose.scale = lerp(origin.scale, bay.scale, easeOutExpo(travel));
 
           this.applyPose(this.pose);
 
@@ -2678,7 +2719,12 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
             this.rafId = null;
             this.mode = 'docked';
             this.el.classList.add('is-docked');
-            this.el.style.zIndex = '45';
+            if (window.innerWidth < 1024) {
+              // Hand off seamlessly into .cd-bay so subsequent scrolling is 100% native CSS
+              this.mountInBay();
+            } else {
+              this.el.style.zIndex = '45';
+            }
             setState(this.disc.catalog, 'docked');
             audio.playDockLatch();
             requestAnimationFrame(() => {
@@ -2694,11 +2740,13 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       returnToSlot(onSeated?: () => void) {
         this.stop();
         const wasDocked = this.mode === 'docked';
+        this.mountInStage();
         if (wasDocked) audio.playEject();
         this.mode = 'returning';
         setState(this.disc.catalog, 'returning');
 
         this.el.style.visibility = 'visible';
+        this.el.style.opacity = '1';
         this.el.classList.remove('is-docked', 'show-open', 'disc-peeking');
         this.el.style.zIndex = '42';
 
@@ -2714,67 +2762,34 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
           }
           // FIX: Match CSS @media (min-width: 1024px) breakpoint
           const desktop = window.innerWidth >= 1024;
-
-          if (!desktop) {
-            const duration = 300;
-            const t0 = performance.now();
-            const tickMobileOut = (now: number) => {
-              if (this.mode !== 'returning') return;
-              const raw = clamp01((now - t0) / duration);
-              const t = easeInOutCubic(raw);
-              const bay = this.bayAnchor();
-
-              this.pose.x = bay.x;
-              this.pose.y = bay.y + lerp(0, 30, t);
-              this.pose.z = lerp(0, -24, t);
-              this.pose.localZ = 0;
-              this.pose.rx = lerp(start.rx, 16, t);
-              this.pose.ry = lerp(start.ry, -4, t);
-              this.pose.rz = 0;
-              this.pose.scale = bay.scale * lerp(1, 0.92, t);
-
-              this.el.style.opacity = clamp01(1 - raw * 1.2).toFixed(3);
-              this.applyPose(this.pose);
-
-              if (raw < 1) {
-                this.rafId = requestAnimationFrame(tickMobileOut);
-              } else {
-                this.rafId = null;
-                this.destroy();
-                setState(this.disc.catalog, 'seated');
-                onSeated?.();
-              }
-            };
-            this.rafId = requestAnimationFrame(tickMobileOut);
-            return;
-          }
-
-          const duration = 680;
+          const duration = desktop ? 680 : 600;
           const t0 = performance.now();
 
           const tick = (now: number) => {
             if (this.mode !== 'returning') return;
             const raw = clamp01((now - t0) / duration);
             const slot = this.slotAnchor();
+            // On mobile, anchor start dynamically to bay if returning from docked so smooth scroll stays locked
+            const origin = !desktop && wasDocked ? this.bayAnchor() : start;
 
             const travel = easeInOutCubic(clamp01(raw / 0.86));
             const arc = Math.sin(Math.PI * travel);
 
             const approach = easeOutCubic(clamp01(raw / 0.55));
             const home = 1 - easeInOutCubic(clamp01((raw - 0.72) / 0.28));
-            const slideX = 34 * approach * home;
+            const slideX = desktop ? 34 * approach * home : 0;
 
             const rot = easeInOutCubic(clamp01(raw / 0.82));
             const bank = Math.sin(Math.PI * rot);
 
-            this.pose.x = lerp(start.x, slot.x, travel) + slideX;
-            this.pose.y = lerp(start.y, slot.y, travel) - 34 * arc;
-            this.pose.z = lerp(start.z, 0, travel) + 74 * arc;
+            this.pose.x = lerp(origin.x, slot.x, travel) + slideX;
+            this.pose.y = lerp(origin.y, slot.y, travel) + (desktop ? -34 * arc : 14 * arc);
+            this.pose.z = lerp(start.z, 0, travel) + (desktop ? 74 : 44) * arc;
             this.pose.localZ = lerp(start.localZ, -this.W / 2, rot);
             this.pose.rx = lerp(start.rx, 90, rot);
-            this.pose.ry = lerp(start.ry, 0, rot) + 18 * bank;
-            this.pose.rz = lerp(start.rz, 0, rot) + 6 * bank;
-            this.pose.scale = lerp(start.scale, slot.scale, easeInOutCubic(raw));
+            this.pose.ry = lerp(start.ry, 0, rot) + (desktop ? 18 : 12) * bank;
+            this.pose.rz = lerp(start.rz, 0, rot) + (desktop ? 6 : 2.5) * bank;
+            this.pose.scale = lerp(origin.scale, slot.scale, easeInOutCubic(raw));
 
             this.applyPose(this.pose);
 
@@ -2819,8 +2834,21 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         this.tiltRafId = requestAnimationFrame(step);
       }
 
-      syncToBay() {
+      syncToBay(fromResize = false) {
         if (this.mode !== 'docked') return;
+        const mobile = window.innerWidth < 1024;
+        if (mobile) {
+          if (!this.inBay) {
+            this.mountInBay();
+          } else if (fromResize) {
+            this.applyBayLocalPose();
+          }
+          // On mobile scroll, do nothing — CSS handles native locked scrolling!
+          return;
+        }
+        if (this.inBay) {
+          this.mountInStage();
+        }
         const bay = this.bayAnchor();
         this.pose.x = bay.x;
         this.pose.y = bay.y;
@@ -2863,8 +2891,9 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
       if (pendingLaunch) clearTimeout(pendingLaunch);
 
-      // On small screens, bring the bay into view so the docking is visible.
+      // On small screens, clear virtual hover and bring the bay into view so the docking is visible.
       if (window.innerWidth < 1024) {
+        clearMobileCenterHover();
         const r = bayEl.getBoundingClientRect();
         if (r.top < 0 || r.bottom > window.innerHeight) {
           bayEl.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
@@ -2930,6 +2959,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         stackLabelEl.textContent = `Stack · ${n} ${vis.length === 1 ? 'Disc' : 'Discs'}`;
       }
 
+      clearMobileCenterHover();
       clearParting();
       towerEl.querySelectorAll('.cd-slot').forEach((slot) => {
         const el = slot as HTMLElement;
@@ -2973,21 +3003,97 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       returnToStack(null, true);
     });
 
-    // Sync via rAF on scroll/resize for silky-smooth tracking with LenisSmoothScroll
+    // ---------------------------------------------------------------- mobile center-of-screen virtual hover
+    let mobileHoverIdx = -1;
+    let mobileHoverRafId: number | null = null;
+
+    function clearMobileCenterHover() {
+      if (mobileHoverIdx === -1) return;
+      const prevSlot = towerEl.querySelector(`.cd-slot[data-index="${mobileHoverIdx}"]`);
+      prevSlot?.querySelector('.cd-spine')?.classList.remove('is-center-hover');
+      mobileHoverIdx = -1;
+      clearParting();
+    }
+
+    function updateMobileCenterHover() {
+      if (reduced || window.innerWidth >= 1024) {
+        clearMobileCenterHover();
+        return;
+      }
+      const midY = window.innerHeight * 0.5;
+      const towerRect = towerEl.getBoundingClientRect();
+      if (towerRect.bottom < midY - 20 || towerRect.top > midY + 20) {
+        clearMobileCenterHover();
+        return;
+      }
+
+      let bestIdx = -1;
+      let bestDist = 44; // px tolerance around vertical screen center
+      towerEl.querySelectorAll('.cd-slot').forEach((slot) => {
+        const el = slot as HTMLElement;
+        if (el.classList.contains('is-filtered-out') || el.classList.contains('is-empty')) return;
+        const r = el.getBoundingClientRect();
+        if (r.height < 4) return;
+        const dist = Math.abs(r.top + r.height / 2 - midY);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestIdx = Number(el.dataset.index);
+        }
+      });
+
+      if (bestIdx === mobileHoverIdx) return;
+
+      if (mobileHoverIdx !== -1) {
+        const prevSlot = towerEl.querySelector(`.cd-slot[data-index="${mobileHoverIdx}"]`);
+        prevSlot?.querySelector('.cd-spine')?.classList.remove('is-center-hover');
+      }
+
+      mobileHoverIdx = bestIdx;
+      if (bestIdx !== -1) {
+        const nextSlot = towerEl.querySelector(`.cd-slot[data-index="${bestIdx}"]`);
+        nextSlot?.querySelector('.cd-spine')?.classList.add('is-center-hover');
+        applyParting(bestIdx);
+      } else {
+        clearParting();
+      }
+    }
+
+    const scheduleMobileCenterHover = () => {
+      if (mobileHoverRafId !== null) return;
+      mobileHoverRafId = requestAnimationFrame(() => {
+        mobileHoverRafId = null;
+        updateMobileCenterHover();
+      });
+    };
+
+    // Sync via rAF on desktop scroll; on mobile scroll, skip docked CD tracking and run virtual center hover
     const scheduleSync = () => {
+      if (window.innerWidth < 1024) {
+        scheduleMobileCenterHover();
+        return;
+      }
       if (syncRafId !== null) return;
       syncRafId = requestAnimationFrame(() => {
         syncRafId = null;
-        actors.forEach((a) => a.syncToBay());
+        actors.forEach((a) => a.syncToBay(false));
+      });
+    };
+
+    const scheduleResize = () => {
+      if (syncRafId !== null) return;
+      syncRafId = requestAnimationFrame(() => {
+        syncRafId = null;
+        actors.forEach((a) => a.syncToBay(true));
+        updateMobileCenterHover();
       });
     };
 
     window.addEventListener('scroll', scheduleSync, { passive: true });
-    window.addEventListener('resize', scheduleSync);
+    window.addEventListener('resize', scheduleResize);
 
     let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(scheduleSync);
+      ro = new ResizeObserver(scheduleResize);
       ro.observe(bayEl);
     }
 
@@ -3005,7 +3111,10 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         actor.dockInstantly();
       }
       updateChrome(DISCS[0]);
-      requestAnimationFrame(() => actors.forEach((a) => a.syncToBay()));
+      requestAnimationFrame(() => {
+        actors.forEach((a) => a.syncToBay(true));
+        updateMobileCenterHover();
+      });
     }
 
     // ---------------------------------------------------------------- teardown
@@ -3013,10 +3122,12 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       if (pendingLaunch) clearTimeout(pendingLaunch);
       if (panelSwap) clearTimeout(panelSwap);
       if (syncRafId !== null) cancelAnimationFrame(syncRafId);
+      if (mobileHoverRafId !== null) cancelAnimationFrame(mobileHoverRafId);
       ro?.disconnect();
       window.removeEventListener('scroll', scheduleSync);
-      window.removeEventListener('resize', scheduleSync);
-      actors.forEach((a) => a.stop());
+      window.removeEventListener('resize', scheduleResize);
+      clearMobileCenterHover();
+      Array.from(actors.values()).forEach((a) => a.destroy());
       actors.clear();
       audio.dispose();
       stage.remove();
