@@ -2424,7 +2424,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
         if (!reduced) {
           el.addEventListener('mousemove', (e: MouseEvent) => {
-            if (this.mode !== 'docked') return;
+            if (this.inBay || this.mode !== 'docked' || window.innerWidth < 1024) return;
             const r = el.getBoundingClientRect();
             const nx = (e.clientX - r.left) / r.width - 0.5;
             const ny = (e.clientY - r.top) / r.height - 0.5;
@@ -2433,10 +2433,20 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
             this.startTilt();
           });
           el.addEventListener('mouseleave', () => {
-            if (this.mode !== 'docked') return;
+            if (this.inBay || this.mode !== 'docked' || window.innerWidth < 1024) return;
             this.targetTiltX = 0;
             this.targetTiltY = 0;
             this.startTilt();
+          });
+        }
+
+        // On mobile, allow tapping anywhere on the docked CD cover to open its project page
+        if (disc.href) {
+          el.addEventListener('click', (e: MouseEvent) => {
+            if (!this.inBay || this.mode !== 'docked') return;
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('a')) return;
+            window.location.href = disc.href as string;
           });
         }
 
@@ -2521,6 +2531,10 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       }
 
       applyPose(p: any) {
+        if (this.inBay) {
+          this.applyBayLocalPose();
+          return;
+        }
         const rx = p.rx + this.tiltX;
         const ry = p.ry + this.tiltY;
 
@@ -2810,9 +2824,9 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       }
 
       startTilt() {
-        if (this.tiltRafId) return;
+        if (this.inBay || this.tiltRafId) return;
         const step = () => {
-          if (this.mode !== 'docked') {
+          if (this.inBay || this.mode !== 'docked') {
             this.tiltRafId = null;
             return;
           }
