@@ -1,25 +1,21 @@
 {
-  "siteTitle": "Mihail Mihaylov - Director & Editor",
+  "siteTitle": "Mihail Mihaylov — Film Student, Director & Editor",
   "hero": {
-    "eyebrow": "Director - Editor",
+    "eyebrow": "Mihail Mihaylov · Sofia, Bulgaria",
     "titleLine1": "Mihail",
     "titleLine2": "Mihaylov",
-    "sub": "Fourth-year director and editor at New Bulgarian University, with experience directing short films, documentaries, TV, and online short-form content.",
-    "meta": "Sofia, Bulgaria · 42.70°N 23.32°E"
+    "sub": "Film student at New Bulgarian University working across directing, editing, and live production.",
+    "meta": "Sofia, Bulgaria"
   },
   "about": {
-    "kicker": "About - Sofia / NBU",
-    "titleLine1": "Crafting",
-    "titleLine2": "visual stories.",
-    "lead": "Sofia-based director in fourth year, Cinema & Television at New Bulgarian University.",
-    "p1": "Hey, I'm Mihail. I'm a director from Sofia who also edits videos. I'm currently in my fourth year studying Cinema and Television at New Bulgarian University.",
-    "p2": "I love the entire post-production process, especially color grading in DaVinci Resolve. Over the past couple of years, my work has bounced between directing short documentaries and TV reality shows, to editing fast-paced digital content.",
-    "stats": [
-      { "value": "28", "label": "days to make a documentary" },
-      { "value": "04", "label": "tv episodes delivered" },
-      { "value": "100+", "label": "shorts & reels" }
-    ],
-    "lang": "Bulgarian • English - Sofia, Bulgaria",
+    "kicker": "About",
+    "titleLine1": "A little",
+    "titleLine2": "about me.",
+    "lead": "I'm Mihail, a film student based in Sofia, Bulgaria, currently studying Cinema and Television at New Bulgarian University.",
+    "p1": "Over the past few years, I've had the chance to work on a variety of projects, from short films and documentaries to television productions and online video.",
+    "p2": "I'm particularly interested in directing and editing, although I enjoy being involved in different parts of the filmmaking process. I'm still exploring my place in the industry, learning through each project and looking forward to whatever comes next.",
+    "stats": [],
+    "lang": "Sofia, Bulgaria",
     "portraitAlt": "Portrait of Mihail Mihaylov"
   },
   "narrative": {
@@ -154,19 +150,17 @@
     "kicker": "Contact",
     "title": "Get in touch.",
     "titleAccent": "",
-    "lede": "Based in Sofia, Bulgaria. Open to editing, color, and directing work.",
+    "lede": "Have a project in mind, want to collaborate, or just want to say hello? Feel free to get in touch.",
     "email": "mohailmihaylov2004@gmail.com",
     "instagram": "https://www.instagram.com/mihail.m4307/",
     "linkedin": "https://www.linkedin.com/in/mihail-mihaylov-bb0238247/",
     "formNote": "Opens your email app - no data stored on site."
   },
-  "footer": "© 2026 Mihail Mihaylov · Sofia, Bulgaria · Made for the big screen",
+  "footer": "© 2026 Mihail Mihaylov · Sofia, Bulgaria",
   "nav": [
-    { "href": "/#narrative", "label": "Narrative", "sub": "01 - Shorts & Docs" },
-    { "href": "/#commercial", "label": "Commercial", "sub": "02 - 7Arts / Timeless" },
-    { "href": "/projects", "label": "Library", "sub": "All work" },
-    { "href": "/#archive", "label": "Archive", "sub": "Film strip" },
-    { "href": "/#about", "label": "About", "sub": "Sofia / NBU" },
+    { "href": "/#top", "label": "Home", "sub": "Featured project" },
+    { "href": "/#about", "label": "About", "sub": "A little about me" },
+    { "href": "/#work", "label": "Work", "sub": "CD collection" },
     { "href": "/#contact", "label": "Contact", "sub": "Get in touch" }
   ]
 }

@@ -60,7 +60,7 @@ const companies = jobs.map((j: any) => ({
 
       <div class="menu-stack">
         <nav class="menu-col" aria-label="Films">
-          <span class="menu-kicker">Films & Stories <em>bar → story · image → YouTube</em></span>
+          <span class="menu-kicker">Films &amp; Projects</span>
           <ul>
             {films.map((f) => {
               const film = f.data;
@@ -76,10 +76,10 @@ const companies = jobs.map((j: any) => ({
           </ul>
         </nav>
 
-        <nav class="menu-col" aria-label="Companies">
-          <span class="menu-kicker">Companies</span>
+        <nav class="menu-col" aria-label="Productions">
+          <span class="menu-kicker">Commercial &amp; Broadcast</span>
           <ul>
-            {companies.map((job, i) => (
+            {companies.map((job: any, i: number) => (
               <li>
                 <a href={`/companies/${job.slug}`} data-menu-link data-cursor-hover data-cursor-label="OPEN">
                   <b>{String(i+1).padStart(2,'0')}</b>

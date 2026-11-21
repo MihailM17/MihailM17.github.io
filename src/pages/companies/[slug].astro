@@ -1,6 +1,5 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import SpliceStrip from '../../components/SpliceStrip.astro';
 import Lightbox from '../../components/Lightbox.astro';
 import { getCollection } from 'astro:content';
 
@@ -9,21 +8,22 @@ export async function getStaticPaths() {
   const jobs = siteDocs[0]?.data?.commercial?.jobs || [];
   return jobs.filter((j: any) => j.detail).map((j: any) => ({
     params: { slug: j.detail.slug },
-    props: { detail: j.detail }
+    props: { detail: j.detail, items: j.items || [] }
   }));
 }
 
-const { detail } = Astro.props;
+const { detail, items } = Astro.props;
 if (!detail) throw new Error('Company not found');
 
 const videoUrl = (detail as any).videoUrl as string | undefined;
 const videoId = videoUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
+const watchableItems = (items || []).filter((it: any) => /^https?:/i.test(it.url));
 ---
 
 <Layout title={`${detail.title} - Mihail Mihaylov`}>
   <main>
     <div class="container" style="padding-top: 1.6rem;">
-      <a href="/#commercial" class="back-link" data-cursor-hover data-cursor-label="BACK">← Back to Commercial</a>
+      <a href="/#work" class="back-link" data-cursor-hover data-cursor-label="BACK">← Back to Work</a>
     </div>
 
     <section class="project-hero">
@@ -47,8 +47,6 @@ const videoId = videoUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
       )}
     </section>
 
-    <SpliceStrip />
-
     <section class="section specs-section">
       <div class="container specs-grid">
         <aside class="specs-aside" data-parallax="0.06">
@@ -71,7 +69,7 @@ const videoId = videoUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
 
         <article class="story" data-parallax="0.12">
           <span class="eyebrow">About</span>
-          {detail.description.split('\n').map((para) => para.trim()).filter(Boolean).map((para, idx) => {
+          {detail.description.split('\n').map((para: string) => para.trim()).filter(Boolean).map((para: string, idx: number) => {
             const isH3 = para.startsWith('### ');
             const isInternshipHeading = /^(Video Editing Intern|Production Intern)\s-/.test(para);
             const isBranchHeading = /^(7Arts \(Streaming Platform\)|ArtPortal:|Art Label Productions)/.test(para);
@@ -113,12 +111,40 @@ const videoId = videoUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
       </div>
     </section>
 
+    {watchableItems.length > 0 && detail.slug !== 'tdb-play' && (
+      <section class="section samples-section" style="padding-top: 0;">
+        <div class="container">
+          <span class="eyebrow" data-reveal>Selected Videos</span>
+          <h2 data-reveal>Watch work samples.</h2>
+          <div class={`samples-grid ${watchableItems.every((it: any) => it.isVertical) ? 'is-vertical-grid' : ''}`}>
+            {watchableItems.map((it: any) => (
+              <a
+                href={it.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class={`sample-card ${it.isVertical ? 'is-vertical' : ''}`}
+                data-reveal
+                data-cursor-hover
+                data-cursor-label={it.isVertical ? 'REEL' : 'WATCH'}
+              >
+                <div class="sample-thumb">
+                  <img src={it.thumb} alt={it.label} loading="lazy" decoding="async" />
+                  <span class="sample-play" aria-hidden="true">▶</span>
+                </div>
+                <span class="sample-label">{it.label} ↗</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
     <section class="section gallery-section" style="padding-top: 0;">
       <div class="container">
         <span class="eyebrow" data-reveal>Gallery</span>
         <h2 data-reveal>Behind the scenes & work samples.</h2>
         <div class="gallery-grid">
-          {detail.gallery?.map((img, i) => (
+          {detail.gallery?.map((img: any) => (
             <figure class="gallery-card" data-reveal data-lightbox data-src={img.src} data-caption={img.caption} data-cursor-hover data-cursor-label="VIEW">
               <div class="gallery-img-wrap skeleton" data-img-wrap>
                 <img src={img.src} alt={img.alt} loading="lazy" decoding="async" onload="this.closest('[data-img-wrap]')?.classList.remove('skeleton')" onerror="this.style.display='none'; const fb=this.nextElementSibling; if(fb) fb.style.display='block'; this.closest('[data-img-wrap]')?.classList.remove('skeleton')" />
@@ -131,7 +157,12 @@ const videoId = videoUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
       </div>
     </section>
 
-    <SpliceStrip />
+    <section class="section" style="padding-top: 0;">
+      <div class="container">
+        <a href="/#work" class="back-link" data-cursor-hover data-cursor-label="WORK">← Back to Work</a>
+      </div>
+    </section>
+
     <Lightbox />
   </main>
 </Layout>
@@ -219,6 +250,33 @@ const videoId = videoUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
     transform: rotate(45deg); flex-shrink:0;
     box-shadow: 0 0 0 6px rgba(212,162,76,0.07);
   }
+
+  .samples-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.4rem; }
+  .samples-grid.is-vertical-grid{ grid-template-columns: repeat(auto-fit, minmax(190px, 240px)); }
+  .sample-card{ display:flex; flex-direction:column; gap: 0.55rem; }
+  .sample-thumb{
+    position: relative; aspect-ratio: 16/9; overflow: hidden;
+    border: 1px solid rgba(239,230,216,.14); background: var(--ink-2);
+    transition: border-color .25s ease;
+  }
+  .sample-card.is-vertical .sample-thumb{ aspect-ratio: 9/16; }
+  .sample-thumb img{ width:100%; height:100%; object-fit:cover; transition: transform .6s cubic-bezier(.16,1,.3,1); }
+  .sample-card:hover .sample-thumb{ border-color: var(--brass); }
+  .sample-card:hover .sample-thumb img{ transform: scale(1.04); }
+  .sample-play{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:44px; height:44px; border-radius:50%;
+    display:grid; place-items:center;
+    background: rgba(28,22,20,.82); border:1px solid var(--brass); color:var(--brass);
+    font-size:.82rem; padding-left:2px;
+    transition: transform .25s ease, background-color .25s ease, color .25s ease;
+  }
+  .sample-card:hover .sample-play{ background: var(--brass); color: var(--ink); transform:translate(-50%,-50%) scale(1.08); }
+  .sample-label{
+    font-family: var(--font-mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ecru); transition: color .2s ease;
+  }
+  .sample-card:hover .sample-label{ color: var(--brass); }
 
   .gallery-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1.4rem; }
   @media (max-width:480px){ .gallery-grid{ grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap:0.9rem; } }

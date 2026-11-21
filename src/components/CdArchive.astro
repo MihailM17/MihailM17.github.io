@@ -10,46 +10,49 @@ interface Props {
   id?: string;
   eyebrow?: string;
   title?: string;
-  countLabel?: string;
 }
 
 const {
-  id = 'selects',
-  eyebrow = 'Selects · Archive',
-  title = 'Selected works',
-  countLabel = 'Works · 2025—2026',
+  id = 'work',
+  eyebrow = 'Work',
+  title = 'Selected work',
 } = Astro.props;
 
 const allProjects = await getCollection('projects');
 const site = (await getCollection('site'))[0]?.data;
 
-// Same curated order used by the homepage narrative list and the menu.
-const FILM_ORDER = [
-  'silent-lifts-vitosha',
-  'lunen-blyasak',
-  'zasnet',
-  'remake-season-2',
-  'eastern-wind',
+type CategoryId = 'short-films' | 'documentary' | 'television' | 'commercial-music';
+
+const CATEGORIES: { id: 'all' | CategoryId; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'short-films', label: 'Short Films' },
+  { id: 'documentary', label: 'Documentary' },
+  { id: 'television', label: 'Television' },
+  { id: 'commercial-music', label: 'Commercial & Music Videos' },
 ];
 
-// Safely sort any unlisted future project to the end instead of index -1
-const orderIndex = (slug: string) => {
-  const idx = FILM_ORDER.indexOf(slug);
-  return idx === -1 ? 999 : idx;
+const CATEGORY_LABELS: Record<CategoryId, string> = {
+  'short-films': 'Short Films',
+  documentary: 'Documentary',
+  television: 'Television',
+  'commercial-music': 'Commercial & Music Videos',
 };
 
-const films = [...allProjects].sort(
-  (a, b) => orderIndex(a.data.slug) - orderIndex(b.data.slug),
-);
+const classifyProject = (slug: string, kicker: string): CategoryId => {
+  if (/documentary/i.test(kicker)) return 'documentary';
+  if (slug === 'remake-season-2' || /tv|television|reality/i.test(kicker)) return 'television';
+  if (/music video|commercial|broadcast|promo/i.test(kicker)) return 'commercial-music';
+  return 'short-films';
+};
 
-// Two accents only: films use brass, companies use oxblood.
+// Two accents only: films/originals use brass, commercial/broadcast productions use oxblood.
 const ACCENT = {
   film: { hex: '#D4A24C', glow: 'rgba(212,162,76,0.17)' },
   company: { hex: '#B23A2E', glow: 'rgba(178,58,46,0.17)' },
 };
 
 // Hand-stacked micro offset, one per shelf position (in px).
-const MICRO = [-2, 2, -1, 3, -3, 1, -2, 2];
+const MICRO = [-2, 2, -1, 3, -3, 1, -2, 2, -1];
 
 // YouTube serves hqdefault for every video, so it is a safe second attempt.
 const youTubeFallback = (src: unknown) =>
@@ -57,31 +60,50 @@ const youTubeFallback = (src: unknown) =>
     ? src.replace('maxresdefault', 'hqdefault')
     : null;
 
+// Custom 1:1 square CD covers (Silent Lifts & Lunen Blyasak intentionally keep their existing covers)
+const CUSTOM_COVERS: Record<string, string> = {
+  'tdb-play': '/cd-cover-tdb-play.jpg',
+  '7arts-artportal': '/cd-cover-7arts.jpg',
+  'zasnet': '/cd-cover-zasnet.jpg',
+  'remake-season-2': '/cd-cover-remakecut.jpg',
+  'eastern-wind': '/cd-cover-eastern-wind.jpg',
+  'timeless-ep1': '/cd-cover-sapunenite-mehuri.jpg',
+  'timeless-ep2': '/cd-cover-koleloto.jpg',
+};
+
 // Dominant / average cover artwork colors for atmospheric ambient illumination
 const DISC_COLORS: Record<string, { r: number; g: number; b: number; hex: string }> = {
   'silent-lifts-vitosha': { r: 68, g: 122, b: 100, hex: '#447a64' }, // Mountain forest pine green
+  'tdb-play':             { r: 214, g: 122, b: 36, hex: '#d67a24' }, // Good Game warm stage orange
   'lunen-blyasak':        { r: 38, g: 78,  b: 132, hex: '#264e84' }, // Moonlit sapphire blue
+  '7arts-artportal':      { r: 30, g: 64,  b: 204, hex: '#1e40cc' }, // 7Arts electric royal blue
   'zasnet':               { r: 88, g: 124, b: 138, hex: '#587c8a' }, // Cool misty winter lake teal
-  'remake-season-2':      { r: 74, g: 88,  b: 162, hex: '#4a58a2' }, // Studio royal cobalt
-  'eastern-wind':         { r: 168, g: 116, b: 68, hex: '#a87444' }, // Villa roasted cedar amber
-  'timeless-ep1':         { r: 56, g: 136, b: 156, hex: '#38889c' }, // Soap bubbles iridescent cyan
-  'timeless-ep2':         { r: 158, g: 114, b: 52, hex: '#9e7234' }, // Wheels golden kinetic ochre
+  'remake-season-2':      { r: 44, g: 82,  b: 196, hex: '#2c52c4' }, // Gundi Remake cobalt blue
+  'eastern-wind':         { r: 108, g: 130, b: 112, hex: '#6c8270' }, // Misty mountain pine sage
+  'timeless-ep1':         { r: 36, g: 118, b: 198, hex: '#2476c6' }, // Soap bubbles winter cobalt blue
+  'timeless-ep2':         { r: 74, g: 142, b: 130, hex: '#4a8e82' }, // Koleloto teal & warm illustration
 };
 
-const filmDiscs = films.map((entry) => {
+const filmDiscs = allProjects.map((entry) => {
   const d = entry.data;
   const displayTitle =
     d.slug === 'silent-lifts-vitosha' && d.titleEn ? d.titleEn : d.title;
   const color = DISC_COLORS[d.slug] || { r: 212, g: 162, b: 76, hex: '#D4A24C' };
+  const category = classifyProject(d.slug, d.kicker);
+  const customCover = CUSTOM_COVERS[d.slug];
   return {
+    id: d.slug,
     kind: 'film',
+    category,
+    categoryLabel: CATEGORY_LABELS[category],
     title: displayTitle,
     year: d.year,
     role: d.kicker,
     format: d.meta,
     description: d.synopsis,
-    cover: d.thumb,
-    fallback: youTubeFallback(d.thumb),
+    cover: customCover || d.thumb,
+    fallback: customCover ? d.thumb : youTubeFallback(d.thumb),
+    customArt: Boolean(customCover),
     href: `/projects/${d.slug}`,
     watchUrl: d.youtubeUrl,
     accent: ACCENT.film.hex,
@@ -90,27 +112,72 @@ const filmDiscs = films.map((entry) => {
   };
 });
 
-// Timeless Production Group - the two TV episodes edited by Mihail
-const timelessJob = site?.commercial?.jobs?.find((job: any) =>
-  job.org.toLowerCase().includes('timeless'),
-);
+// Commercial & broadcast productions from site content (zero project data lost)
+const jobs = site?.commercial?.jobs || [];
+const tdbJob = jobs.find((job: any) => job.detail?.slug === 'tdb-play');
+const sevenArtsJob = jobs.find((job: any) => job.detail?.slug === '7arts-artportal');
+const timelessJob = jobs.find((job: any) => job.org.toLowerCase().includes('timeless'));
+
 const ep1Item = timelessJob?.items?.[0];
 const ep2Item = timelessJob?.items?.[1];
-
+const tdbColor = DISC_COLORS['tdb-play'];
+const sevenArtsColor = DISC_COLORS['7arts-artportal'];
 const ep1Color = DISC_COLORS['timeless-ep1'];
 const ep2Color = DISC_COLORS['timeless-ep2'];
 
-const timelessDiscs = [
+const extraDiscs = [
+  tdbJob && {
+    id: 'tdb-play',
+    kind: 'commercial',
+    category: 'commercial-music' as CategoryId,
+    categoryLabel: CATEGORY_LABELS['commercial-music'],
+    title: 'TDB Play — Live Broadcast',
+    year: '2026',
+    role: tdbJob.role,
+    format: 'Vivacom Game-ON & Good Game Festival · Freelance',
+    description: tdbJob.desc,
+    cover: CUSTOM_COVERS['tdb-play'],
+    fallback: '/goodgame-director-vision-mixer.jpg',
+    customArt: true,
+    href: '/companies/tdb-play',
+    watchUrl: tdbJob.detail?.videoUrl || 'https://www.youtube.com/watch?v=Epg8ynZ2TDc',
+    accent: ACCENT.company.hex,
+    glow: `rgba(${tdbColor.r}, ${tdbColor.g}, ${tdbColor.b}, 0.42)`,
+    avg: tdbColor,
+  },
+  sevenArtsJob && {
+    id: '7arts-artportal',
+    kind: 'commercial',
+    category: 'commercial-music' as CategoryId,
+    categoryLabel: CATEGORY_LABELS['commercial-music'],
+    title: '7Arts & ArtPortal',
+    year: '2026',
+    role: sevenArtsJob.role,
+    format: 'Trailers, Promos & Social Reels · June 2025 – March 2026',
+    description: sevenArtsJob.desc,
+    cover: CUSTOM_COVERS['7arts-artportal'],
+    fallback: sevenArtsJob.items?.[0]?.thumb || '/art-portal-cover.jpg',
+    customArt: true,
+    href: '/companies/7arts-artportal',
+    watchUrl: sevenArtsJob.items?.[0]?.url || 'https://www.instagram.com/reel/DP1d4V7DE5n/',
+    accent: ACCENT.company.hex,
+    glow: `rgba(${sevenArtsColor.r}, ${sevenArtsColor.g}, ${sevenArtsColor.b}, 0.42)`,
+    avg: sevenArtsColor,
+  },
   {
+    id: 'timeless-ep1',
     kind: 'episode',
+    category: 'television' as CategoryId,
+    categoryLabel: CATEGORY_LABELS['television'],
     title: ep1Item?.label || 'Сапунените мехури',
     year: '2025',
     role: 'Video Editor · Уча, зная и играя',
     format: 'TV Broadcast Episode · Timeless Production',
     description:
-      "Broadcast episode for children's educational series 'Уча, зная и играя' on national television, cut and edited for Timeless Production Group.",
-    cover: ep1Item?.thumb || 'https://img.youtube.com/vi/vC3i48d0Mms/maxresdefault.jpg',
-    fallback: youTubeFallback(ep1Item?.thumb || 'https://img.youtube.com/vi/vC3i48d0Mms/maxresdefault.jpg'),
+      "Broadcast episode for children's educational series 'Уча, зная и играя' on national television, edited for Timeless Production Group.",
+    cover: CUSTOM_COVERS['timeless-ep1'],
+    fallback: ep1Item?.thumb || 'https://img.youtube.com/vi/vC3i48d0Mms/maxresdefault.jpg',
+    customArt: true,
     href: '/companies/timeless-production',
     watchUrl: ep1Item?.url || 'https://youtu.be/vC3i48d0Mms',
     accent: ACCENT.company.hex,
@@ -118,30 +185,59 @@ const timelessDiscs = [
     avg: ep1Color,
   },
   {
+    id: 'timeless-ep2',
     kind: 'episode',
+    category: 'television' as CategoryId,
+    categoryLabel: CATEGORY_LABELS['television'],
     title: ep2Item?.label || 'Колелото',
     year: '2025',
     role: 'Video Editor · Уча, зная и играя',
     format: 'TV Broadcast Episode · Timeless Production',
     description:
-      "Broadcast episode exploring how wheels work for 'Уча, зная и играя', cut and edited for Timeless Production Group.",
-    cover: ep2Item?.thumb || 'https://img.youtube.com/vi/CE5H1h6dpFw/maxresdefault.jpg',
-    fallback: youTubeFallback(ep2Item?.thumb || 'https://img.youtube.com/vi/CE5H1h6dpFw/maxresdefault.jpg'),
+      "Broadcast episode exploring how wheels work for 'Уча, зная и играя', edited for Timeless Production Group.",
+    cover: CUSTOM_COVERS['timeless-ep2'],
+    fallback: ep2Item?.thumb || 'https://img.youtube.com/vi/CE5H1h6dpFw/maxresdefault.jpg',
+    customArt: true,
     href: '/companies/timeless-production',
     watchUrl: ep2Item?.url || 'https://youtu.be/CE5H1h6dpFw',
     accent: ACCENT.company.hex,
     glow: `rgba(${ep2Color.r}, ${ep2Color.g}, ${ep2Color.b}, 0.42)`,
     avg: ep2Color,
   },
+].filter(Boolean) as any[];
+
+// Recency-first curated order across all works
+const DISC_ORDER = [
+  'silent-lifts-vitosha',
+  'tdb-play',
+  'lunen-blyasak',
+  '7arts-artportal',
+  'zasnet',
+  'remake-season-2',
+  'eastern-wind',
+  'timeless-ep1',
+  'timeless-ep2',
 ];
 
-const rawDiscs = [...filmDiscs, ...timelessDiscs];
+const discOrderIndex = (id: string) => {
+  const idx = DISC_ORDER.indexOf(id);
+  return idx === -1 ? 999 : idx;
+};
+
+const rawDiscs = [...filmDiscs, ...extraDiscs].sort(
+  (a, b) => discOrderIndex(a.id) - discOrderIndex(b.id),
+);
 
 const discs = rawDiscs.map((disc, i) => ({
   ...disc,
   catalog: `MM-${String(i + 1).padStart(2, '0')}`,
   microX: MICRO[i % MICRO.length] ?? 0,
 }));
+
+const categoryCounts: Record<string, number> = { all: discs.length };
+for (const d of discs) {
+  categoryCounts[d.category] = (categoryCounts[d.category] || 0) + 1;
+}
 
 const total = String(discs.length).padStart(2, '0');
 const initialDisc = discs[0];
@@ -160,9 +256,25 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
   <div class="container cd-inner">
     <div class="cd-head" data-reveal>
-      <span class="eyebrow">{eyebrow}</span>
-      <h2>{title}<em>.</em></h2>
-      <p class="cd-count"><b>{total}</b> {countLabel}</p>
+      <div class="cd-head-top">
+        <div>
+          <span class="eyebrow">{eyebrow}</span>
+          <h2>{title}<em>.</em></h2>
+        </div>
+        <div class="cd-filters" role="group" aria-label="Filter projects by category" data-cd-filters>
+          {CATEGORIES.map((cat) => (
+            <button
+              type="button"
+              class={`cd-filter ${cat.id === 'all' ? 'is-active' : ''}`}
+              data-cd-filter={cat.id}
+              aria-pressed={cat.id === 'all' ? 'true' : 'false'}
+            >
+              <span>{cat.label}</span>
+              <span class="cd-filter-count">{String(categoryCounts[cat.id] || 0).padStart(2, '0')}</span>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
 
     <div class="cd-layout">
@@ -172,7 +284,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       <div class="cd-tower-col">
         <div class="cd-tower-frame">
           <div class="cd-tower-meta">
-            <span>Stack · {total} Discs</span>
+            <span data-cd-stack-label>Stack · {total} Discs</span>
             <span class="cd-tower-meta-dim">2025—2026</span>
           </div>
 
@@ -187,6 +299,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
                 class={`cd-slot ${i === 0 ? 'is-empty' : ''}`}
                 data-id={disc.catalog}
                 data-index={i}
+                data-category={disc.category}
                 style={`--case-accent:${disc.accent};--micro-x:${disc.microX}px;`}
               >
                 {/* FIX: Only mark non-empty cavities as inert initially; slot 0 starts in bay */}
@@ -284,7 +397,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
               data-cd-return
               aria-label="Return current disc to the tower"
             >
-              Return to Stack
+              Return
             </button>
             <button type="button" class="cd-tbtn" data-cd-next aria-label="Next disc">
               Next →
@@ -297,7 +410,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         {discs[0] && (
           <div class="cd-stagger">
             <div class="cd-kicker">
-              <span style={`color:${discs[0].accent}`}>{discs[0].catalog} · {discs[0].year}</span>
+              <span style={`color:${discs[0].accent}`}>{discs[0].catalog} · {discs[0].categoryLabel} · {discs[0].year}</span>
             </div>
             <h3 class="cd-panel-title">{discs[0].title}</h3>
             <div class="cd-panel-meta">
@@ -352,8 +465,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
   .cd-archive {
     position: relative;
-    padding-block: var(--sp-5);
-    border-top: 1px solid rgba(239, 230, 216, 0.08);
+    padding-block: clamp(5rem, 9vw, 8.25rem);
+    background: #15100E;
     overflow: clip;
     scroll-margin-top: 84px;
   }
@@ -365,8 +478,8 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     inset: 0;
     pointer-events: none;
     background:
-      radial-gradient(ellipse 48% 46% at 68% 40%, rgba(255, 224, 185, 0.055) 0%, rgba(255, 206, 160, 0.015) 50%, transparent 76%),
-      linear-gradient(180deg, rgba(37, 30, 26, 0.5) 0%, transparent 45%);
+      radial-gradient(ellipse 48% 46% at 62% 44%, rgba(255, 224, 185, 0.05) 0%, rgba(255, 206, 160, 0.015) 50%, transparent 76%),
+      linear-gradient(180deg, rgba(18, 14, 12, 0.35) 0%, transparent 35%);
   }
 
   .cd-ambient {
@@ -390,42 +503,79 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
   .cd-inner {
     position: relative;
     z-index: 2;
+    max-width: 1320px;
   }
 
-  /* Header - mirrors the Archive section's rhythm */
+  /* Header & category filters */
   .cd-head {
-    margin-bottom: var(--sp-3);
+    margin-bottom: var(--sp-4);
+  }
+  .cd-head-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.25rem 2rem;
   }
   .cd-head h2 {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: clamp(1.9rem, 4.4vw, 2.9rem);
-    line-height: 1.08;
+    font-size: clamp(1.9rem, 4.2vw, 2.8rem);
+    line-height: 1.06;
     letter-spacing: -0.03em;
-    margin: 0 0 0.6rem;
+    margin: 0;
     color: var(--ecru);
   }
   .cd-head h2 em {
     font-style: normal;
     color: var(--brass);
   }
-  .cd-count {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ash);
-    margin: 0;
+
+  .cd-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    align-items: center;
   }
-  .cd-count b {
-    color: var(--brass);
+  .cd-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.46rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--cd-line);
+    background: rgba(30, 24, 21, 0.45);
+    color: var(--ash);
+    font-family: var(--font-mono);
+    font-size: 0.67rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  }
+  .cd-filter:hover {
+    color: var(--ecru);
+    border-color: rgba(239, 230, 216, 0.3);
+  }
+  .cd-filter.is-active {
+    color: var(--ink);
+    background: var(--brass);
+    border-color: var(--brass);
+    font-weight: 600;
+  }
+  .cd-filter-count {
+    opacity: 0.62;
+    font-size: 0.62rem;
+  }
+  .cd-filter.is-active .cd-filter-count {
+    opacity: 0.8;
   }
 
   /* ==========================================================================
      LAYOUT
      Mobile: bay, then details, then the stack.
-     1024px: stack on the left, bay above details on the right.
-     1180px: stack, bay, details side by side.
+     1024px: stack on the left, large bay above details on the right.
+     1200px: stack, centerpiece bay, streamlined details side by side.
      ========================================================================== */
   .cd-layout {
     display: grid;
@@ -440,32 +590,38 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
   .cd-tower-col {
     grid-area: tower;
     min-width: 0;
+    position: relative;
+    z-index: 3;
   }
   .cd-bay-col {
     grid-area: bay;
     min-width: 0;
+    position: relative;
+    z-index: 1;
   }
   .cd-panel {
     grid-area: panel;
+    position: relative;
+    z-index: 3;
   }
 
   @media (min-width: 1024px) {
     .cd-layout {
-      grid-template-columns: 300px minmax(0, 1fr);
+      grid-template-columns: 280px minmax(0, 1fr);
       grid-template-areas:
         'tower bay'
         'tower panel';
-      column-gap: clamp(2rem, 4vw, 3rem);
-      row-gap: clamp(2.5rem, 4vw, 3.25rem);
+      column-gap: clamp(2rem, 4vw, 3.25rem);
+      row-gap: clamp(2.25rem, 4vw, 3rem);
       align-items: start;
     }
   }
 
-  @media (min-width: 1180px) {
+  @media (min-width: 1200px) {
     .cd-layout {
-      grid-template-columns: 320px 340px minmax(0, 1fr);
+      grid-template-columns: 278px 360px minmax(260px, 1fr);
       grid-template-areas: 'tower bay panel';
-      column-gap: clamp(2rem, 5vw, 4.5rem);
+      column-gap: clamp(2.25rem, 3.8vw, 3.5rem);
       align-items: center;
     }
   }
@@ -547,6 +703,9 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     height: var(--slot-h);
     width: 100%;
     transition: transform 0.34s var(--cd-ease);
+  }
+  .cd-slot.is-filtered-out {
+    display: none;
   }
   .cd-slot.part-up {
     transform: translateY(-2.5px);
@@ -798,19 +957,24 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
   /* Wide atmospheric background aura directly behind the CD in the bay */
   .cd-aura-wrap {
     position: absolute;
-    top: 148px;
+    top: 172px;
     left: 50%;
-    width: clamp(520px, 75vw, 780px);
-    height: clamp(520px, 75vw, 780px);
+    width: clamp(560px, 78vw, 840px);
+    height: clamp(560px, 78vw, 840px);
     transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 0;
     overflow: visible;
   }
+  @media (max-width: 1199px) and (min-width: 1024px) {
+    .cd-aura-wrap {
+      top: 162px;
+    }
+  }
   /* FIX: Align mobile breakpoint consistently at 1023px across CSS & JS */
   @media (max-width: 1023px) {
     .cd-aura-wrap {
-      top: 110px;
+      top: 132px;
       width: clamp(380px, 92vw, 560px);
       height: clamp(380px, 92vw, 560px);
     }
@@ -832,16 +996,22 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
   .cd-bay {
     position: relative;
-    width: 296px;
-    height: 296px;
+    width: 344px;
+    height: 344px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
+  @media (max-width: 1199px) and (min-width: 1024px) {
+    .cd-bay {
+      width: 324px;
+      height: 324px;
+    }
+  }
   @media (max-width: 1023px) {
     .cd-bay {
-      width: 220px;
-      height: 220px;
+      width: clamp(232px, 64vw, 290px);
+      height: clamp(232px, 64vw, 290px);
     }
   }
 
@@ -982,8 +1152,10 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
   .cd-transport {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.45rem;
     margin-top: 2.5rem;
     font-family: var(--font-mono);
     font-size: 10px;
@@ -991,7 +1163,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     text-transform: uppercase;
   }
   .cd-tbtn {
-    padding: 0.5rem 0.9rem;
+    padding: 0.48rem 0.85rem;
     border-radius: 999px;
     border: 1px solid var(--cd-line);
     background: transparent;
@@ -1000,7 +1172,10 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     letter-spacing: inherit;
     text-transform: inherit;
     cursor: pointer;
-    transition: color 0.2s ease, border-color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
   }
   .cd-tbtn:hover {
     color: var(--ecru);
@@ -1025,6 +1200,13 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     .cd-panel {
       padding-left: 1.5rem;
       border-left: 1px solid var(--cd-line);
+    }
+  }
+  /* Keep clear horizontal separation from the peeking CD on 3-column desktop */
+  @media (min-width: 1200px) {
+    .cd-panel {
+      margin-left: clamp(5.5rem, 6.8vw, 7rem);
+      padding-left: 1.75rem;
     }
   }
   .cd-panel.is-exiting {
@@ -1626,7 +1808,10 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 <script>
   // @ts-nocheck
   type Disc = {
+    id: string;
     kind: string;
+    category: string;
+    categoryLabel: string;
     catalog: string;
     title: string;
     year: string;
@@ -1635,6 +1820,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     description: string;
     cover: string | null;
     fallback: string | null;
+    customArt?: boolean;
     href: string | null;
     watchUrl: string | null;
     microX: number;
@@ -1642,6 +1828,140 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     glow: string;
     avg: { r: number; g: number; b: number; hex: string };
   };
+
+  // Subtle, tactile mechanical CD bay audio (Web Audio API, zero external assets)
+  class DiscBayAudio {
+    ctx: AudioContext | null = null;
+
+    private getContext(): AudioContext | null {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return null;
+      if (!this.ctx) {
+        try {
+          this.ctx = new AudioCtx();
+        } catch {
+          return null;
+        }
+      }
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
+      }
+      return this.ctx;
+    }
+
+    private playClick(ctx: AudioContext, when: number, freq: number, gainPeak: number, dur = 0.032) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, when);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(80, freq * 0.35), when + dur);
+
+      gain.gain.setValueAtTime(0.0001, when);
+      gain.gain.linearRampToValueAtTime(gainPeak, when + 0.003);
+      gain.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(when);
+      osc.stop(when + dur + 0.01);
+    }
+
+    private playSlide(
+      ctx: AudioContext,
+      when: number,
+      duration: number,
+      filterFrom: number,
+      filterTo: number,
+      gainPeak: number,
+    ) {
+      const sampleCount = Math.floor(ctx.sampleRate * duration);
+      const buffer = ctx.createBuffer(1, sampleCount, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < sampleCount; i++) {
+        data[i] = (Math.random() * 2 - 1) * 0.65;
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.Q.value = 2.4;
+      filter.frequency.setValueAtTime(filterFrom, when);
+      filter.frequency.exponentialRampToValueAtTime(filterTo, when + duration);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, when);
+      gain.gain.linearRampToValueAtTime(gainPeak, when + duration * 0.22);
+      gain.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      noise.start(when);
+      noise.stop(when + duration + 0.02);
+    }
+
+    private playServo(ctx: AudioContext, when: number, fStart: number, fEnd: number, duration: number, gainPeak: number) {
+      const osc = ctx.createOscillator();
+      const filter = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(fStart, when);
+      osc.frequency.exponentialRampToValueAtTime(fEnd, when + duration);
+
+      filter.type = 'lowpass';
+      filter.frequency.value = 340;
+
+      gain.gain.setValueAtTime(0.0001, when);
+      gain.gain.linearRampToValueAtTime(gainPeak, when + duration * 0.25);
+      gain.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(when);
+      osc.stop(when + duration + 0.02);
+    }
+
+    playLoad() {
+      const ctx = this.getContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      // Soft plastic pull from shelf + gentle tray servo glide
+      this.playClick(ctx, now, 1150, 0.035, 0.024);
+      this.playSlide(ctx, now + 0.02, 0.18, 680, 1280, 0.028);
+      this.playServo(ctx, now + 0.04, 118, 174, 0.24, 0.022);
+    }
+
+    playDockLatch() {
+      const ctx = this.getContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      // Tactile spindle seat + subtle disc peek slide
+      this.playClick(ctx, now, 2100, 0.042, 0.022);
+      this.playClick(ctx, now + 0.018, 360, 0.048, 0.038);
+      this.playSlide(ctx, now + 0.05, 0.22, 1400, 880, 0.018);
+    }
+
+    playEject() {
+      const ctx = this.getContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      // Unlatch + quiet downward return glide
+      this.playClick(ctx, now, 1650, 0.036, 0.022);
+      this.playServo(ctx, now + 0.03, 152, 92, 0.2, 0.02);
+      this.playSlide(ctx, now + 0.04, 0.16, 1120, 620, 0.022);
+    }
+
+    dispose() {
+      if (this.ctx) {
+        this.ctx.close().catch(() => {});
+        this.ctx = null;
+      }
+    }
+  }
 
   const ROOT = '[data-cd-archive]';
   let teardown: (() => void) | null = null;
@@ -1675,8 +1995,18 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     const btnPrev = root.querySelector('[data-cd-prev]') as HTMLButtonElement;
     const btnReturn = root.querySelector('[data-cd-return]') as HTMLButtonElement;
     const btnNext = root.querySelector('[data-cd-next]') as HTMLButtonElement;
+    const stackLabelEl = root.querySelector('[data-cd-stack-label]') as HTMLElement | null;
+    const filterBtns = Array.from(root.querySelectorAll('[data-cd-filter]')) as HTMLButtonElement[];
 
     if (!towerEl || !bayEl || !panelEl) return;
+
+    const audio = new DiscBayAudio();
+
+    let activeCategory = 'all';
+    const visibleIndices = (): number[] =>
+      DISCS.map((d, i) => (activeCategory === 'all' || d.category === activeCategory ? i : -1)).filter(
+        (i) => i !== -1,
+      );
 
     // Track active aura layer & last color key so duplicate calls never re-trigger a flash
     let activeAuraLayer: 'a' | 'b' = 'a';
@@ -1722,12 +2052,16 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
     // ---------------------------------------------------------------- tower
     function applyParting(centerIdx: number) {
-      Array.from(towerEl.children).forEach((child, i) => {
-        const el = child as HTMLElement;
-        el.classList.remove('part-up', 'part-down');
-        if (i === centerIdx - 1) el.classList.add('part-up');
-        if (i === centerIdx + 1) el.classList.add('part-down');
+      const visibleSlots = Array.from(towerEl.children).filter(
+        (child) => !(child as HTMLElement).classList.contains('is-filtered-out'),
+      ) as HTMLElement[];
+      const pos = visibleSlots.findIndex((el) => Number(el.dataset.index) === centerIdx);
+      Array.from(towerEl.children).forEach((child) => {
+        (child as HTMLElement).classList.remove('part-up', 'part-down');
       });
+      if (pos === -1) return;
+      if (visibleSlots[pos - 1]) visibleSlots[pos - 1].classList.add('part-up');
+      if (visibleSlots[pos + 1]) visibleSlots[pos + 1].classList.add('part-down');
     }
     function clearParting() {
       Array.from(towerEl.children).forEach((child) => {
@@ -1790,14 +2124,16 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     towerEl.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
       e.preventDefault();
+      const vis = visibleIndices();
+      if (!vis.length) return;
       const forward = e.key === 'ArrowDown';
-      const next = forward
-        ? activeIndex >= DISCS.length - 1 || activeIndex === -1
-          ? 0
-          : activeIndex + 1
-        : activeIndex <= 0
-          ? DISCS.length - 1
-          : activeIndex - 1;
+      const pos = vis.indexOf(activeIndex);
+      const next =
+        pos === -1
+          ? vis[0]
+          : forward
+            ? vis[(pos + 1) % vis.length]
+            : vis[(pos - 1 + vis.length) % vis.length];
       selectProject(next);
       const spine = slotEl(DISCS[next].catalog)?.querySelector('.cd-spine') as HTMLElement;
       spine?.focus({ preventScroll: true });
@@ -1809,7 +2145,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       return `
         <div class="cd-stagger">
           <div class="cd-kicker">
-            <span style="color:${disc.accent}">${esc(disc.catalog)} · ${esc(disc.year)}</span>
+            <span style="color:${disc.accent}">${esc(disc.catalog)} · ${esc(disc.categoryLabel)} · ${esc(disc.year)}</span>
           </div>
           <h3 class="cd-panel-title">${esc(disc.title)}</h3>
           <div class="cd-panel-meta">
@@ -1833,17 +2169,14 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
     }
 
     function standbyHTML() {
+      const count = visibleIndices().length;
       return `
         <div class="cd-stagger">
           <div class="cd-kicker" style="color:var(--ash)">
-            <span>Curated Archive · Sofia</span>
+            <span>Work · ${String(count).padStart(2, '0')} ${count === 1 ? 'Project' : 'Projects'}</span>
           </div>
-          <h3 class="cd-standby-title">Selected Works<br /><em>Vol. 01 — ${String(DISCS.length).padStart(2, '0')}</em></h3>
-          <p class="cd-panel-desc">Narrative short films, documentaries, music videos and multi-camera live broadcasts directed and edited by Mihail Mihaylov.</p>
-          <div class="cd-stats">
-            <div><span class="cd-stat-value">${String(DISCS.length).padStart(2, '0')}</span><span class="cd-stat-label">Releases</span></div>
-            <div><span class="cd-stat-value">100+</span><span class="cd-stat-label">Delivered cuts</span></div>
-          </div>
+          <h3 class="cd-standby-title">Select a disc<br /><em>from the stack.</em></h3>
+          <p class="cd-panel-desc">Short films, documentary work, television, and live broadcast projects. Pick any case from the stack to inspect it or open its project page.</p>
         </div>`;
     }
 
@@ -2135,12 +2468,14 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         code.className = 'jc-code';
         code.textContent = d.catalog;
 
-        const foot = document.createElement('div');
-        foot.className = 'jc-foot';
-        foot.innerHTML = `<span class="jc-foot-title">${esc(d.title)}</span><span class="jc-foot-year">${esc(d.year)}</span>`;
-
         wrap.appendChild(code);
-        wrap.appendChild(foot);
+
+        if (!d.customArt) {
+          const foot = document.createElement('div');
+          foot.className = 'jc-foot';
+          foot.innerHTML = `<span class="jc-foot-title">${esc(d.title)}</span><span class="jc-foot-year">${esc(d.year)}</span>`;
+          wrap.appendChild(foot);
+        }
         return wrap;
       }
 
@@ -2179,6 +2514,15 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       slotAnchor() {
         const cavity = this.slotEl.querySelector('.cd-cavity') as HTMLElement;
         const r = cavity.getBoundingClientRect();
+        // If the slot is currently filtered out (display: none), return cleanly to the top of the tower
+        if (r.width < 10 || r.height < 4) {
+          const tr = towerEl.getBoundingClientRect();
+          return {
+            x: tr.left + tr.width / 2,
+            y: tr.top + 18,
+            scale: Math.max(0.45, tr.width / this.W),
+          };
+        }
         return {
           x: r.left + r.width / 2 + this.disc.microX,
           y: r.top + r.height / 2,
@@ -2217,6 +2561,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
         this.pose.scale = bay.scale;
         this.applyPose(this.pose);
         this.mode = 'docked';
+        this.el.style.opacity = '1';
         this.el.classList.add('is-docked', 'disc-peeking', 'show-open');
         this.el.style.zIndex = '45';
         const isOffscreen =
@@ -2227,23 +2572,71 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
       flyToBay(onDocked?: () => void) {
         if (reduced) {
+          audio.playDockLatch();
           this.dockInstantly();
           onDocked?.();
           return;
         }
         this.stop();
+        audio.playLoad();
         this.mode = 'entering';
         this.tiltX = this.tiltY = this.targetTiltX = this.targetTiltY = 0;
         this.el.style.visibility = 'visible';
+        this.el.style.opacity = '1';
         this.el.classList.remove('is-docked', 'disc-peeking', 'show-open');
         this.el.style.zIndex = '50';
+
+        // FIX: Match CSS @media (min-width: 1024px) breakpoint
+        const desktop = window.innerWidth >= 1024;
+        const idx = DISCS.indexOf(this.disc);
+
+        // On mobile/tablet (< 1024px), keep the animation anchored directly to the bay's live
+        // coordinates so smooth scrolling up to the bay never causes jarring vertical jumps.
+        if (!desktop) {
+          const duration = 460;
+          const t0 = performance.now();
+          const tickMobile = (now: number) => {
+            if (this.mode !== 'entering') return;
+            const raw = clamp01((now - t0) / duration);
+            const t = easeOutExpo(raw);
+            const bay = this.bayAnchor();
+
+            this.pose.x = bay.x;
+            this.pose.y = bay.y + lerp(36, 0, t);
+            this.pose.z = lerp(-24, 0, t);
+            this.pose.localZ = 0;
+            this.pose.rx = lerp(16, 3, t);
+            this.pose.ry = lerp(-4, -10, t);
+            this.pose.rz = 0;
+            this.pose.scale = bay.scale * lerp(0.92, 1, t);
+
+            this.el.style.opacity = clamp01(raw * 2.4).toFixed(3);
+            this.applyPose(this.pose);
+
+            if (raw < 1) {
+              this.rafId = requestAnimationFrame(tickMobile);
+            } else {
+              this.rafId = null;
+              this.el.style.opacity = '1';
+              this.mode = 'docked';
+              this.el.classList.add('is-docked');
+              this.el.style.zIndex = '45';
+              setState(this.disc.catalog, 'docked');
+              audio.playDockLatch();
+              requestAnimationFrame(() => {
+                if (this.mode !== 'docked') return;
+                this.el.classList.add('disc-peeking', 'show-open');
+              });
+              onDocked?.();
+            }
+          };
+          this.rafId = requestAnimationFrame(tickMobile);
+          return;
+        }
 
         const start = { ...this.pose };
         const duration = 840;
         const t0 = performance.now();
-        // FIX: Match CSS @media (min-width: 1024px) breakpoint
-        const desktop = window.innerWidth >= 1024;
-        const idx = DISCS.indexOf(this.disc);
 
         applyParting(idx);
         this.timers.push(
@@ -2258,24 +2651,23 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
           const pull = easeOutCubic(clamp01(raw / 0.24));
           const release = 1 - easeInOutCubic(clamp01((raw - 0.16) / 0.56));
-          const pullX = desktop ? 46 * pull * release : 0;
+          const pullX = 46 * pull * release;
 
           const travel = easeInOutQuart(clamp01((raw - 0.08) / 0.92));
           const arc = Math.sin(Math.PI * travel);
 
-          const liftY = desktop ? -52 * arc : -22 * arc;
-          const swingX = desktop ? 0 : 28 * arc;
+          const liftY = -52 * arc;
 
           const rot = easeInOutCubic(clamp01((raw - 0.12) / 0.84));
           const bank = Math.sin(Math.PI * rot);
 
-          this.pose.x = lerp(start.x, bay.x, travel) + pullX + swingX;
+          this.pose.x = lerp(start.x, bay.x, travel) + pullX;
           this.pose.y = lerp(start.y, bay.y, travel) + liftY;
           this.pose.z = lerp(start.z, 0, travel) + 96 * arc + 32 * pull * release;
           this.pose.localZ = lerp(start.localZ, 0, rot);
           this.pose.rx = lerp(start.rx, 3, rot);
           this.pose.ry = lerp(start.ry, -10, rot) - 22 * bank;
-          this.pose.rz = lerp(start.rz, 0, rot) - (desktop ? 7.5 : 4.5) * bank;
+          this.pose.rz = lerp(start.rz, 0, rot) - 7.5 * bank;
           this.pose.scale = lerp(start.scale, bay.scale, easeOutExpo(travel));
 
           this.applyPose(this.pose);
@@ -2288,6 +2680,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
             this.el.classList.add('is-docked');
             this.el.style.zIndex = '45';
             setState(this.disc.catalog, 'docked');
+            audio.playDockLatch();
             requestAnimationFrame(() => {
               if (this.mode !== 'docked') return;
               this.el.classList.add('disc-peeking', 'show-open');
@@ -2301,6 +2694,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       returnToSlot(onSeated?: () => void) {
         this.stop();
         const wasDocked = this.mode === 'docked';
+        if (wasDocked) audio.playEject();
         this.mode = 'returning';
         setState(this.disc.catalog, 'returning');
 
@@ -2318,10 +2712,45 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
             onSeated?.();
             return;
           }
-          const duration = 680;
-          const t0 = performance.now();
           // FIX: Match CSS @media (min-width: 1024px) breakpoint
           const desktop = window.innerWidth >= 1024;
+
+          if (!desktop) {
+            const duration = 300;
+            const t0 = performance.now();
+            const tickMobileOut = (now: number) => {
+              if (this.mode !== 'returning') return;
+              const raw = clamp01((now - t0) / duration);
+              const t = easeInOutCubic(raw);
+              const bay = this.bayAnchor();
+
+              this.pose.x = bay.x;
+              this.pose.y = bay.y + lerp(0, 30, t);
+              this.pose.z = lerp(0, -24, t);
+              this.pose.localZ = 0;
+              this.pose.rx = lerp(start.rx, 16, t);
+              this.pose.ry = lerp(start.ry, -4, t);
+              this.pose.rz = 0;
+              this.pose.scale = bay.scale * lerp(1, 0.92, t);
+
+              this.el.style.opacity = clamp01(1 - raw * 1.2).toFixed(3);
+              this.applyPose(this.pose);
+
+              if (raw < 1) {
+                this.rafId = requestAnimationFrame(tickMobileOut);
+              } else {
+                this.rafId = null;
+                this.destroy();
+                setState(this.disc.catalog, 'seated');
+                onSeated?.();
+              }
+            };
+            this.rafId = requestAnimationFrame(tickMobileOut);
+            return;
+          }
+
+          const duration = 680;
+          const t0 = performance.now();
 
           const tick = (now: number) => {
             if (this.mode !== 'returning') return;
@@ -2333,18 +2762,18 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
 
             const approach = easeOutCubic(clamp01(raw / 0.55));
             const home = 1 - easeInOutCubic(clamp01((raw - 0.72) / 0.28));
-            const slideX = desktop ? 34 * approach * home : 0;
+            const slideX = 34 * approach * home;
 
             const rot = easeInOutCubic(clamp01(raw / 0.82));
             const bank = Math.sin(Math.PI * rot);
 
             this.pose.x = lerp(start.x, slot.x, travel) + slideX;
-            this.pose.y = lerp(start.y, slot.y, travel) + (desktop ? -34 * arc : 18 * arc);
+            this.pose.y = lerp(start.y, slot.y, travel) - 34 * arc;
             this.pose.z = lerp(start.z, 0, travel) + 74 * arc;
             this.pose.localZ = lerp(start.localZ, -this.W / 2, rot);
             this.pose.rx = lerp(start.rx, 90, rot);
             this.pose.ry = lerp(start.ry, 0, rot) + 18 * bank;
-            this.pose.rz = lerp(start.rz, 0, rot) + (desktop ? 6 : 3) * bank;
+            this.pose.rz = lerp(start.rz, 0, rot) + 6 * bank;
             this.pose.scale = lerp(start.scale, slot.scale, easeInOutCubic(raw));
 
             this.applyPose(this.pose);
@@ -2484,13 +2913,60 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       }
     }
 
+    // ---------------------------------------------------------------- categories
+    function applyCategory(nextCat: string) {
+      if (nextCat === activeCategory) return;
+      activeCategory = nextCat;
+
+      filterBtns.forEach((btn) => {
+        const active = btn.dataset.cdFilter === activeCategory;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+
+      const vis = visibleIndices();
+      if (stackLabelEl) {
+        const n = String(vis.length).padStart(2, '0');
+        stackLabelEl.textContent = `Stack · ${n} ${vis.length === 1 ? 'Disc' : 'Discs'}`;
+      }
+
+      clearParting();
+      towerEl.querySelectorAll('.cd-slot').forEach((slot) => {
+        const el = slot as HTMLElement;
+        const cat = el.dataset.category || '';
+        const match = activeCategory === 'all' || cat === activeCategory;
+        el.classList.toggle('is-filtered-out', !match);
+      });
+
+      // Keep the active disc if it belongs to the chosen category; otherwise load the first visible disc
+      if (activeIndex !== -1 && vis.includes(activeIndex)) {
+        scheduleSync();
+      } else if (vis.length > 0) {
+        selectProject(vis[0]);
+      } else {
+        returnToStack(null, true);
+      }
+    }
+
+    filterBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        applyCategory(btn.dataset.cdFilter || 'all');
+      });
+    });
+
     // ---------------------------------------------------------------- chrome
     btnPrev?.addEventListener('click', () => {
-      const idx = activeIndex <= 0 ? DISCS.length - 1 : activeIndex - 1;
+      const vis = visibleIndices();
+      if (!vis.length) return;
+      const pos = vis.indexOf(activeIndex);
+      const idx = pos <= 0 ? vis[vis.length - 1] : vis[pos - 1];
       selectProject(idx);
     });
     btnNext?.addEventListener('click', () => {
-      const idx = activeIndex >= DISCS.length - 1 || activeIndex === -1 ? 0 : activeIndex + 1;
+      const vis = visibleIndices();
+      if (!vis.length) return;
+      const pos = vis.indexOf(activeIndex);
+      const idx = pos === -1 || pos >= vis.length - 1 ? vis[0] : vis[pos + 1];
       selectProject(idx);
     });
     btnReturn?.addEventListener('click', () => {
@@ -2542,6 +3018,7 @@ const initialAvg = initialDisc?.avg ?? { r: 68, g: 122, b: 100 };
       window.removeEventListener('resize', scheduleSync);
       actors.forEach((a) => a.stop());
       actors.clear();
+      audio.dispose();
       stage.remove();
       root.dataset.cdBound = '0';
     };

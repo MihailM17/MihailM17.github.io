@@ -20,9 +20,9 @@ const { title } = Astro.props;
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{title}</title>
-<meta name="description" content="Mihail Mihaylov - director and editor based in Sofia, Bulgaria. DaVinci Resolve post-production, camera work, and documentary filmmaking.">
-<!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-GZMPLW7CNY"></script>
-<script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-GZMPLW7CNY');</script>
+<meta name="description" content="Mihail Mihaylov — film student in Sofia, Bulgaria, working across directing, editing, documentary, and live production.">
+<!-- Google tag (gtag.js) --><script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-GZMPLW7CNY"></script>
+<script is:inline>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-GZMPLW7CNY');</script>
 <ClientRouter />
 <link rel="icon" href="/favicon.ico" sizes="48x48" />
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -238,98 +238,40 @@ const { title } = Astro.props;
     to{ transform: translateX(-50%); }
   }
 
-  /* ---------- about - interesting wash ---------- */
+  /* ---------- about ---------- */
   .about-section{
     position:relative; overflow:clip;
-    padding-block: calc(var(--sp-6) + 0.5rem);
-    background:
-      radial-gradient(ellipse 720px 380px at 18% 12%, rgba(212,162,76,0.045), transparent 58%),
-      radial-gradient(ellipse 560px 360px at 88% 86%, rgba(178,58,46,0.04), transparent 60%),
-      var(--ink);
-  }
-  .about-section::before{
-    content:"ABOUT";
-    position:absolute;
-    left: 50%; top: 46%;
-    transform: translate(-50%,-50%) rotate(-4deg);
-    font-family: var(--font-display); font-weight: 900;
-    font-size: clamp(6rem, 18vw, 16rem);
-    line-height:1; letter-spacing: -0.05em;
-    color: transparent; -webkit-text-stroke: 1px rgba(239,230,216,0.045);
-    pointer-events:none; user-select:none; white-space:nowrap;
-  }
-  .about-header{ position:relative; z-index:1; margin-bottom: var(--sp-4); }
-  .about-header .eyebrow{ letter-spacing: 0.18em; }
-  .about-header h2{
-    font-family: var(--font-display); font-weight: 900;
-    font-size: clamp(2.6rem, 6.8vw, 5.1rem);
-    line-height: 0.88; letter-spacing: -0.04em; text-transform: uppercase;
-    color: var(--ecru); max-width: none; margin: 0;
-  }
-  .about-header h2 span{ display:block; }
-  .about-header h2 em{
-    font-family: var(--font-body); font-style: italic; font-weight: 400;
-    text-transform: none; letter-spacing: -0.02em; color: var(--brass);
-    font-size: 0.82em; display:block; margin-top: 0.1em;
-  }
-  .about-grid{display:grid; grid-template-columns:1.15fr 0.95fr; gap:clamp(2rem,5vw,4rem); align-items:start; position:relative; z-index:1;}
-  @media (max-width:480px){ .about-grid{grid-template-columns:1fr; gap:1.5rem;} }
-  .about-copy p{margin-bottom:1.15em; max-width:56ch; color:var(--ecru); line-height:1.68;}
-  .about-copy p:last-of-type{margin-bottom:0;}
-  .about-lead{
-    font-size: clamp(1.08rem, 2.1vw, 1.32rem);
-    line-height: 1.48; color: var(--ecru); font-style: italic;
-    border-left: 3px solid var(--oxblood); padding-left: 1rem;
-    margin-bottom: 1.25rem; max-width: 48ch;
-  }
-  .about-stats{
-    display:grid; grid-template-columns: 1fr 1fr 1fr;
-    gap: 1.2rem; margin-top: var(--sp-3);
+    padding-block: clamp(4.75rem, 8.5vw, 7.75rem);
     border-top: 1px solid rgba(239,230,216,0.08);
-    padding-top: 1rem;
-    align-items: stretch;
+    border-bottom: 1px solid rgba(239,230,216,0.08);
+    background:
+      radial-gradient(ellipse 680px 420px at 78% 45%, rgba(212,162,76,0.055), transparent 64%),
+      linear-gradient(180deg, #221C18 0%, #1F1916 100%);
   }
-  .stat{ border-left: 1px solid var(--oxblood-dim); padding-left: 0.85rem; display:flex; flex-direction:column; justify-content:flex-start; margin:0; }
-  .stat:first-child{ border-left:none; padding-left:0; }
-  .stat b{
-    display:block; font-family: var(--font-display); font-weight: 800;
-    font-size: clamp(1.35rem, 2.6vw, 1.9rem); line-height:1; color: var(--brass); letter-spacing: -0.02em; margin:0;
+  .about-grid{
+    display:grid;
+    grid-template-columns: 1.25fr 0.75fr;
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: center;
+    position: relative;
+    z-index: 1;
   }
-  .stat span{
-    display:block; margin-top: 0.3rem;
-    font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--ash);
-  }
-  .about-stats-footnote{
-    grid-column: 1 / -1;
-    margin-top: .6rem; padding-top:.6rem;
-    border-top:1px dashed rgba(239,230,216,.08);
-    font-family:var(--font-mono); font-size:.64rem; letter-spacing:.06em; text-transform:uppercase; color:var(--ash);
-  }
-  .about-stats-footnote b{ color:var(--brass); font-weight:700; }
-  @media (max-width:560px){ .about-stats{ gap:0.7rem; } .stat b{ font-size: clamp(1.15rem, 4vw, 1.5rem); } .stat span{ font-size:0.60rem; } }
-  @media (max-width:380px){ .about-stats{ gap:0.6rem; } .stat{ padding-left:0.6rem; } }
-  .about-lang{
-    display:inline-flex; align-items:center; gap:0.4rem;
-    margin-top:var(--sp-3); font-family:var(--font-mono); font-size:.72rem;
-    letter-spacing:.1em; text-transform:uppercase; color:var(--ash);
-    border:1px solid var(--oxblood-dim); background: rgba(239,230,216,0.03);
-    padding:.45rem .7rem;
+  @media (max-width:820px){
+    .about-grid{
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .portrait-panel{
+      max-width: 360px;
+    }
   }
   .portrait-panel{
     position:relative; aspect-ratio:4/5; background:var(--ink-2);
-    border:1px solid var(--oxblood-dim);
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.9rem;
-    clip-path:polygon(0 0,100% 0,100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%);
+    border:1px solid rgba(239,230,216,0.14);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    clip-path:polygon(0 0,100% 0,100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
     overflow:hidden;
-  }
-  .portrait-panel::after{
-    content:"SOFIA • NBU • 2026";
-    position:absolute; bottom:10px; right:14px;
-    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.14em;
-    color: rgba(239,230,216,0.72); background: rgba(28,22,20,0.78);
-    border:1px solid rgba(239,230,216,0.12); padding: 2px 6px;
-    backdrop-filter: blur(4px);
+    width: 100%;
   }
 
   /* ---------- work / case card ---------- */
@@ -397,12 +339,13 @@ const { title } = Astro.props;
     backdrop-filter: blur(6px);
   }
   #contact{
+    padding-block: clamp(5rem, 9vw, 8.25rem);
     background:
       radial-gradient(ellipse 820px 420px at 88% 18%, rgba(178,58,46,0.11), transparent 58%),
       radial-gradient(ellipse 600px 320px at 8% 88%, rgba(212,162,76,0.072), transparent 60%),
-      radial-gradient(ellipse at 50% 100%, rgba(239,230,216,0.04), transparent 45%),
-      var(--ink);
-    border-top: 1px solid rgba(239,230,216,0.07);
+      radial-gradient(ellipse at 50% 100%, rgba(239,230,216,0.035), transparent 48%),
+      #16110F;
+    border-top: 1px solid rgba(239,230,216,0.09);
   }
   #contact h2{
     text-shadow: 0 0 32px rgba(178,58,46,0.18);
@@ -900,7 +843,7 @@ const { title } = Astro.props;
   <footer>
     <div class="container footer-inner">
       <Image src={logoImg} alt="Mihail Mihaylov Logo" class="footer-logo" widths={[48, 96]} sizes="48px" loading="lazy" decoding="async" />
-      <p>{siteContent?.footer || '© 2026 Mihail Mihaylov · Sofia, Bulgaria · Made for the big screen'}</p>
+      <p>{siteContent?.footer || '© 2026 Mihail Mihaylov · Sofia, Bulgaria'}</p>
     </div>
   </footer>
 

@@ -2,7 +2,6 @@
 // Project Library: aggregates films (projects collection) + companies (site commercial.jobs)
 // Homepage highlights in src/pages/index.astro are intentionally untouched.
 import Layout from '../../layouts/Layout.astro';
-import SpliceStrip from '../../components/SpliceStrip.astro';
 import { getCollection } from 'astro:content';
 
 const projects = await getCollection('projects');
@@ -99,8 +98,6 @@ const counts = {
       </div>
     </section>
 
-    <SpliceStrip />
-
     <section class="section library-controls-section" style="padding-top: var(--sp-4);">
       <div class="container">
         <div class="library-controls" data-reveal>
@@ -159,8 +156,6 @@ const counts = {
         </div>
       </div>
     </section>
-
-    <SpliceStrip />
   </main>
 </Layout>
 

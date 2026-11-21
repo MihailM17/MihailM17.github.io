@@ -1,6 +1,5 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import SpliceStrip from '../../components/SpliceStrip.astro';
 import Lightbox from '../../components/Lightbox.astro';
 import { getCollection } from 'astro:content';
 
@@ -13,8 +12,17 @@ const { project } = Astro.props;
 if (!project) throw new Error('Project not found');
 const { slug } = Astro.params;
 
-// Need to fetch all projects again for prev/next navigation
-const allProjects = await getCollection('projects');
+// Need to fetch all projects again for prev/next navigation in curated order
+const ORDER: Record<string, number> = {
+  'silent-lifts-vitosha': 1,
+  'lunen-blyasak': 2,
+  'zasnet': 3,
+  'remake-season-2': 4,
+  'eastern-wind': 5,
+};
+const allProjects = (await getCollection('projects')).sort(
+  (a, b) => (ORDER[a.data.slug] ?? 999) - (ORDER[b.data.slug] ?? 999),
+);
 const projectMap = new Map(allProjects.map(p => [p.data.slug, p]));
 const current = projectMap.get(slug);
 if (!current) throw new Error('Project not found');
@@ -33,7 +41,7 @@ const gradeId = gradeUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
 <Layout title={`${displayTitle}, ${projectData.year} - Mihail Mihaylov`}>
   <main>
     <div class="container" style="padding-top: 1.6rem;">
-      <a href="/#narrative" class="back-link" data-cursor-hover data-cursor-label="BACK">← Back to Narrative</a>
+      <a href="/#work" class="back-link" data-cursor-hover data-cursor-label="BACK">← Back to Work</a>
     </div>
 
     <section class="project-hero">
@@ -57,8 +65,6 @@ const gradeId = gradeUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
         </a>
       </div>
     </section>
-
-    <SpliceStrip />
 
     <section class="section specs-section">
       <div class="container specs-grid">
@@ -130,7 +136,7 @@ const gradeId = gradeUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
             <span>{prev.data.kicker}</span>
           </a>
         ) : <span />}
-        <a href="/#narrative" class="nav-center" data-cursor-hover>Narrative Index</a>
+        <a href="/#work" class="nav-center" data-cursor-hover>All Work</a>
         {next ? (
           <a href={`/projects/${next.data.slug}`} class="nav-card nav-next" data-cursor-hover data-cursor-label="NEXT">
             <span class="eyebrow">Next</span>
@@ -141,7 +147,6 @@ const gradeId = gradeUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
       </div>
     </section>
 
-    <SpliceStrip />
     <Lightbox />
   </main>
 </Layout>
