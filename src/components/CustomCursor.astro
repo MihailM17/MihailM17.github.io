@@ -21,6 +21,11 @@
     html.has-custom-cursor [data-cursor-hover] {
       cursor: none;
     }
+    html.has-custom-cursor input,
+    html.has-custom-cursor textarea,
+    html.has-custom-cursor select {
+      cursor: text;
+    }
   }
 
   #custom-cursor {
@@ -169,33 +174,57 @@
     ring.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
     label.style.transform = `translate(${labelX}px, ${labelY}px) translate(-50%, -50%)`;
 
+    let isRunning = false;
+
+    function startLoop() {
+      if (isRunning) return;
+      isRunning = true;
+      rafId = requestAnimationFrame(lerpLoop);
+    }
+
     function onMouseMove(e) {
       mouseX = e.clientX;
       mouseY = e.clientY;
       if (!active) {
         active = true;
-        // already ready, but ensure
         cursor.classList.add('is-ready');
       }
+      startLoop();
     }
 
     function lerpLoop() {
-      // Smooth follow - dot snappier, ring/label lazy
-      dotX += (mouseX - dotX) * 0.32;
-      dotY += (mouseY - dotY) * 0.32;
-      ringX += (mouseX - ringX) * 0.16;
-      ringY += (mouseY - ringY) * 0.16;
-      labelX += (mouseX - labelX) * 0.16;
-      labelY += (mouseY - labelY) * 0.16;
+      // Smooth follow - stops automatically once settled so idle CPU stays at 0%
+      dotX += (mouseX - dotX) * 0.34;
+      dotY += (mouseY - dotY) * 0.34;
+      ringX += (mouseX - ringX) * 0.18;
+      ringY += (mouseY - ringY) * 0.18;
+      labelX += (mouseX - labelX) * 0.18;
+      labelY += (mouseY - labelY) * 0.18;
+
+      const settled =
+        Math.abs(mouseX - ringX) < 0.15 &&
+        Math.abs(mouseY - ringY) < 0.15 &&
+        Math.abs(mouseX - dotX) < 0.15 &&
+        Math.abs(mouseY - dotY) < 0.15;
+
+      if (settled) {
+        dotX = ringX = labelX = mouseX;
+        dotY = ringY = labelY = mouseY;
+      }
 
       dot.style.transform = `translate(${dotX}px, ${dotY}px) translate(-50%, -50%)`;
       ring.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
       label.style.transform = `translate(${labelX}px, ${labelY}px) translate(-50%, -50%)`;
 
+      if (settled) {
+        isRunning = false;
+        rafId = 0;
+        return;
+      }
       rafId = requestAnimationFrame(lerpLoop);
     }
     cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(lerpLoop);
+    isRunning = false;
 
     function onMouseLeave() {
       cursor.classList.remove('is-ready');

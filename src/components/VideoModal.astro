@@ -1,0 +1,466 @@
+---
+// Cinema Screening Room Modal & Inline Poster Player
+// Plays YouTube videos (via youtube-nocookie.com) and Instagram Reels directly inside the site
+// without redirecting visitors away, while automatically ducking the site ambient soundscape.
+---
+
+<div
+  id="video-modal"
+  class="vmodal"
+  aria-hidden="true"
+  inert
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="vmodal-title"
+>
+  <div class="vmodal-backdrop" data-vm-close></div>
+
+  <div class="vmodal-dialog" data-vm-dialog>
+    <div class="vmodal-bar">
+      <div class="vmodal-heading">
+        <span class="vmodal-dot" aria-hidden="true"></span>
+        <span id="vmodal-title" class="vmodal-title" data-vm-title>Now playing</span>
+      </div>
+      <div class="vmodal-controls">
+        <a
+          class="vmodal-ext"
+          data-vm-ext
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open original <span aria-hidden="true">↗</span>
+        </a>
+        <button
+          type="button"
+          class="vmodal-close"
+          data-vm-close
+          aria-label="Close video player"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <div class="vmodal-stage" data-vm-stage>
+      <div class="vmodal-frame" data-vm-frame></div>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .vmodal {
+    position: fixed;
+    inset: 0;
+    z-index: 10020;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(0.85rem, 3vw, 2rem);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.24s ease, visibility 0.24s ease;
+  }
+  .vmodal.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+  .vmodal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 8, 7, 0.94);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .vmodal-dialog {
+    position: relative;
+    z-index: 2;
+    width: min(1080px, 94vw);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transform: translateY(10px) scale(0.98);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .vmodal.is-open .vmodal-dialog {
+    transform: translateY(0) scale(1);
+  }
+  .vmodal-dialog.is-vertical {
+    width: min(410px, 92vw);
+  }
+
+  .vmodal-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .vmodal-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+  }
+  .vmodal-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--brass);
+    flex-shrink: 0;
+  }
+  .vmodal-title {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ecru);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .vmodal-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-shrink: 0;
+  }
+  .vmodal-ext {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    padding: 0 0.95rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    background: rgba(28, 22, 20, 0.8);
+    color: var(--ash);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .vmodal-ext:hover {
+    border-color: var(--brass);
+    color: var(--ecru);
+  }
+  .vmodal-close {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border-subtle);
+    background: rgba(28, 22, 20, 0.88);
+    color: var(--ecru);
+    font-size: 1.15rem;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+  .vmodal-close:hover {
+    border-color: var(--brass);
+    color: var(--brass);
+    transform: scale(1.05);
+  }
+
+  .vmodal-stage {
+    position: relative;
+    width: 100%;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #0b0807;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 32px 72px rgba(0, 0, 0, 0.8);
+  }
+  .vmodal-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0b0807;
+  }
+  .vmodal-dialog.is-vertical .vmodal-frame {
+    aspect-ratio: 9 / 16;
+    max-height: 78vh;
+    background: #14110f;
+  }
+  .vmodal-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  /* Inline facade player state for project & company cover posters */
+  .project-cover.is-playing {
+    cursor: default;
+  }
+  .project-cover.is-playing img,
+  .project-cover.is-playing .play-badge {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .project-cover .inline-embed {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 4;
+    background: #0b0807;
+  }
+
+  @media (max-width: 640px) {
+    .vmodal-ext span:first-child {
+      display: none;
+    }
+    .vmodal-ext {
+      padding: 0 0.7rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vmodal,
+    .vmodal-dialog {
+      transition: opacity 0.14s ease;
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  import { getSound } from '../lib/sound';
+
+  interface ParsedVideo {
+    embedUrl: string;
+    originalUrl: string;
+    platform: 'YouTube' | 'Instagram';
+    vertical: boolean;
+  }
+
+  function parseVideoUrl(rawUrl: string | null | undefined): ParsedVideo | null {
+    if (!rawUrl) return null;
+    const url = rawUrl.trim();
+
+    // YouTube (youtu.be, watch?v=, shorts/, embed/)
+    const ytMatch = url.match(
+      /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([\w-]{11})/i,
+    );
+    if (ytMatch) {
+      const id = ytMatch[1];
+      const isShort = /youtube\.com\/shorts\//i.test(url);
+      return {
+        embedUrl: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&playsinline=1`,
+        originalUrl: url,
+        platform: 'YouTube',
+        vertical: isShort,
+      };
+    }
+
+    // Instagram Reels / Posts
+    const igMatch = url.match(/instagram\.com\/(?:reel|p)\/([\w-]+)/i);
+    if (igMatch) {
+      const code = igMatch[1];
+      return {
+        embedUrl: `https://www.instagram.com/reel/${code}/embed/`,
+        originalUrl: url,
+        platform: 'Instagram',
+        vertical: true,
+      };
+    }
+
+    return null;
+  }
+
+  function initVideoModal() {
+    const modal = document.getElementById('video-modal') as HTMLElement | null;
+    if (!modal || modal.dataset.bound === '1') return;
+    modal.dataset.bound = '1';
+
+    const dialog = modal.querySelector('[data-vm-dialog]') as HTMLElement | null;
+    const titleEl = modal.querySelector('[data-vm-title]') as HTMLElement | null;
+    const extEl = modal.querySelector('[data-vm-ext]') as HTMLAnchorElement | null;
+    const frameEl = modal.querySelector('[data-vm-frame]') as HTMLElement | null;
+    const closeBtn = modal.querySelector('button[data-vm-close]') as HTMLButtonElement | null;
+    if (!dialog || !titleEl || !extEl || !frameEl || !closeBtn) return;
+
+    let lastTrigger: HTMLElement | null = null;
+    const focusables = [extEl, closeBtn];
+
+    function stopInlinePlayers() {
+      document.querySelectorAll<HTMLElement>('.project-cover.is-playing').forEach((cover) => {
+        cover.querySelector('iframe.inline-embed')?.remove();
+        cover.classList.remove('is-playing');
+      });
+    }
+
+    function openVideo(parsed: ParsedVideo, title: string, trigger?: HTMLElement | null) {
+      stopInlinePlayers();
+      lastTrigger = trigger || (document.activeElement as HTMLElement | null);
+
+      titleEl!.textContent = title || 'Now playing';
+      extEl!.href = parsed.originalUrl;
+      extEl!.innerHTML = `<span>Open on ${parsed.platform}</span><span aria-hidden="true">↗</span>`;
+      dialog!.classList.toggle('is-vertical', parsed.vertical);
+
+      frameEl!.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.src = parsed.embedUrl;
+      iframe.title = title || 'Video player';
+      iframe.allow =
+        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      frameEl!.appendChild(iframe);
+
+      modal!.classList.add('is-open');
+      modal!.setAttribute('aria-hidden', 'false');
+      modal!.removeAttribute('inert');
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', onKeydown);
+
+      const sound = getSound();
+      sound.playOpen();
+      sound.setVideoDucking(true);
+
+      requestAnimationFrame(() => closeBtn!.focus());
+    }
+
+    function closeVideo() {
+      if (!modal!.classList.contains('is-open')) return;
+      modal!.classList.remove('is-open');
+      modal!.setAttribute('aria-hidden', 'true');
+      modal!.setAttribute('inert', '');
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKeydown);
+
+      // Tear down iframe so video & audio stop immediately
+      frameEl!.innerHTML = '';
+
+      const sound = getSound();
+      sound.playClose();
+      sound.setVideoDucking(false);
+
+      if (lastTrigger && document.contains(lastTrigger)) {
+        lastTrigger.focus();
+      }
+      lastTrigger = null;
+    }
+
+    function activateInlinePlayer(cover: HTMLElement, parsed: ParsedVideo, title: string) {
+      if (cover.classList.contains('is-playing')) return;
+      stopInlinePlayers();
+
+      const iframe = document.createElement('iframe');
+      iframe.className = 'inline-embed';
+      iframe.src = parsed.embedUrl;
+      iframe.title = title || 'Video player';
+      iframe.allow =
+        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+
+      cover.classList.add('is-playing');
+      cover.appendChild(iframe);
+
+      const sound = getSound();
+      sound.playOpen();
+      sound.setVideoDucking(true);
+    }
+
+    function onKeydown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeVideo();
+      } else if (e.key === 'Tab') {
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    modal.querySelectorAll('[data-vm-close]').forEach((el) => {
+      el.addEventListener('click', closeVideo);
+    });
+
+    const onOpenVideoEvent = (e: Event) => {
+      const detail = (e as CustomEvent<{ parsed: ParsedVideo; title: string; trigger: HTMLElement }>).detail;
+      if (detail) openVideo(detail.parsed, detail.title, detail.trigger);
+    };
+    const onInlineVideoEvent = (e: Event) => {
+      const detail = (e as CustomEvent<{ cover: HTMLElement; parsed: ParsedVideo; title: string }>).detail;
+      if (detail) activateInlinePlayer(detail.cover, detail.parsed, detail.title);
+    };
+    window.addEventListener('portfolio:open-video', onOpenVideoEvent);
+    window.addEventListener('portfolio:play-inline', onInlineVideoEvent);
+
+    if (document.documentElement.dataset.videoDelegate !== '1') {
+      document.documentElement.dataset.videoDelegate = '1';
+      document.addEventListener('click', (e) => {
+        // Allow Cmd/Ctrl/Shift/middle-click to open original URL in a new tab naturally
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+
+        const target = e.target as HTMLElement | null;
+        const inlineTrigger = target?.closest<HTMLElement>('[data-inline-video]');
+        if (inlineTrigger) {
+          const url = inlineTrigger.dataset.inlineVideo || inlineTrigger.getAttribute('href');
+          const parsed = parseVideoUrl(url);
+          if (parsed) {
+            e.preventDefault();
+            const title = inlineTrigger.dataset.videoTitle || inlineTrigger.getAttribute('aria-label') || 'Video';
+            window.dispatchEvent(
+              new CustomEvent('portfolio:play-inline', { detail: { cover: inlineTrigger, parsed, title } }),
+            );
+            return;
+          }
+        }
+
+        const trigger = target?.closest<HTMLElement>('[data-video-url]');
+        if (!trigger) return;
+        const url = trigger.dataset.videoUrl || trigger.getAttribute('href');
+        const parsed = parseVideoUrl(url);
+        if (!parsed) return; // Non-embeddable links (e.g. Facebook share) fall through to native href
+
+        e.preventDefault();
+        const title =
+          trigger.dataset.videoTitle ||
+          trigger.getAttribute('aria-label') ||
+          trigger.textContent?.trim() ||
+          'Video';
+        window.dispatchEvent(
+          new CustomEvent('portfolio:open-video', { detail: { parsed, title, trigger } }),
+        );
+      });
+    }
+
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        window.removeEventListener('portfolio:open-video', onOpenVideoEvent);
+        window.removeEventListener('portfolio:play-inline', onInlineVideoEvent);
+        if (modal.classList.contains('is-open')) {
+          closeVideo();
+        }
+        stopInlinePlayers();
+        getSound().setVideoDucking(false);
+      },
+      { once: true },
+    );
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initVideoModal);
+  } else {
+    initVideoModal();
+  }
+  document.addEventListener('astro:page-load', initVideoModal);
+  document.addEventListener('astro:after-swap', initVideoModal);
+</script>

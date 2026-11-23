@@ -1,39 +1,52 @@
 ---
 // LenisSmoothScroll - buttery inertia + GSAP ScrollTrigger sync
-// Respects prefers-reduced-motion. No destructive kill of all triggers.
+// Respects prefers-reduced-motion cleanly and guarantees keyboard-focused elements are never hidden.
 ---
 
 <script>
-  // @ts-nocheck
   import Lenis from 'lenis';
   import { gsap, ScrollTrigger } from '../lib/gsap';
 
-  let lenis = null;
-  let rafId = 0;
-  let updateLenis = null;
+  let lenis: Lenis | null = null;
+  let updateLenis: ((time: number) => void) | null = null;
+
+  function revealElementImmediately(el: Element) {
+    const htmlEl = el as HTMLElement;
+    gsap.killTweensOf(htmlEl);
+    gsap.set(htmlEl, { opacity: 1, y: 0, clearProps: 'transform,willChange' });
+    htmlEl.classList.add('reveal-visible');
+  }
 
   function initLenis() {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Cleanup previous instance cleanly
     if (lenis) {
-      try { lenis.destroy(); } catch {}
+      try {
+        lenis.destroy();
+      } catch {}
       lenis = null;
     }
     if (updateLenis) {
       gsap.ticker.remove(updateLenis);
       updateLenis = null;
     }
-    cancelAnimationFrame(rafId);
 
-    // Don't kill every ScrollTrigger - that breaks HorizontalGallery pin.
-    // Just refresh after setup.
+    const isMobile =
+      window.innerWidth < 768 ||
+      window.matchMedia('(pointer: coarse)').matches ||
+      window.matchMedia('(hover: none)').matches;
 
-    const isMobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(hover: none)').matches;
-    if (prefersReduced || isMobile) {
+    if (prefersReduced) {
+      document.documentElement.classList.remove('lenis', 'lenis-smooth');
+      document.documentElement.style.scrollBehavior = 'auto';
+      document.querySelectorAll('[data-reveal]').forEach(revealElementImmediately);
+      return;
+    }
+
+    if (isMobile) {
       document.documentElement.classList.remove('lenis', 'lenis-smooth');
       document.documentElement.style.scrollBehavior = 'smooth';
-      initGsapOnly();
+      initGsapShared();
       ScrollTrigger.refresh();
       return;
     }
@@ -51,77 +64,53 @@
     });
 
     document.documentElement.classList.add('lenis', 'lenis-smooth');
-
     lenis.on('scroll', ScrollTrigger.update);
 
-    updateLenis = (time) => {
+    updateLenis = (time: number) => {
       lenis?.raf(time * 1000);
     };
     gsap.ticker.add(updateLenis);
     gsap.ticker.lagSmoothing(0);
 
-    // Anchor hijack - smooth hash navigation (handles both #section and /#section, plus logo /)
     function hijackAnchors() {
-      document.querySelectorAll('a[href*="#"], a[href="/"], a[href="/#top"]').forEach((a) => {
-        const anchor = a;
+      document.querySelectorAll<HTMLAnchorElement>('a[href*="#"], a[href="/"], a[href="/#top"]').forEach((anchor) => {
         if (anchor.dataset.lenisBound === '1') return;
         anchor.dataset.lenisBound = '1';
         anchor.addEventListener('click', (e) => {
           const href = anchor.getAttribute('href');
-          if (!href) return;
-          if (href === '#') return;
-          // Handle logo "/" - if already on home, scroll to top
+          if (!href || href === '#') return;
+
           if (href === '/' || href === '/#top') {
             const isHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
             if (isHome) {
               e.preventDefault();
-              const topEl = document.querySelector('#top');
+              const topEl = document.querySelector<HTMLElement>('#top');
               if (topEl && lenis) {
-                lenis.scrollTo(topEl, { offset: -72, duration: 1.0, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
-              } else if (topEl) {
-                topEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                lenis.scrollTo(topEl, { offset: -72, duration: 1.0 });
               } else {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }
               history.pushState(null, '', '/');
-              return;
             }
-            // not on home - let browser navigate to "/"
             return;
           }
-          
-          // Handle /#section format (from other pages) - navigate to home first
+
           if (href.startsWith('/#')) {
-            const hash = href.slice(1); // #section
-            const target = document.querySelector(hash);
-            if (target) {
+            const hash = href.slice(1);
+            const target = document.querySelector<HTMLElement>(hash);
+            if (target && (window.location.pathname === '/' || window.location.pathname === '/index.html')) {
               e.preventDefault();
-              // If we're on home page, scroll directly
-              if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-                lenis?.scrollTo(target, {
-                  offset: -72,
-                  duration: 1.1,
-                  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-                });
-                history.pushState(null, '', hash);
-              } else {
-                // Navigate to home page with hash
-                window.location.href = href;
-              }
+              lenis?.scrollTo(target, { offset: -72, duration: 1.1 });
+              history.pushState(null, '', hash);
             }
             return;
           }
-          
-          // Handle #section format (on home page)
+
           if (href.startsWith('#')) {
-            const target = document.querySelector(href);
+            const target = document.querySelector<HTMLElement>(href);
             if (target) {
               e.preventDefault();
-              lenis?.scrollTo(target, {
-                offset: -72,
-                duration: 1.1,
-                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-              });
+              lenis?.scrollTo(target, { offset: -72, duration: 1.1 });
               history.pushState(null, '', href);
             }
           }
@@ -129,113 +118,102 @@
       });
     }
     hijackAnchors();
-    
-    // Re-run hijackAnchors on view transitions for new links
-    document.addEventListener('astro:after-swap', () => {
-      setTimeout(hijackAnchors, 50);
-    });
 
-    // handle hash on initial load (e.g. /#narrative from subpages - back to narrative/commercial)
     function handleInitialHash() {
       const hash = window.location.hash;
       if (!hash || hash === '#') return;
-      const target = document.querySelector(hash);
+      const target = document.querySelector<HTMLElement>(hash);
       if (!target) return;
       setTimeout(() => {
         if (lenis) {
-          lenis.scrollTo(target, { offset: -72, duration: 1.0, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+          lenis.scrollTo(target, { offset: -72, duration: 1.0 });
         } else {
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-      }, 180);
+      }, 140);
     }
 
-    // expose for debugging
-    window.__LENIS__ = lenis;
-    window.__GSAP__ = gsap;
-    window.__ScrollTrigger__ = ScrollTrigger;
+    (window as any).__LENIS__ = lenis;
+    (window as any).__GSAP__ = gsap;
+    (window as any).__ScrollTrigger__ = ScrollTrigger;
 
     initGsapShared();
     setTimeout(() => {
       ScrollTrigger.refresh();
       handleInitialHash();
-    }, 120);
-    window.addEventListener('load', () => {
-      ScrollTrigger.refresh();
-      handleInitialHash();
-    }, { once: true });
-  }
-
-  function initGsapOnly() {
-    initGsapShared();
-    window.__GSAP__ = gsap;
-    window.__ScrollTrigger__ = ScrollTrigger;
+    }, 100);
+    window.addEventListener(
+      'load',
+      () => {
+        ScrollTrigger.refresh();
+        handleInitialHash();
+      },
+      { once: true },
+    );
   }
 
   function initGsapShared() {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) return;
 
-    // Reveal - intentional, not generic: hero gets cinematic rise, everything else is near-instant (keeps glass, kills stagger slop)
-    const allReveal = gsap.utils.toArray('[data-reveal]:not([data-gsap-init])');
-    allReveal.forEach((el) => el.setAttribute('data-gsap-init', '1'));
-    const heroReveal = allReveal.filter(el => el.closest('.hero'));
-    const otherReveal = allReveal.filter(el => !el.closest('.hero'));
+    const allReveal = gsap.utils.toArray<HTMLElement>('[data-reveal]:not([data-gsap-init])');
+    allReveal.forEach((el) => {
+      el.setAttribute('data-gsap-init', '1');
+      // Guarantee keyboard focus NEVER lands on an invisible element
+      el.addEventListener('focusin', () => revealElementImmediately(el), { once: true });
+    });
 
-    if (heroReveal.length > 0) {
-      gsap.set(heroReveal, { autoAlpha: 0, y: 18 });
-      ScrollTrigger.batch(heroReveal, {
-        onEnter: (batch) => gsap.to(batch, {
-          autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.06, ease: 'power3.out', overwrite: true,
-          onComplete: () => batch.forEach(el => el.classList.add('reveal-visible')),
-        }),
-        start: 'top 92%', once: true,
+    // Only animate elements that are currently below the fold; anything already visible stays visible
+    const belowFold = allReveal.filter((el) => el.getBoundingClientRect().top > window.innerHeight * 0.95);
+    const alreadyVisible = allReveal.filter((el) => el.getBoundingClientRect().top <= window.innerHeight * 0.95);
+    alreadyVisible.forEach(revealElementImmediately);
+
+    if (belowFold.length > 0) {
+      // Never set visibility:hidden (autoAlpha) on focusable sections; use opacity + gentle translate only
+      gsap.set(belowFold, { opacity: 0, y: 14 });
+      ScrollTrigger.batch(belowFold, {
+        onEnter: (batch) =>
+          gsap.to(batch, {
+            opacity: 1,
+            y: 0,
+            duration: 0.45,
+            stagger: 0.04,
+            ease: 'power2.out',
+            overwrite: true,
+            onComplete: () =>
+              batch.forEach((el) => {
+                (el as HTMLElement).style.willChange = 'auto';
+                el.classList.add('reveal-visible');
+              }),
+          }),
+        start: 'top 92%',
+        once: true,
       });
-    }
-    if (otherReveal.length > 0) {
-      gsap.set(otherReveal, { autoAlpha: 0 });
-      ScrollTrigger.batch(otherReveal, {
-        onEnter: (batch) => gsap.to(batch, {
-          autoAlpha: 1, duration: 0.45, stagger: 0.03, ease: 'power2.out', overwrite: true,
-          onComplete: () => batch.forEach(el => el.classList.add('reveal-visible')),
-        }),
-        start: 'top 92%', once: true,
-      });
+
+      // Fallback safety reveal if user jumps via scrollbar/hash
       setTimeout(() => {
-        otherReveal.forEach((el) => {
-          const style = window.getComputedStyle(el);
-          if (parseFloat(style.opacity) < 0.1) {
+        belowFold.forEach((el) => {
+          if (parseFloat(window.getComputedStyle(el).opacity) < 0.2) {
             const rect = el.getBoundingClientRect();
-            if (rect.top < window.innerHeight * 0.92) gsap.to(el, { autoAlpha: 1, duration: 0.4 });
+            if (rect.top < window.innerHeight * 1.05) {
+              revealElementImmediately(el);
+            }
           }
         });
         ScrollTrigger.refresh();
-      }, 900);
+      }, 650);
     }
 
-    // Kinetic hero
-    const heroH1 = document.querySelector('.hero h1');
-    if (heroH1 && !heroH1.dataset.kinInit) {
-      heroH1.dataset.kinInit = '1';
-      gsap.from(heroH1, {
-        yPercent: 12,
-        autoAlpha: 0,
-        duration: 1.1,
-        ease: 'power4.out',
-        scrollTrigger: { trigger: heroH1, start: 'top 92%', once: true },
-      });
-    }
-
-    // Subtle parallax - disabled on mobile for performance (kills scroll lag)
+    // Subtle portrait parallax on desktop only
     const isMobileParallax = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
     if (!isMobileParallax) {
-      const parallaxImgs = gsap.utils.toArray('.portrait-panel img, .reel-frame img, .exp-thumb img, .exp-thumb-vertical img');
+      const parallaxImgs = gsap.utils.toArray<HTMLElement>('.portrait-panel img');
       parallaxImgs.forEach((img) => {
         if (img.dataset.parallaxInit) return;
         img.dataset.parallaxInit = '1';
-        const triggerEl = img.closest('section, .exp-card, .case-card') || img;
+        const triggerEl = img.closest('section') || img;
         gsap.to(img, {
-          yPercent: -5,
+          yPercent: -4,
           ease: 'none',
           scrollTrigger: {
             trigger: triggerEl,
@@ -248,13 +226,18 @@
     }
   }
 
-  // Clean up ScrollTriggers on page transition to avoid duplicates
   document.addEventListener('astro:before-swap', () => {
-    ScrollTrigger.getAll().forEach(st => {
-      if (st.vars.id !== 'horizontal-gallery') {
-        st.kill();
-      }
-    });
+    ScrollTrigger.getAll().forEach((st) => st.kill());
+    if (lenis) {
+      try {
+        lenis.destroy();
+      } catch {}
+      lenis = null;
+    }
+    if (updateLenis) {
+      gsap.ticker.remove(updateLenis);
+      updateLenis = null;
+    }
   });
 
   if (document.readyState === 'loading') {
@@ -264,25 +247,28 @@
   }
   document.addEventListener('astro:page-load', initLenis);
   document.addEventListener('astro:after-swap', () => ScrollTrigger.refresh());
-  document.addEventListener('astro:before-swap', () => {
-    if (lenis) {
-      try { lenis.destroy(); } catch {}
-      lenis = null;
-    }
-    if (updateLenis) {
-      gsap.ticker.remove(updateLenis);
-      updateLenis = null;
-    }
-  });
 </script>
 
 <style is:global>
-  html.lenis, html.lenis body { height: auto; }
-  .lenis.lenis-smooth { scroll-behavior: auto !important; }
-  .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
-  .lenis.lenis-stopped { overflow: hidden; }
-  .lenis.lenis-scrolling iframe { pointer-events: none; }
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+  .lenis.lenis-scrolling iframe {
+    pointer-events: none;
+  }
   @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: auto;
+    }
   }
 </style>

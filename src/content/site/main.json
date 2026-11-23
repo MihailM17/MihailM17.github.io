@@ -105,10 +105,10 @@
           "synopsis": "Two internships - from Production Intern in 2022 to Video Editing Intern in 2025, cutting Deroni recipe videos and Уча, зная и играя.",
           "description": "Video Editing Intern - February 2025 – April 2025\n\nReturning to the company for a second internship, I stepped directly into an active editing role. During this three-month period, I was trusted to cut commercial YouTube content for clients, specifically focusing on fast-paced, short-form recipe videos featuring Deroni products. Additionally, I took on broadcast responsibilities by editing several episodes of the children's educational television program Уча, зная и играя.\n\nProduction Intern - July 2022 – September 2022\n\nDuring my initial time with the company, I focused on absorbing as much as possible about how a professional production environment operates. I assisted the team with general, day-to-day tasks, doing the foundational, hands-on work required to keep a production moving while learning the industry ropes from the ground up.",
           "gallery": [
-            { "src": "https://img.youtube.com/vi/vC3i48d0Mms/maxresdefault.jpg", "caption": "Сапунените мехури - Episode still", "alt": "Episode 1" },
-            { "src": "https://img.youtube.com/vi/CE5H1h6dpFw/maxresdefault.jpg", "caption": "Колелото - Episode still", "alt": "Episode 2" },
-            { "src": "https://img.youtube.com/vi/O9bSfzCGmyg/mqdefault.jpg", "caption": "Фотография - Episode still", "alt": "Episode 3" },
-            { "src": "https://img.youtube.com/vi/l9OJxQ7X9vY/maxresdefault.jpg", "caption": "Механика - Episode still", "alt": "Episode 4" }
+            { "src": "https://img.youtube.com/vi/vC3i48d0Mms/maxresdefault.jpg", "caption": "Сапунените мехури - Episode still", "alt": "Child blowing soap bubbles outdoors in Сапунените мехури TV episode" },
+            { "src": "https://img.youtube.com/vi/CE5H1h6dpFw/maxresdefault.jpg", "caption": "Колелото - Episode still", "alt": "Animated bicycle title frame from Колелото TV episode" },
+            { "src": "https://img.youtube.com/vi/O9bSfzCGmyg/mqdefault.jpg", "caption": "Фотография - Episode still", "alt": "Frame from Фотография educational TV episode" },
+            { "src": "https://img.youtube.com/vi/l9OJxQ7X9vY/maxresdefault.jpg", "caption": "Механика - Episode still", "alt": "Frame from Механика educational TV episode" }
           ]
         }
       }
@@ -154,7 +154,7 @@
     "email": "mohailmihaylov2004@gmail.com",
     "instagram": "https://www.instagram.com/mihail.m4307/",
     "linkedin": "https://www.linkedin.com/in/mihail-mihaylov-bb0238247/",
-    "formNote": "Opens your email app - no data stored on site."
+    "formNote": "Opens your email app with your message pre-filled. Nothing is stored on this site."
   },
   "footer": "© 2026 Mihail Mihaylov · Sofia, Bulgaria",
   "nav": [

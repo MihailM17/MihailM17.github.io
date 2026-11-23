@@ -8,7 +8,8 @@ export default defineConfig({
   image: {
     service: { entrypoint: 'astro/assets/services/sharp' },
   },
-  prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
+  prefetch: { prefetchAll: false, defaultStrategy: 'hover' },
+  trailingSlash: 'ignore',
   build: { inlineStylesheets: 'auto' },
   compressHTML: true,
   redirects: {

@@ -2,14 +2,18 @@
 import Layout from '../../layouts/Layout.astro';
 import Lightbox from '../../components/Lightbox.astro';
 import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import { resolveMedia, optimizeMediaUrl } from '../../lib/media';
 
 export async function getStaticPaths() {
   const siteDocs = await getCollection('site');
   const jobs = siteDocs[0]?.data?.commercial?.jobs || [];
-  return jobs.filter((j: any) => j.detail).map((j: any) => ({
-    params: { slug: j.detail.slug },
-    props: { detail: j.detail, items: j.items || [] }
-  }));
+  return jobs
+    .filter((j: any) => j.detail)
+    .map((j: any) => ({
+      params: { slug: j.detail.slug },
+      props: { detail: j.detail, items: j.items || [] },
+    }));
 }
 
 const { detail, items } = Astro.props;
@@ -17,31 +21,120 @@ if (!detail) throw new Error('Company not found');
 
 const videoUrl = (detail as any).videoUrl as string | undefined;
 const videoId = videoUrl?.match(/(?:youtu\.be\/|v=)([\w-]{11})/)?.[1];
-const watchableItems = (items || []).filter((it: any) => /^https?:/i.test(it.url));
+
+const watchableItems = await Promise.all(
+  (items || [])
+    .filter((it: any) => /^https?:/i.test(it.url))
+    .map(async (it: any) => ({
+      ...it,
+      media: resolveMedia(it.thumb),
+    })),
+);
+
+const galleryItems = await Promise.all(
+  (detail.gallery || []).map(async (img: any) => ({
+    ...img,
+    media: resolveMedia(img.src),
+    lightboxSrc: await optimizeMediaUrl(img.src, 1600, 84),
+  })),
+);
+
+const firstLocalGallery = (detail.gallery || []).find((g: any) => !/^https?:/i.test(g.src));
+const ogCover = firstLocalGallery
+  ? await optimizeMediaUrl(firstLocalGallery.src, 1200, 82)
+  : videoId
+    ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+    : '/og-cover.jpg';
+
+function escapeHtml(raw: string): string {
+  return raw
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatInline(text: string): string {
+  return escapeHtml(text).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+}
 ---
 
-<Layout title={`${detail.title} - Mihail Mihaylov`}>
-  <main>
-    <div class="container" style="padding-top: 1.6rem;">
+<Layout
+  title={`${detail.title} — Mihail Mihaylov`}
+  description={(detail as any).synopsis || detail.description.split('\n')[0]}
+  ogImage={ogCover}
+  ogType="article"
+>
+  <main id="main">
+    <div class="container back-wrap">
       <a href="/#work" class="back-link" data-cursor-hover data-cursor-label="BACK">← Back to Work</a>
     </div>
 
     <section class="project-hero">
       <div class="container project-hero-inner">
-        <div class="hero-meta" data-reveal>
-          <span class="eyebrow" style="margin-bottom: 0.6rem;">{detail.role} - {detail.years}</span>
+        <div class="hero-meta">
+          <span class="eyebrow" style="margin:0;">{detail.role} · {detail.years}</span>
         </div>
-        <h1 data-reveal>
-          <span class="line"><span>{detail.title},</span></span>
-        </h1>
-        <p class="project-synopsis" data-reveal>{(detail as any).synopsis || detail.description.split('\n')[0]}</p>
+        <h1>{detail.title}</h1>
+        <p class="project-synopsis">{(detail as any).synopsis || detail.description.split('\n')[0]}</p>
+
+        {(videoUrl || (detail as any).websiteUrl) && (
+          <div class="hero-actions">
+            {videoUrl && (
+              <a
+                href={videoUrl}
+                data-video-url={videoUrl}
+                data-video-title={(detail as any).videoLabel || detail.title}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="pill-btn pill-btn--primary"
+                data-cursor-hover
+                data-cursor-label="PLAY"
+              >
+                {(detail as any).videoLabel || 'Watch video'} <span aria-hidden="true">▶</span>
+              </a>
+            )}
+            {(detail as any).websiteUrl && (
+              <a
+                href={(detail as any).websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="pill-btn pill-btn--secondary"
+                data-cursor-hover
+                data-cursor-label="WEBSITE"
+              >
+                Visit website <span aria-hidden="true">↗</span>
+              </a>
+            )}
+          </div>
+        )}
       </div>
 
-      {videoUrl && (
-        <div class="project-cover-wrap container" data-reveal data-parallax="0.08">
-          <a href={videoUrl} target="_blank" rel="noopener noreferrer" class="project-cover" aria-label={`Watch ${(detail as any).videoLabel || 'video'} on YouTube`} data-cursor-hover data-cursor-label="PLAY ON YOUTUBE">
-            <img src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`} alt={`${detail.title} video cover`} loading="eager" decoding="async" onerror={`this.onerror=null;this.src='https://img.youtube.com/vi/${videoId}/hqdefault.jpg'`} />
-            <span class="play-badge"><i>▶</i> {(detail as any).videoLabel || 'Watch Video'}</span>
+      {videoUrl && videoId && (
+        <div class="project-cover-wrap container">
+          <a
+            href={videoUrl}
+            data-inline-video={videoUrl}
+            data-video-title={(detail as any).videoLabel || detail.title}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="project-cover"
+            aria-label={`Play ${(detail as any).videoLabel || 'video'}`}
+            data-cursor-hover
+            data-cursor-label="PLAY"
+          >
+            <img
+              src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+              alt={`${detail.title} video cover`}
+              width="1280"
+              height="720"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+              onerror={`this.onerror=null;this.src='https://img.youtube.com/vi/${videoId}/hqdefault.jpg'`}
+            />
+            <span class="play-badge" aria-hidden="true"><i>▶</i> {(detail as any).videoLabel || 'Watch video'}</span>
           </a>
         </div>
       )}
@@ -49,8 +142,8 @@ const watchableItems = (items || []).filter((it: any) => /^https?:/i.test(it.url
 
     <section class="section specs-section">
       <div class="container specs-grid">
-        <aside class="specs-aside" data-parallax="0.06">
-          <span class="eyebrow">Details</span>
+        <aside class="specs-aside">
+          <h2 class="aside-heading">Details</h2>
           <ul>
             <li><b>Role</b> <span>{detail.role}</span></li>
             <li><b>Period</b> <span>{detail.years}</span></li>
@@ -59,54 +152,87 @@ const watchableItems = (items || []).filter((it: any) => /^https?:/i.test(it.url
             {(detail as any).events && <li><b>Events</b> <span>{(detail as any).events}</span></li>}
             {(detail as any).gear && <li><b>Gear</b> <span>{(detail as any).gear}</span></li>}
           </ul>
-          {videoUrl && (
-            <a href={videoUrl} target="_blank" rel="noopener noreferrer" class="specs-cta" data-cursor-hover data-cursor-label="YOUTUBE">Watch Concert Live →</a>
-          )}
-          {(detail as any).websiteUrl && (
-            <><br /><a href={(detail as any).websiteUrl} target="_blank" rel="noopener noreferrer" class="specs-cta" data-cursor-hover data-cursor-label="WEBSITE">Good Game Festival →</a></>
+          {(videoUrl || (detail as any).websiteUrl) && (
+            <div class="specs-actions">
+              {videoUrl && (
+                <a
+                  href={videoUrl}
+                  data-video-url={videoUrl}
+                  data-video-title={(detail as any).videoLabel || detail.title}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="pill-btn pill-btn--primary"
+                  data-cursor-hover
+                  data-cursor-label="PLAY"
+                >
+                  Watch concert live <span aria-hidden="true">▶</span>
+                </a>
+              )}
+              {(detail as any).websiteUrl && (
+                <a
+                  href={(detail as any).websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="pill-btn pill-btn--secondary"
+                  data-cursor-hover
+                  data-cursor-label="WEBSITE"
+                >
+                  Good Game Festival ↗
+                </a>
+              )}
+            </div>
           )}
         </aside>
 
-        <article class="story" data-parallax="0.12">
-          <span class="eyebrow">About</span>
-          {detail.description.split('\n').map((para: string) => para.trim()).filter(Boolean).map((para: string, idx: number) => {
-            const isH3 = para.startsWith('### ');
-            const isInternshipHeading = /^(Video Editing Intern|Production Intern)\s-/.test(para);
-            const isBranchHeading = /^(7Arts \(Streaming Platform\)|ArtPortal:|Art Label Productions)/.test(para);
-            const formatInline = (text: string) => text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        <article class="story">
+          <h2 class="section-subhead">Overview</h2>
+          {detail.description
+            .split('\n')
+            .map((para: string) => para.trim())
+            .filter(Boolean)
+            .map((para: string, idx: number) => {
+              const isH3 = para.startsWith('### ');
+              const isInternshipHeading = /^(Video Editing Intern|Production Intern)\s-/.test(para);
+              const isBranchHeading = /^(7Arts \(Streaming Platform\)|ArtPortal:|Art Label Productions)/.test(para);
 
-            let content;
-            if (isH3) {
-              const headingText = para.replace(/^###\s+/, '');
-              content = <h3 data-reveal class="internship-heading">{headingText}</h3>;
-            } else if (isInternshipHeading) {
-              content = <p data-reveal class="internship-heading"><b>{para}</b></p>;
-            } else if (isBranchHeading) {
-              const colonIdx = para.indexOf(':');
-              if (colonIdx !== -1) {
-                const head = para.slice(0, colonIdx + 1);
-                const rest = para.slice(colonIdx + 1);
-                content = <p data-reveal><b class="branch-head">{head}</b><span set:html={formatInline(rest)} /></p>;
+              let content;
+              if (isH3) {
+                const headingText = para.replace(/^###\s+/, '');
+                content = <h3 class="internship-heading">{headingText}</h3>;
+              } else if (isInternshipHeading) {
+                content = <h3 class="internship-heading">{para}</h3>;
+              } else if (isBranchHeading) {
+                const colonIdx = para.indexOf(':');
+                if (colonIdx !== -1) {
+                  const head = para.slice(0, colonIdx + 1);
+                  const rest = para.slice(colonIdx + 1);
+                  content = (
+                    <p>
+                      <b class="branch-head">{head}</b>
+                      <span set:html={formatInline(rest)} />
+                    </p>
+                  );
+                } else {
+                  content = <p set:html={formatInline(para)} />;
+                }
               } else {
-                content = <p data-reveal set:html={formatInline(para)} />;
+                content = <p set:html={formatInline(para)} />;
               }
-            } else {
-              content = <p data-reveal set:html={formatInline(para)} />;
-            }
-            const showDivider = detail.slug === 'timeless-production' && idx === 1;
-            return (
-              <>
-                {content}
-                {showDivider && (
-                  <div class="internship-divider" aria-hidden="true" data-reveal>
-                    <span class="divider-line"></span>
-                    <span class="divider-diamond"></span>
-                    <span class="divider-line"></span>
-                  </div>
-                )}
-              </>
-            );
-          })}
+
+              const showDivider = detail.slug === 'timeless-production' && idx === 1;
+              return (
+                <>
+                  {content}
+                  {showDivider && (
+                    <div class="internship-divider" aria-hidden="true">
+                      <span class="divider-line"></span>
+                      <span class="divider-diamond"></span>
+                      <span class="divider-line"></span>
+                    </div>
+                  )}
+                </>
+              );
+            })}
         </article>
       </div>
     </section>
@@ -114,52 +240,93 @@ const watchableItems = (items || []).filter((it: any) => /^https?:/i.test(it.url
     {watchableItems.length > 0 && detail.slug !== 'tdb-play' && (
       <section class="section samples-section" style="padding-top: 0;">
         <div class="container">
-          <span class="eyebrow" data-reveal>Selected Videos</span>
-          <h2 data-reveal>Watch work samples.</h2>
+          <h2 class="section-subhead">Selected videos</h2>
           <div class={`samples-grid ${watchableItems.every((it: any) => it.isVertical) ? 'is-vertical-grid' : ''}`}>
-            {watchableItems.map((it: any) => (
-              <a
-                href={it.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                class={`sample-card ${it.isVertical ? 'is-vertical' : ''}`}
-                data-reveal
+            {watchableItems.map((it: any) => {
+              const isEmbeddable = /(?:youtu\.be|youtube\.com|instagram\.com\/(?:reel|p)\/)/i.test(it.url || '');
+              return (
+                <a
+                  href={it.url}
+                  data-video-url={isEmbeddable ? it.url : undefined}
+                  data-video-title={it.label}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class={`sample-card ${it.isVertical ? 'is-vertical' : ''}`}
+                  data-cursor-hover
+                  data-cursor-label={it.isVertical ? 'REEL' : 'PLAY'}
+                >
+                  <div class="sample-thumb">
+                    {it.media ? (
+                      <Image
+                        src={it.media}
+                        alt={it.label}
+                        widths={[360, 640]}
+                        sizes="(max-width: 640px) 100vw, 320px"
+                        format="webp"
+                        quality={82}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <img src={it.thumb} alt={it.label} width="640" height="360" loading="lazy" decoding="async" />
+                    )}
+                    <span class="sample-play" aria-hidden="true">▶</span>
+                  </div>
+                  <span class="sample-label">{it.label} {isEmbeddable ? '▶' : '↗'}</span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    )}
+
+    {galleryItems.length > 0 && (
+      <section class="section gallery-section" style="padding-top: 0;">
+        <div class="container">
+          <h2 class="section-subhead">Behind the scenes &amp; stills</h2>
+          <div class="gallery-grid">
+            {galleryItems.map((img: any) => (
+              <figure
+                class="gallery-card"
+                data-lightbox
+                data-src={img.lightboxSrc || img.src}
+                data-caption={img.caption}
                 data-cursor-hover
-                data-cursor-label={it.isVertical ? 'REEL' : 'WATCH'}
+                data-cursor-label="VIEW"
+                tabindex="0"
+                role="button"
+                aria-label={`Inspect still: ${img.caption || img.alt}`}
               >
-                <div class="sample-thumb">
-                  <img src={it.thumb} alt={it.label} loading="lazy" decoding="async" />
-                  <span class="sample-play" aria-hidden="true">▶</span>
+                <div class="gallery-img-wrap">
+                  {img.media ? (
+                    <Image
+                      src={img.media}
+                      alt={img.alt}
+                      widths={[400, 720, 1000]}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
+                      format="webp"
+                      quality={82}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <img src={img.src} alt={img.alt} width="720" height="450" loading="lazy" decoding="async" />
+                  )}
                 </div>
-                <span class="sample-label">{it.label} ↗</span>
-              </a>
+                <figcaption>{img.caption}</figcaption>
+              </figure>
             ))}
           </div>
         </div>
       </section>
     )}
 
-    <section class="section gallery-section" style="padding-top: 0;">
-      <div class="container">
-        <span class="eyebrow" data-reveal>Gallery</span>
-        <h2 data-reveal>Behind the scenes & work samples.</h2>
-        <div class="gallery-grid">
-          {detail.gallery?.map((img: any) => (
-            <figure class="gallery-card" data-reveal data-lightbox data-src={img.src} data-caption={img.caption} data-cursor-hover data-cursor-label="VIEW">
-              <div class="gallery-img-wrap skeleton" data-img-wrap>
-                <img src={img.src} alt={img.alt} loading="lazy" decoding="async" onload="this.closest('[data-img-wrap]')?.classList.remove('skeleton')" onerror="this.style.display='none'; const fb=this.nextElementSibling; if(fb) fb.style.display='block'; this.closest('[data-img-wrap]')?.classList.remove('skeleton')" />
-                <div class="img-error-fallback" style="display:none;">Image failed - <small>{img.src}</small></div>
-              </div>
-              <figcaption>{img.caption}</figcaption>
-            </figure>
-          ))}
-        </div>
-      </div>
-    </section>
-
     <section class="section" style="padding-top: 0;">
       <div class="container">
-        <a href="/#work" class="back-link" data-cursor-hover data-cursor-label="WORK">← Back to Work</a>
+        <a href="/#work" class="pill-btn pill-btn--secondary" data-cursor-hover data-cursor-label="WORK">
+          ← Back to Work
+        </a>
       </div>
     </section>
 
@@ -168,121 +335,339 @@ const watchableItems = (items || []).filter((it: any) => /^https?:/i.test(it.url
 </Layout>
 
 <style>
-  .back-link{
-    font-family: var(--font-mono); font-size: .78rem; letter-spacing: .1em; text-transform: uppercase;
-    color: var(--ash); border-bottom: 1px solid transparent; padding-bottom: 2px; transition: color .2s, border-color .2s;
+  .back-wrap {
+    padding-top: 1.4rem;
   }
-  .back-link:hover{ color: var(--ecru); border-color: var(--brass); }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ash);
+    transition: color 0.2s ease;
+  }
+  .back-link:hover {
+    color: var(--brass);
+  }
 
-  .project-hero{
-    position: relative; padding-block: var(--sp-5) var(--sp-4);
-    background: radial-gradient(ellipse at 72% 12%, rgba(178,58,46,.14), transparent 58%), var(--ink);
+  .project-hero {
+    position: relative;
+    padding-block: clamp(1.75rem, 4vw, 3.25rem) clamp(2.5rem, 5vw, 4rem);
+    background: radial-gradient(ellipse at 72% 12%, rgba(178, 58, 46, 0.12), transparent 58%), var(--ink);
     overflow: clip;
   }
-  .project-hero-inner{ position: relative; z-index: 1; }
-  .hero-meta{ display:flex; align-items:center; gap: .85rem; }
-  .project-hero h1{
-    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
-    font-size: clamp(2.6rem, 9vw, 6.2rem); line-height: .9; letter-spacing: -.03em; color: var(--ecru);
-    margin: .45em 0 .3em;
+  .project-hero-inner {
+    position: relative;
+    z-index: 1;
   }
-  .project-hero h1 .line{ display:block; overflow:clip; }
-  .project-synopsis{ max-width: 58ch; font-size: clamp(1.05rem, 2vw, 1.25rem); font-style: italic; color: var(--ecru); border-left: 2px solid var(--oxblood); padding-left: 1rem; }
-
-  .project-cover-wrap{ margin-top: var(--sp-4); }
-  .project-cover{
-    position: relative; display: block; aspect-ratio: 16/8.5; overflow: hidden;
-    border: 1px solid rgba(239,230,216,.14); background: var(--ink-2);
-    clip-path: polygon(0 0,100% 0,100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%);
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 1rem;
   }
-  .project-cover img{ width:100%; height:100%; object-fit:cover; transition: transform .7s cubic-bezier(.16,1,.3,1), filter .4s; filter: saturate(.95) contrast(1.04); }
-  .project-cover:hover img{ transform: scale(1.03); filter: saturate(1); }
-  .play-badge{
-    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
-    font-family: var(--font-mono); font-size: .78rem; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--ecru); background: rgba(28,22,20,.82); border: 1px solid var(--brass);
-    padding: .65rem 1rem; backdrop-filter: blur(6px); display:flex; gap:.5rem; align-items:center;
+  .project-hero h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2.1rem, 5.4vw, 4rem);
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    color: var(--ecru);
+    margin: 0 0 1rem;
+    max-width: 18ch;
   }
-  .play-badge i{ color: var(--brass); font-style: normal; }
-
-  .specs-grid{ display:grid; grid-template-columns: 300px 1fr; gap: var(--sp-5); align-items:start; }
-  @media (max-width:480px){ .specs-grid{ grid-template-columns:1fr; gap:1.5rem; } }
-  .specs-aside{
-    position: sticky; top: 92px; background: var(--ink-2); border: 1px solid var(--oxblood-dim);
-    padding: 1.4rem; clip-path: polygon(0 0,100% 0,100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+  .project-synopsis {
+    max-width: 58ch;
+    font-size: clamp(1.04rem, 1.8vw, 1.2rem);
+    line-height: 1.65;
+    color: rgba(239, 230, 216, 0.92);
+    border-left: 2px solid var(--brass);
+    padding-left: 1rem;
   }
-  @media (max-width:640px){
-    .specs-aside{ position:static; top:auto; }
-  }
-  .specs-aside ul{ margin-top: .9rem; display:grid; gap: .65rem; }
-  .specs-aside li{ display:flex; justify-content:space-between; gap:1rem; font-family: var(--font-mono); font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ash); border-bottom: 1px solid rgba(239,230,216,.08); padding-bottom: .5rem; }
-  .specs-aside li b{ color: var(--ecru); }
-  .specs-cta{ display:inline-block; margin-top: 1rem; font-family: var(--font-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--brass); border-bottom: 1px solid var(--oxblood); padding-bottom: 2px; }
-  .specs-cta:hover{ color: var(--ecru); border-color: var(--brass); }
-
-  .story{ display:grid; gap: 1.1rem; }
-  .story p{ color: var(--ecru); max-width: 58ch; line-height: 1.7; }
-  .story strong{ color: var(--ecru); font-weight: 700; }
-  .internship-heading{
-    font-family: var(--font-mono); font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--brass); font-weight: 700; line-height: 1.4;
-    margin-top: 0.6rem; padding-bottom: 0.4rem;
-    border-bottom: 1px solid rgba(212,162,76,0.18);
-  }
-  .internship-heading:first-of-type{ margin-top: 0.2rem; }
-  h3.internship-heading{
-    font-size: 0.86rem; margin-top: 1.8rem; margin-bottom: 0.2rem;
-  }
-  .branch-head{
-    font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.04em;
-    color: var(--brass); font-weight: 700;
-  }
-  .internship-divider{
-    display:flex; align-items:center; gap:0.75rem;
-    margin: 0.4rem 0 0.2rem; padding-block: 0.4rem;
-  }
-  .internship-divider .divider-line{
-    flex:1; height:1px;
-    background: linear-gradient(90deg, transparent, rgba(239,230,216,0.14), transparent);
-  }
-  .internship-divider .divider-diamond{
-    width:7px; height:7px; background: var(--brass);
-    transform: rotate(45deg); flex-shrink:0;
-    box-shadow: 0 0 0 6px rgba(212,162,76,0.07);
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
   }
 
-  .samples-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.4rem; }
-  .samples-grid.is-vertical-grid{ grid-template-columns: repeat(auto-fit, minmax(190px, 240px)); }
-  .sample-card{ display:flex; flex-direction:column; gap: 0.55rem; }
-  .sample-thumb{
-    position: relative; aspect-ratio: 16/9; overflow: hidden;
-    border: 1px solid rgba(239,230,216,.14); background: var(--ink-2);
-    transition: border-color .25s ease;
+  .project-cover-wrap {
+    margin-top: clamp(2rem, 4vw, 3rem);
   }
-  .sample-card.is-vertical .sample-thumb{ aspect-ratio: 9/16; }
-  .sample-thumb img{ width:100%; height:100%; object-fit:cover; transition: transform .6s cubic-bezier(.16,1,.3,1); }
-  .sample-card:hover .sample-thumb{ border-color: var(--brass); }
-  .sample-card:hover .sample-thumb img{ transform: scale(1.04); }
-  .sample-play{
-    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    width:44px; height:44px; border-radius:50%;
-    display:grid; place-items:center;
-    background: rgba(28,22,20,.82); border:1px solid var(--brass); color:var(--brass);
-    font-size:.82rem; padding-left:2px;
-    transition: transform .25s ease, background-color .25s ease, color .25s ease;
+  .project-cover {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    background: var(--ink-2);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%);
   }
-  .sample-card:hover .sample-play{ background: var(--brass); color: var(--ink); transform:translate(-50%,-50%) scale(1.08); }
-  .sample-label{
-    font-family: var(--font-mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase;
-    color: var(--ecru); transition: color .2s ease;
+  .project-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s;
+    filter: saturate(0.95) contrast(1.04);
   }
-  .sample-card:hover .sample-label{ color: var(--brass); }
+  .project-cover:hover img {
+    transform: scale(1.03);
+    filter: saturate(1);
+  }
+  .play-badge {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    min-height: 44px;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ecru);
+    background: rgba(28, 22, 20, 0.86);
+    border: 1px solid var(--brass);
+    padding: 0 1.2rem;
+    backdrop-filter: blur(6px);
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .play-badge i {
+    color: var(--brass);
+    font-style: normal;
+  }
 
-  .gallery-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1.4rem; }
-  @media (max-width:480px){ .gallery-grid{ grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap:0.9rem; } }
-  .gallery-card{ margin:0; cursor: zoom-in; }
-  .gallery-img-wrap{ aspect-ratio: 16/10; overflow:hidden; border:1px solid rgba(239,230,216,.12); background: var(--ink-2); }
-  .gallery-img-wrap img{ width:100%; height:100%; object-fit:cover; transition: transform .6s cubic-bezier(.16,1,.3,1); }
-  .gallery-card:hover img{ transform: scale(1.04); }
-  .gallery-card figcaption{ margin-top: .5rem; font-family: var(--font-mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ash); }
+  .specs-grid {
+    display: grid;
+    grid-template-columns: 310px 1fr;
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: start;
+  }
+  @media (max-width: 768px) {
+    .specs-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+  }
+  .specs-aside {
+    position: sticky;
+    top: 96px;
+    background: var(--ink-2);
+    border: 1px solid var(--border-subtle);
+    padding: 1.5rem;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+  }
+  @media (max-width: 768px) {
+    .specs-aside {
+      position: static;
+    }
+  }
+  .aside-heading,
+  .section-subhead {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--ecru);
+    margin: 0 0 1.15rem;
+  }
+  .specs-aside ul {
+    display: grid;
+    gap: 0.7rem;
+  }
+  .specs-aside li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ash);
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 0.55rem;
+  }
+  .specs-aside li b {
+    color: var(--ecru);
+  }
+  .specs-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-top: 1.35rem;
+  }
+
+  .story {
+    display: grid;
+    gap: 1.15rem;
+  }
+  .story p {
+    color: rgba(239, 230, 216, 0.92);
+    font-size: 1.06rem;
+    max-width: 58ch;
+    line-height: 1.72;
+  }
+  .story strong {
+    color: var(--ecru);
+    font-weight: 700;
+  }
+  .internship-heading {
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--brass);
+    font-weight: 600;
+    line-height: 1.4;
+    margin-top: 1.2rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid rgba(212, 162, 76, 0.2);
+  }
+  .branch-head {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    color: var(--brass);
+    font-weight: 600;
+  }
+  .internship-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.4rem 0 0.2rem;
+    padding-block: 0.4rem;
+  }
+  .internship-divider .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-subtle), transparent);
+  }
+  .internship-divider .divider-diamond {
+    width: 7px;
+    height: 7px;
+    background: var(--brass);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+  }
+
+  .samples-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.4rem;
+  }
+  .samples-grid.is-vertical-grid {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 240px));
+  }
+  .sample-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .sample-thumb {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    background: var(--ink-2);
+    transition: border-color 0.25s ease;
+  }
+  .sample-card.is-vertical .sample-thumb {
+    aspect-ratio: 9 / 16;
+  }
+  .sample-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .sample-card:hover .sample-thumb {
+    border-color: var(--brass);
+  }
+  .sample-card:hover .sample-thumb img {
+    transform: scale(1.04);
+  }
+  .sample-play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(28, 22, 20, 0.85);
+    border: 1px solid var(--brass);
+    color: var(--brass);
+    font-size: 0.82rem;
+    padding-left: 2px;
+    transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+  }
+  .sample-card:hover .sample-play {
+    background: var(--brass);
+    color: var(--ink);
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+  .sample-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ecru);
+    transition: color 0.2s ease;
+  }
+  .sample-card:hover .sample-label {
+    color: var(--brass);
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.4rem;
+  }
+  @media (max-width: 520px) {
+    .gallery-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .gallery-card {
+    margin: 0;
+    cursor: zoom-in;
+    border-radius: 2px;
+  }
+  .gallery-img-wrap {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    background: var(--ink-2);
+    transition: border-color 0.22s ease;
+  }
+  .gallery-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .gallery-card:hover img,
+  .gallery-card:focus-visible img {
+    transform: scale(1.04);
+  }
+  .gallery-card:hover .gallery-img-wrap,
+  .gallery-card:focus-visible .gallery-img-wrap {
+    border-color: var(--brass);
+  }
+  .gallery-card figcaption {
+    margin-top: 0.55rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ash);
+  }
 </style>

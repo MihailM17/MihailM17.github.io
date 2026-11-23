@@ -1,4 +1,7 @@
 ---
+import { Image } from 'astro:assets';
+import { resolveMedia, optimizeMediaUrl } from '../lib/media';
+
 interface StripItem {
   src: string;
   alt: string;
@@ -7,22 +10,29 @@ interface StripItem {
 }
 
 interface Props {
-  eyebrow?: string;
   title?: string;
   items: StripItem[];
 }
 
-const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
+const { title = 'Selected frames.', items } = Astro.props;
+
+const resolvedItems = await Promise.all(
+  items.map(async (item) => ({
+    ...item,
+    media: resolveMedia(item.src),
+    lightboxSrc: await optimizeMediaUrl(item.src, 1600, 84),
+  })),
+);
 ---
 
 <section id="stills" class="filmstrip-section" data-filmstrip>
   <div class="container filmstrip-head" data-reveal>
     <div>
-      <span class="eyebrow">{eyebrow}</span>
       <h2>{title}</h2>
     </div>
     <div class="filmstrip-controls">
-      <span class="filmstrip-hint">Drag or scroll sideways · Click frame to inspect</span>
+      <span class="filmstrip-hint filmstrip-hint--desktop">Drag or scroll sideways · Click frame to inspect</span>
+      <span class="filmstrip-hint filmstrip-hint--mobile">Swipe sideways · Tap frame</span>
       <div class="filmstrip-arrows">
         <button type="button" class="strip-arrow" data-strip-prev aria-label="Scroll film strip left">←</button>
         <button type="button" class="strip-arrow" data-strip-next aria-label="Scroll film strip right">→</button>
@@ -35,7 +45,7 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
       <div class="sprocket-rail" aria-hidden="true"></div>
 
       <div class="filmstrip-track" data-strip-track>
-        {items.map((item, i) => {
+        {resolvedItems.map((item, i) => {
           const frameCode = `${String(i + 1).padStart(2, '0')}A`;
           const fullCaption = item.year
             ? `${item.caption || item.alt} · ${item.year}`
@@ -44,28 +54,42 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
             <figure
               class="film-frame"
               data-lightbox
-              data-src={item.src}
+              data-src={item.lightboxSrc || item.src}
               data-caption={fullCaption}
               data-cursor-hover
               data-cursor-label="VIEW"
               tabindex="0"
               role="button"
-              aria-label={`View ${item.caption || item.alt}`}
+              aria-label={`Inspect still: ${item.caption || item.alt}`}
             >
               <div class="film-frame-top" aria-hidden="true">
                 <span class="film-code">{frameCode}</span>
                 {item.year && <span class="film-year">{item.year}</span>}
               </div>
-              <div class="film-frame-media skeleton" data-img-wrap>
-                <img
-                  src={item.src}
-                  alt={item.alt}
-                  loading="lazy"
-                  decoding="async"
-                  draggable="false"
-                  onload="this.closest('[data-img-wrap]')?.classList.remove('skeleton')"
-                  onerror="this.closest('[data-img-wrap]')?.classList.remove('skeleton'); this.style.opacity='0.25'"
-                />
+              <div class="film-frame-media" data-img-wrap>
+                {item.media ? (
+                  <Image
+                    src={item.media}
+                    alt={item.alt}
+                    widths={[360, 640, 840]}
+                    sizes="(max-width: 640px) 74vw, 360px"
+                    format="webp"
+                    quality={80}
+                    loading="lazy"
+                    decoding="async"
+                    draggable="false"
+                  />
+                ) : (
+                  <img
+                    src={item.src}
+                    alt={item.alt}
+                    width="720"
+                    height="480"
+                    loading="lazy"
+                    decoding="async"
+                    draggable="false"
+                  />
+                )}
               </div>
               <figcaption class="film-frame-caption">
                 <span>{item.caption || item.alt}</span>
@@ -84,11 +108,11 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
   .filmstrip-section {
     --strip-surface: #211B18;
     position: relative;
-    padding-block: clamp(4.75rem, 8.5vw, 7.5rem);
+    padding-block: clamp(4.5rem, 8vw, 7.25rem);
     background:
       radial-gradient(ellipse 680px 320px at 80% 12%, rgba(212, 162, 76, 0.05), transparent 62%),
       linear-gradient(180deg, #221C18 0%, #1E1815 100%);
-    border-top: 1px solid rgba(239, 230, 216, 0.09);
+    border-top: 1px solid var(--border-soft);
     overflow: clip;
   }
 
@@ -103,7 +127,7 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
   .filmstrip-head h2 {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: clamp(1.75rem, 3.8vw, 2.55rem);
+    font-size: var(--h2-size);
     line-height: 1.08;
     letter-spacing: -0.025em;
     color: var(--ecru);
@@ -114,27 +138,31 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-wrap: wrap;
   }
   .filmstrip-hint {
     font-family: var(--font-mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.12em;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ash);
   }
+  .filmstrip-hint--mobile {
+    display: none;
+  }
   .filmstrip-arrows {
     display: inline-flex;
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
   .strip-arrow {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    border: 1px solid rgba(239, 230, 216, 0.16);
-    background: rgba(30, 24, 21, 0.7);
+    border: 1px solid var(--border-subtle);
+    background: rgba(30, 24, 21, 0.75);
     color: var(--ecru);
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     display: grid;
     place-items: center;
     cursor: pointer;
@@ -143,13 +171,14 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
   .strip-arrow:hover {
     border-color: var(--brass);
     color: var(--brass);
-    background: rgba(212, 162, 76, 0.08);
+    background: rgba(212, 162, 76, 0.1);
   }
 
   .filmstrip-viewport {
     width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
+    touch-action: pan-x pan-y;
     cursor: grab;
     scrollbar-width: thin;
     scrollbar-color: rgba(212, 162, 76, 0.35) rgba(18, 14, 12, 0.7);
@@ -163,28 +192,27 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
     height: 6px;
   }
   .filmstrip-viewport::-webkit-scrollbar-track {
-    background: #120e0c;
+    background: var(--surface-0);
   }
   .filmstrip-viewport::-webkit-scrollbar-thumb {
-    background: rgba(212, 162, 76, 0.32);
+    background: rgba(212, 162, 76, 0.35);
     border-radius: 999px;
   }
   .filmstrip-viewport::-webkit-scrollbar-thumb:hover {
-    background: rgba(212, 162, 76, 0.6);
+    background: rgba(212, 162, 76, 0.65);
   }
 
   .filmstrip-band {
     display: inline-flex;
     flex-direction: column;
     min-width: 100%;
-    background: #120e0c;
-    border-block: 1px solid rgba(239, 230, 216, 0.12);
+    background: var(--surface-0);
+    border-block: 1px solid var(--border-subtle);
     box-shadow:
       inset 0 1px 0 rgba(239, 230, 216, 0.05),
       inset 0 -1px 0 rgba(239, 230, 216, 0.05);
   }
 
-  /* Subtle 35mm sprocket perforations matching the page background (--ink) */
   .sprocket-rail {
     position: relative;
     height: 18px;
@@ -223,7 +251,7 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
     flex-direction: column;
     gap: 0.45rem;
     cursor: pointer;
-    outline: none;
+    border-radius: 2px;
   }
 
   .film-frame-top {
@@ -231,15 +259,14 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
     align-items: center;
     justify-content: space-between;
     font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.14em;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: rgba(212, 162, 76, 0.72);
+    color: var(--brass);
     padding-inline: 2px;
   }
   .film-year {
     color: var(--ash);
-    opacity: 0.75;
   }
 
   .film-frame-media {
@@ -247,16 +274,16 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
     aspect-ratio: 3 / 2;
     overflow: hidden;
     background: var(--ink-2);
-    border: 1px solid rgba(239, 230, 216, 0.14);
+    border: 1px solid var(--border-subtle);
     border-radius: 2px;
-    transition: border-color 0.28s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+    transition: border-color 0.25s ease, box-shadow 0.3s ease;
   }
   .film-frame-media img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     filter: saturate(0.92) contrast(1.04);
-    transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
   }
   .film-frame:hover .film-frame-media,
   .film-frame:focus-visible .film-frame-media {
@@ -265,14 +292,14 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
   }
   .film-frame:hover .film-frame-media img,
   .film-frame:focus-visible .film-frame-media img {
-    transform: scale(1.045);
+    transform: scale(1.04);
     filter: saturate(1) contrast(1.06);
   }
 
   .film-frame-caption {
     font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.06em;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--ash);
     white-space: nowrap;
@@ -281,80 +308,117 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
     padding-inline: 2px;
     transition: color 0.2s ease;
   }
-  .film-frame:hover .film-frame-caption {
+  .film-frame:hover .film-frame-caption,
+  .film-frame:focus-visible .film-frame-caption {
     color: var(--ecru);
   }
 
   @media (max-width: 640px) {
-    .filmstrip-hint {
+    .filmstrip-hint--desktop {
       display: none;
+    }
+    .filmstrip-hint--mobile {
+      display: inline;
     }
     .film-frame {
       width: 74vw;
     }
-    .sprocket-rail {
-      height: 18px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .film-frame-media img {
+      transition: none;
+    }
+    .film-frame:hover .film-frame-media img {
+      transform: none;
     }
   }
 </style>
 
 <script>
-  // @ts-nocheck
   import { getSound } from '../lib/sound';
 
   function initFilmStrip() {
-    const section = document.querySelector('[data-filmstrip]');
+    const section = document.querySelector<HTMLElement>('[data-filmstrip]');
     if (!section || section.dataset.stripBound === '1') return;
     section.dataset.stripBound = '1';
 
-    const viewport = section.querySelector('[data-strip-viewport]');
-    const prevBtn = section.querySelector('[data-strip-prev]');
-    const nextBtn = section.querySelector('[data-strip-next]');
+    const viewport = section.querySelector<HTMLElement>('[data-strip-viewport]');
+    const prevBtn = section.querySelector<HTMLButtonElement>('[data-strip-prev]');
+    const nextBtn = section.querySelector<HTMLButtonElement>('[data-strip-next]');
     if (!viewport) return;
 
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const stepSize = () => Math.max(280, Math.round(viewport.clientWidth * 0.65));
 
     prevBtn?.addEventListener('click', () => {
       getSound().playStep(-1);
-      viewport.scrollBy({ left: -stepSize(), behavior: 'smooth' });
+      viewport.scrollBy({ left: -stepSize(), behavior: prefersReduced ? 'auto' : 'smooth' });
     });
     nextBtn?.addEventListener('click', () => {
       getSound().playStep(1);
-      viewport.scrollBy({ left: stepSize(), behavior: 'smooth' });
+      viewport.scrollBy({ left: stepSize(), behavior: prefersReduced ? 'auto' : 'smooth' });
     });
 
-    // Click-and-drag horizontal scrubbing without hijacking vertical page scroll
+    // Pointer-event mouse drag scrubbing (touch uses native inertial overflow-x).
+    // Capture pointer ONLY after dragging past threshold so normal mouse clicks reach .film-frame -> Lightbox.
     let isDown = false;
+    let activePointerId: number | null = null;
+    let captured = false;
     let startX = 0;
     let startScroll = 0;
     let dragged = false;
 
-    viewport.addEventListener('mousedown', (e) => {
-      if (e.button !== 0) return;
-      isDown = true;
-      dragged = false;
-      startX = e.pageX;
-      startScroll = viewport.scrollLeft;
-      viewport.classList.add('is-dragging');
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isDown) return;
-      const dx = e.pageX - startX;
-      if (Math.abs(dx) > 6) dragged = true;
-      viewport.scrollLeft = startScroll - dx;
-    });
-
-    window.addEventListener('mouseup', () => {
+    const endDrag = () => {
       if (!isDown) return;
       isDown = false;
+      if (captured && activePointerId !== null) {
+        try {
+          viewport.releasePointerCapture(activePointerId);
+        } catch {}
+      }
+      captured = false;
+      activePointerId = null;
       viewport.classList.remove('is-dragging');
       if (dragged) {
-        setTimeout(() => { dragged = false; }, 50);
+        setTimeout(() => {
+          dragged = false;
+        }, 80);
       }
-    });
+    };
 
-    // Prevent drag release from accidentally opening Lightbox
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      isDown = true;
+      activePointerId = e.pointerId;
+      captured = false;
+      dragged = false;
+      startX = e.clientX;
+      startScroll = viewport.scrollLeft;
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDown || e.pointerId !== activePointerId) return;
+      const dx = e.clientX - startX;
+      if (!dragged) {
+        if (Math.abs(dx) <= 6) return;
+        dragged = true;
+        viewport.classList.add('is-dragging');
+        try {
+          viewport.setPointerCapture(e.pointerId);
+          captured = true;
+        } catch {}
+      }
+      viewport.scrollLeft = startScroll - dx;
+    };
+
+    viewport.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+    viewport.addEventListener('lostpointercapture', endDrag);
+    window.addEventListener('blur', endDrag);
+
     viewport.addEventListener(
       'click',
       (e) => {
@@ -366,15 +430,17 @@ const { eyebrow = 'Stills', title = 'Selected frames.', items } = Astro.props;
       true,
     );
 
-    // Keyboard open for film frames
-    viewport.querySelectorAll('.film-frame[data-lightbox]').forEach((frame) => {
-      frame.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          frame.click();
-        }
-      });
-    });
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', endDrag);
+        window.removeEventListener('pointercancel', endDrag);
+        window.removeEventListener('blur', endDrag);
+        endDrag();
+      },
+      { once: true },
+    );
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initFilmStrip);
